@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { of, throwError } from 'rxjs';
@@ -17,10 +18,30 @@ describe('OpenWeatherMapAdapter', () => {
     set: jest.fn(),
   };
 
+  const mockConfigService = {
+    get: jest.fn((key: string, defaultValue?: any) => {
+      if (key === 'openweathermap') {
+        return {
+          apiKey: 'test-api-key',
+          baseUrl: 'https://api.openweathermap.org/data/2.5/weather',
+          cacheTtl: 600000,
+          timeout: 5000,
+          maxRedirects: 5,
+          cacheMax: 100,
+        };
+      }
+      return defaultValue;
+    }),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OpenWeatherMapAdapter,
+        {
+          provide: ConfigService,
+          useValue: mockConfigService,
+        },
         {
           provide: HttpService,
           useValue: mockHttpService,
@@ -33,9 +54,6 @@ describe('OpenWeatherMapAdapter', () => {
     }).compile();
 
     adapter = module.get<OpenWeatherMapAdapter>(OpenWeatherMapAdapter);
-
-    // Set API key for tests
-    process.env.OPENWEATHERMAP_API_KEY = 'test-api-key';
 
     // Reset mocks
     jest.clearAllMocks();

@@ -1,4 +1,5 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import type { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -6,6 +7,7 @@ import { firstValueFrom } from 'rxjs';
 import { WeatherService } from '../../domain/services';
 import { WeatherCondition } from '../../domain/value-objects';
 import { WeatherCodeMapper } from './weather-code.mapper';
+import type { OpenWeatherMapConfig } from './openweathermap.config';
 
 /**
  * OpenWeatherMap API response interface
@@ -36,16 +38,23 @@ interface OpenWeatherMapResponse {
 export class OpenWeatherMapAdapter implements WeatherService {
   private readonly logger = new Logger(OpenWeatherMapAdapter.name);
   private readonly apiKey: string;
-  private readonly baseUrl = 'https://api.openweathermap.org/data/2.5/weather';
+  private readonly baseUrl: string;
   private readonly cacheKeyPrefix = 'weather_';
-  private readonly cacheTtl = 600000; // 10 minutes in milliseconds
+  private readonly cacheTtl: number;
 
   constructor(
     private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {
-    // Get API key from environment variable
-    this.apiKey = process.env.OPENWEATHERMAP_API_KEY || '';
+    // Get configuration from ConfigService
+    const config =
+      this.configService.get<OpenWeatherMapConfig>('openweathermap');
+
+    this.apiKey = config?.apiKey || '';
+    this.baseUrl =
+      config?.baseUrl || 'https://api.openweathermap.org/data/2.5/weather';
+    this.cacheTtl = config?.cacheTtl || 600000;
 
     if (!this.apiKey) {
       this.logger.warn(
