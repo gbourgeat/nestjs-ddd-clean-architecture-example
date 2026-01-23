@@ -141,6 +141,12 @@ export class RouteController {
         constraints,
       });
 
+      if (!result.path.length) {
+        return {
+          path: [],
+        };
+      }
+
       // Map result to response DTO
       return {
         path: result.path,
