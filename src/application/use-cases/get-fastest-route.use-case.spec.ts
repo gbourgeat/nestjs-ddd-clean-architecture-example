@@ -49,8 +49,8 @@ describe('GetFastestRouteUseCase', () => {
             from: 'Paris',
             to: 'Lyon',
             distance: 465,
-            speed: 120,
             travelTime: 3.875,
+            speed: 120,
             weather: 'sunny',
           },
         ],
@@ -63,14 +63,13 @@ describe('GetFastestRouteUseCase', () => {
       expect(result).toEqual({
         path: ['Paris', 'Lyon'],
         totalDistance: 465,
-        estimatedTime: 3.875,
+        estimatedTime: 3.9,
         steps: [
           {
             from: 'Paris',
             to: 'Lyon',
             distance: 465,
             speed: 120,
-            travelTime: 3.875,
             weather: 'sunny',
           },
         ],
@@ -132,8 +131,8 @@ describe('GetFastestRouteUseCase', () => {
             from: 'Paris',
             to: 'Lyon',
             distance: 465,
-            speed: 120,
             travelTime: 3.875,
+            speed: 120,
             weather: 'sunny',
           },
         ],
@@ -230,8 +229,8 @@ describe('GetFastestRouteUseCase', () => {
             from: 'Lille',
             to: 'Paris',
             distance: 225,
+            travelTime: 2.15,
             speed: 130,
-            travelTime: 1.73,
             weather: 'cloudy',
           },
           {
@@ -239,7 +238,7 @@ describe('GetFastestRouteUseCase', () => {
             to: 'Dijon',
             distance: 315,
             speed: 110,
-            travelTime: 2.86,
+            travelTime: 1.875,
             weather: 'cloudy',
           },
           {
@@ -247,15 +246,15 @@ describe('GetFastestRouteUseCase', () => {
             to: 'Lyon',
             distance: 195,
             speed: 110,
-            travelTime: 1.77,
+            travelTime: 1.125,
             weather: 'sunny',
           },
           {
             from: 'Lyon',
             to: 'Nice',
             distance: 470,
+            travelTime: 3.875,
             speed: 110,
-            travelTime: 4.27,
             weather: 'sunny',
           },
         ],
@@ -267,7 +266,7 @@ describe('GetFastestRouteUseCase', () => {
       // Assert
       expect(result.path).toEqual(['Lille', 'Paris', 'Dijon', 'Lyon', 'Nice']);
       expect(result.totalDistance).toBe(1385);
-      expect(result.estimatedTime).toBe(12.15);
+      expect(result.estimatedTime).toBe(12.2);
       expect(result.steps).toHaveLength(4);
       expect(result.steps[0].from).toBe('Lille');
       expect(result.steps[3].to).toBe('Nice');
@@ -301,16 +300,16 @@ describe('GetFastestRouteUseCase', () => {
             from: 'Paris',
             to: 'Lyon',
             distance: 465,
-            speed: 120,
             travelTime: 3.875,
+            speed: 120,
             weather: 'rain',
           },
           {
             from: 'Lyon',
             to: 'Nice',
             distance: 470,
+            travelTime: 3.875,
             speed: 110,
-            travelTime: 4.27,
             weather: 'sunny',
           },
         ],

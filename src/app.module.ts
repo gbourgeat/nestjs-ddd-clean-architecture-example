@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { InfrastructureModule } from './infrastructure';
+import { PresentationModule } from './presentation/presentation.module';
 
 @Module({
   imports: [
@@ -9,6 +10,7 @@ import { InfrastructureModule } from './infrastructure';
       envFilePath: '.env',
     }),
     InfrastructureModule,
+    PresentationModule,
   ],
   controllers: [],
   providers: [],

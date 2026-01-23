@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ROUTES } from '../../data';
 import type { PathfindingService, WeatherService } from '../../domain/services';
 import { RouteConstraints, WeatherCondition } from '../../domain/value-objects';
@@ -24,7 +24,6 @@ export interface GetFastestRouteOutput {
     to: string;
     distance: number;
     speed: number;
-    travelTime: number;
     weather?: WeatherCondition;
   }>;
 }
@@ -41,7 +40,9 @@ export interface GetFastestRouteOutput {
 @Injectable()
 export class GetFastestRouteUseCase {
   constructor(
+    @Inject('PathfindingService')
     private readonly pathfindingService: PathfindingService,
+    @Inject('WeatherService')
     private readonly weatherService: WeatherService,
   ) {}
 
@@ -100,13 +101,12 @@ export class GetFastestRouteUseCase {
     return {
       path: result.path,
       totalDistance: result.totalDistance,
-      estimatedTime: result.estimatedTime,
+      estimatedTime: Math.round(result.estimatedTime * 10) / 10,
       steps: result.steps.map((step) => ({
         from: step.from,
         to: step.to,
         distance: step.distance,
         speed: step.speed,
-        travelTime: step.travelTime,
         weather: step.weather,
       })),
     };

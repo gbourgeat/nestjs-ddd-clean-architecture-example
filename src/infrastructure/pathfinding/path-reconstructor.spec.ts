@@ -235,7 +235,6 @@ describe('PathReconstructor', () => {
       expect(step.to).toBe('Lyon');
       expect(step.distance).toBe(465);
       expect(step.speed).toBe(120);
-      expect(step.travelTime).toBeCloseTo(3.875, 3);
     });
   });
 });

@@ -19,7 +19,7 @@ describe('OpenWeatherMapAdapter', () => {
   };
 
   const mockConfigService = {
-    get: jest.fn((key: string, defaultValue?: any) => {
+    get: jest.fn((key: string, defaultValue?: any): any => {
       if (key === 'openweathermap') {
         return {
           apiKey: 'test-api-key',
@@ -30,6 +30,7 @@ describe('OpenWeatherMapAdapter', () => {
           cacheMax: 100,
         };
       }
+
       return defaultValue;
     }),
   };
