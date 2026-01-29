@@ -1,14 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { RouteController } from './controllers/route.controller';
-import { DatabaseModule } from '../../infrastructure/database/database.module';
-import { OpenWeatherMapModule } from '../../infrastructure/openweathermap/openweathermap.module';
-import { PathfindingModule } from '../../infrastructure/pathfinding/pathfinding.module';
-import { PathFinder } from '../../domain/services/path-finder';
-import { RoadSegmentRepository } from '../../domain/repositories/road-segment.repository';
-import { WeatherConditionProvider } from '../../domain/services/weather-condition-provider';
-import { GetFastestRouteUseCase } from '../../application/use-cases/get-fastest-route/get-fastest-route.use-case';
-import { CityRepository } from '../../domain/repositories/city.repository';
+import { RouteController } from './controllers';
+import { DatabaseModule } from '@/infrastructure/database/database.module';
+import { PathfindingModule } from '@/infrastructure/pathfinding/pathfinding.module';
+import { PathFinder } from '@/domain/services';
+import { RoadSegmentRepository, CityRepository } from '@/domain/repositories';
+import { GetFastestRouteUseCase } from '@/application/use-cases/get-fastest-route';
+import { UpdateRoadSegmentSpeedUseCase } from '@/application/use-cases/update-road-segment-speed';
 
 @Module({
   imports: [
@@ -17,7 +15,6 @@ import { CityRepository } from '../../domain/repositories/city.repository';
       envFilePath: '.env',
     }),
     DatabaseModule,
-    OpenWeatherMapModule,
     PathfindingModule,
   ],
   providers: [
@@ -27,21 +24,21 @@ import { CityRepository } from '../../domain/repositories/city.repository';
         fastestRoadFinder: PathFinder,
         roadSegmentRepository: RoadSegmentRepository,
         cityRepository: CityRepository,
-        weatherConditionProvider: WeatherConditionProvider,
       ) => {
         return new GetFastestRouteUseCase(
           fastestRoadFinder,
           roadSegmentRepository,
           cityRepository,
-          weatherConditionProvider,
         );
       },
-      inject: [
-        PathFinder,
-        RoadSegmentRepository,
-        CityRepository,
-        WeatherConditionProvider,
-      ],
+      inject: [PathFinder, RoadSegmentRepository, CityRepository],
+    },
+    {
+      provide: UpdateRoadSegmentSpeedUseCase,
+      useFactory: (roadSegmentRepository: RoadSegmentRepository) => {
+        return new UpdateRoadSegmentSpeedUseCase(roadSegmentRepository);
+      },
+      inject: [RoadSegmentRepository],
     },
   ],
   controllers: [RouteController],

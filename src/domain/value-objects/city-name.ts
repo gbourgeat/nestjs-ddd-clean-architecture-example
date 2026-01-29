@@ -1,3 +1,5 @@
+import { InvalidCityNameError } from '@/domain/errors';
+
 export class CityName {
   private readonly _value: string;
 
@@ -13,46 +15,35 @@ export class CityName {
 
   private static validate(name: string): void {
     if (!name || name.trim().length === 0) {
-      throw new Error('Le nom de la ville ne peut pas être vide');
+      throw InvalidCityNameError.empty();
     }
 
     const trimmedName = name.trim();
 
-    // Seem weird but in France we have city name Y (Somme)
-    if (!trimmedName.length) {
-      throw new Error('Le nom de la ville doit contenir au moins 1 caractères');
-    }
-
     if (trimmedName.length > 100) {
-      throw new Error('Le nom de la ville ne peut pas dépasser 100 caractères');
+      throw InvalidCityNameError.tooLong();
     }
 
     // Ensure name doesn't start or end with special characters (except balanced parentheses)
     if (/^[\s\-']|[\s\-']$/.test(trimmedName)) {
-      throw new Error(
-        'Le nom de la ville ne peut pas commencer ou se terminer par un espace, un tiret, une apostrophe ou une parenthèse',
-      );
+      throw InvalidCityNameError.invalidFormat();
     }
 
     // Check for mismatched parentheses
     const openParens = (trimmedName.match(/\(/g) || []).length;
     const closeParens = (trimmedName.match(/\)/g) || []).length;
     if (openParens !== closeParens) {
-      throw new Error('Les parenthèses doivent être équilibrées');
+      throw InvalidCityNameError.mismatchedParentheses();
     }
 
     // If there are parentheses, they shouldn't be at the very start
     if (/^\(/.test(trimmedName)) {
-      throw new Error(
-        'Le nom de la ville ne peut pas commencer ou se terminer par un espace, un tiret, une apostrophe ou une parenthèse',
-      );
+      throw InvalidCityNameError.invalidFormat();
     }
 
     // Avoid multiple consecutive spaces or hyphens
     if (/\s{2,}|--/.test(trimmedName)) {
-      throw new Error(
-        'Le nom de la ville ne peut pas contenir plusieurs espaces ou tirets consécutifs',
-      );
+      throw InvalidCityNameError.invalidFormat();
     }
 
     // French city name pattern:
@@ -66,9 +57,7 @@ export class CityName {
       /^[A-ZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞŸŒ][a-zA-ZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿŒœ\s'\-()]*$/;
 
     if (!frenchCityNamePattern.test(trimmedName)) {
-      throw new Error(
-        'Le nom de la ville contient des caractères invalides. Seuls les lettres (avec accents), espaces, tirets, apostrophes et parenthèses sont autorisés',
-      );
+      throw InvalidCityNameError.invalidCharacters();
     }
   }
 

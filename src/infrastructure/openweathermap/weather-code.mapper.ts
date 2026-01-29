@@ -1,4 +1,5 @@
-import { WeatherCondition } from '../../domain/value-objects/weather-condition';
+import { WeatherCondition } from '@/domain/value-objects';
+import { WeatherServiceError } from './weather-service.error';
 
 export class WeatherCodeMapper {
   private static readonly weatherMapping: Record<string, WeatherCondition> = {
@@ -23,7 +24,7 @@ export class WeatherCodeMapper {
     const condition = this.weatherMapping[weatherMain];
 
     if (!condition) {
-      throw new Error(`Unrecognized weather condition: ${weatherMain}`);
+      throw WeatherServiceError.unrecognizedCondition(weatherMain);
     }
 
     return condition;

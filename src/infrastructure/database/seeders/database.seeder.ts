@@ -1,15 +1,17 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { CITIES, ROAD_SEGMENTS } from './road-segments.fixtures';
 import { Repository } from 'typeorm';
-import { RoadSegmentTypeormEntity } from '../entities/route.typeorm-entity';
-import { CityTypeormEntity } from '../entities/city.typeorm-entity';
+import { RoadSegmentTypeormEntity, CityTypeormEntity } from '../entities';
 
 @Injectable()
 export class DatabaseSeeder implements OnModuleInit {
   private readonly logger = new Logger(DatabaseSeeder.name);
 
   constructor(
+    @InjectRepository(CityTypeormEntity)
     private readonly cityTypeormEntityRepository: Repository<CityTypeormEntity>,
+    @InjectRepository(RoadSegmentTypeormEntity)
     private readonly roadSegmentTypeormEntityRepository: Repository<RoadSegmentTypeormEntity>,
   ) {}
 
@@ -53,7 +55,7 @@ export class DatabaseSeeder implements OnModuleInit {
         segment.cityAId = cityNameToId.get(segmentData.fromCityName)!;
         segment.cityBId = cityNameToId.get(segmentData.toCityName)!;
         segment.distance = segmentData.distance;
-        segment.speed = segmentData.speed;
+        segment.speedLimit = segmentData.speed;
 
         await this.roadSegmentTypeormEntityRepository.save(segment);
       }

@@ -1,0 +1,162 @@
+---
+description: Rules for creating Value Objects in the Domain layer
+globs: ["src/domain/value-objects/**/*.ts"]
+alwaysApply: false
+---
+
+# Domain Value Objects
+
+## Value Object Structure
+
+Value Objects are immutable and encapsulate validation.
+
+```typescript
+import { InvalidValueError } from '@/domain/errors';
+
+export class ValueObjectName {
+  // Private constructor
+  private constructor(private readonly _value: PrimitiveType) {}
+
+  // Factory method with validation
+  static create(value: PrimitiveType): ValueObjectName {
+    // Validation
+    if (!this.isValid(value)) {
+      throw InvalidValueError.forReason('Explicit message');
+    }
+    return new ValueObjectName(value);
+  }
+
+  // Alternative factory method if needed
+  static fromXxx(input: OtherType): ValueObjectName {
+    const converted = /* conversion */;
+    return ValueObjectName.create(converted);
+  }
+
+  // Static validation
+  private static isValid(value: PrimitiveType): boolean {
+    return /* validation condition */;
+  }
+
+  // Getter for primitive value
+  get value(): PrimitiveType {
+    return this._value;
+  }
+
+  // Value-based equality
+  equals(other: ValueObjectName): boolean {
+    return this._value === other._value;
+  }
+
+  // String conversion if relevant
+  toString(): string {
+    return String(this._value);
+  }
+}
+```
+
+## Types of Value Objects
+
+### 1. Simple Value Object (primitive wrapper)
+```typescript
+export class Distance {
+  private constructor(private readonly _kilometers: number) {}
+
+  static create(kilometers: number): Distance {
+    if (kilometers < 0) {
+      throw InvalidDistanceError.negative();
+    }
+    return new Distance(kilometers);
+  }
+
+  get kilometers(): number {
+    return this._kilometers;
+  }
+
+  equals(other: Distance): boolean {
+    return this._kilometers === other._kilometers;
+  }
+}
+```
+
+### 2. Value Object with normalization
+```typescript
+export class CityId {
+  private constructor(private readonly _value: string) {}
+
+  static fromCityName(cityName: string): CityId {
+    if (!cityName?.trim()) {
+      throw InvalidCityIdError.emptyCityName();
+    }
+    return new CityId(CityId.normalize(cityName));
+  }
+
+  private static normalize(name: string): string {
+    return name.trim().toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  }
+
+  get value(): string {
+    return this._value;
+  }
+
+  equals(other: CityId): boolean {
+    return this._value === other._value;
+  }
+}
+```
+
+### 3. Enumeration Value Object (union type)
+```typescript
+export type WeatherCondition =
+  | 'sunny'
+  | 'cloudy'
+  | 'rain'
+  | 'snow'
+  | 'thunderstorm'
+  | 'fog';
+
+export const VALID_WEATHER_CONDITIONS: readonly WeatherCondition[] = [
+  'sunny', 'cloudy', 'rain', 'snow', 'thunderstorm', 'fog',
+] as const;
+
+export function isWeatherCondition(value: string): value is WeatherCondition {
+  return VALID_WEATHER_CONDITIONS.includes(value as WeatherCondition);
+}
+```
+
+### 4. Composite Value Object
+```typescript
+export class RoadConstraints {
+  private constructor(
+    public readonly excludeWeatherConditions: WeatherCondition[],
+    public readonly maxDistance?: Distance,
+    public readonly minSpeedLimit?: Speed,
+  ) {}
+
+  static create(params: {
+    excludeWeatherConditions?: WeatherCondition[];
+    maxDistance?: Distance;
+    minSpeedLimit?: Speed;
+  }): RoadConstraints {
+    return new RoadConstraints(
+      params.excludeWeatherConditions ?? [],
+      params.maxDistance,
+      params.minSpeedLimit,
+    );
+  }
+
+  static empty(): RoadConstraints {
+    return new RoadConstraints([], undefined, undefined);
+  }
+}
+```
+
+## Rules
+
+1. **Immutability** - Once created, a Value Object never changes
+2. **Private constructor** - Enforce factory method usage
+3. **Creation-time validation** - Every created Value Object is valid
+4. **Value equality** - Two VOs with same values are equal
+5. **No NestJS decorators** - No `@Injectable()` in domain
+6. **Specific errors** - Throw business errors, not generic `Error`

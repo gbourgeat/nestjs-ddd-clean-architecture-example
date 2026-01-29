@@ -4,7 +4,7 @@ import { HttpModule } from '@nestjs/axios';
 import { CacheModule } from '@nestjs/cache-manager';
 import { OpenWeatherMapAdapter } from './openweathermap.adapter';
 import openweathermapConfig from './openweathermap.config';
-import { WeatherConditionProvider } from '../../domain/services/weather-condition-provider';
+import { WeatherConditionProvider } from '../pathfinding/weather-condition-provider';
 
 @Module({
   imports: [
@@ -30,7 +30,6 @@ import { WeatherConditionProvider } from '../../domain/services/weather-conditio
     }),
   ],
   providers: [
-    OpenWeatherMapAdapter,
     {
       provide: WeatherConditionProvider,
       useClass: OpenWeatherMapAdapter,

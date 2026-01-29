@@ -1,0 +1,250 @@
+---
+description: Rules for writing unit and E2E tests
+globs: ["**/*.spec.ts", "**/*.e2e-spec.ts"]
+alwaysApply: false
+---
+# Tests
+## Testing Strategy
+### Fundamental Principle
+**The Domain is tested INDIRECTLY via Use Case tests.**
+- ❌ **NO `*.spec.ts` files in `src/domain/`**
+- ✅ Use Case tests cover entities, value objects and domain errors
+- ✅ E2E tests cover HTTP endpoints
+### Advantages of this approach
+1. More realistic tests (complete business scenarios)
+2. Fewer tests to maintain
+3. Better coverage of component interactions
+4. Avoids redundant tests
+## Test Structure
+### Use Case Unit Tests
+```
+src/application/use-cases/<use-case-name>/
+├── <use-case-name>.use-case.ts
+├── <use-case-name>.use-case.spec.ts  # ← Tests here
+├── <use-case-name>.input.ts
+├── <use-case-name>.output.ts
+└── index.ts
+```
+### E2E Tests
+```
+test/e2e/
+├── jest-e2e.json
+└── <feature>.e2e-spec.ts
+```
+## Use Case Tests (cover Domain)
+```typescript
+// src/application/use-cases/get-fastest-route/get-fastest-route.use-case.spec.ts
+import { GetFastestRouteUseCase } from './get-fastest-route.use-case';
+import { PathFinder } from '@/domain/services';
+import { CityRepository, RoadSegmentRepository } from '@/domain/repositories';
+import { City, RoadSegment } from '@/domain/entities';
+import { CityId, CityName, Distance, Duration, Speed } from '@/domain/value-objects';
+import {
+  SameStartAndEndCityError,
+  CityNotFoundError,
+  InvalidCityNameError,
+} from '@/domain/errors';
+describe('GetFastestRouteUseCase', () => {
+  let useCase: GetFastestRouteUseCase;
+  let mockPathFinder: jest.Mocked<PathFinder>;
+  let mockRoadSegmentRepository: jest.Mocked<RoadSegmentRepository>;
+  let mockCityRepository: jest.Mocked<CityRepository>;
+  // Helpers pour créer des entités de test
+  const createCity = (name: string): City => {
+    return City.create(
+      CityId.fromCityName(name),
+      CityName.create(name),
+    );
+  };
+  beforeEach(() => {
+    mockPathFinder = {
+      findFastestRoute: jest.fn(),
+    } as jest.Mocked<PathFinder>;
+    mockRoadSegmentRepository = {
+      findAll: jest.fn(),
+    } as jest.Mocked<RoadSegmentRepository>;
+    mockCityRepository = {
+      findByName: jest.fn(),
+      save: jest.fn(),
+    } as jest.Mocked<CityRepository>;
+    useCase = new GetFastestRouteUseCase(
+      mockPathFinder,
+      mockRoadSegmentRepository,
+      mockCityRepository,
+    );
+  });
+  describe('execute', () => {
+    // ✅ This test covers CityName.create() and CityName.equals()
+    it('should throw SameStartAndEndCityError when start and end cities are the same', async () => {
+      await expect(
+        useCase.execute({
+          startCity: 'Paris',
+          endCity: 'Paris',
+        }),
+      ).rejects.toThrow(SameStartAndEndCityError);
+    });
+    // ✅ This test covers CityName.create() with validation
+    it('should throw InvalidCityNameError when startCity is empty', async () => {
+      await expect(
+        useCase.execute({
+          startCity: '',
+          endCity: 'Lyon',
+        }),
+      ).rejects.toThrow(InvalidCityNameError);
+    });
+    // ✅ This test covers CityName.create() with validation
+    it('should throw InvalidCityNameError when endCity is empty', async () => {
+      await expect(
+        useCase.execute({
+          startCity: 'Paris',
+          endCity: '   ',
+        }),
+      ).rejects.toThrow(InvalidCityNameError);
+    });
+    // ✅ This test covers CityNotFoundError
+    it('should throw CityNotFoundError when city does not exist', async () => {
+      mockCityRepository.findByName.mockRejectedValue(
+        CityNotFoundError.forCityName(CityName.create('Unknown')),
+      );
+      await expect(
+        useCase.execute({
+          startCity: 'Unknown',
+          endCity: 'Paris',
+        }),
+      ).rejects.toThrow(CityNotFoundError);
+    });
+    // ✅ This test covers City.create(), Distance, Duration
+    it('should return route when path exists', async () => {
+      const paris = createCity('Paris');
+      const lyon = createCity('Lyon');
+      mockCityRepository.findByName
+        .mockResolvedValueOnce(paris)
+        .mockResolvedValueOnce(lyon);
+      mockRoadSegmentRepository.findAll.mockResolvedValue([]);
+      mockPathFinder.findFastestRoute.mockResolvedValue({
+        totalDistance: Distance.create(465),
+        estimatedTime: Duration.fromHours(4.2),
+        steps: [],
+      });
+      const result = await useCase.execute({
+        startCity: 'Paris',
+        endCity: 'Lyon',
+      });
+      expect(result.totalDistance).toBe(465);
+      expect(result.estimatedDuration).toBeCloseTo(4.2, 1);
+    });
+    // ✅ This test covers RoadConstraints validation
+    it('should apply constraints when provided', async () => {
+      const paris = createCity('Paris');
+      const lyon = createCity('Lyon');
+      mockCityRepository.findByName
+        .mockResolvedValueOnce(paris)
+        .mockResolvedValueOnce(lyon);
+      mockRoadSegmentRepository.findAll.mockResolvedValue([]);
+      mockPathFinder.findFastestRoute.mockResolvedValue(null);
+      const result = await useCase.execute({
+        startCity: 'Paris',
+        endCity: 'Lyon',
+        constraints: {
+          excludeWeatherConditions: ['rain', 'snow'],
+          maxDistance: 500,
+          minSpeedLimit: 100,
+        },
+      });
+      expect(mockPathFinder.findFastestRoute).toHaveBeenCalledWith(
+        expect.anything(),
+        paris,
+        lyon,
+        expect.objectContaining({
+          excludeWeatherConditions: ['rain', 'snow'],
+        }),
+      );
+    });
+  });
+});
+```
+## Tests E2E
+```typescript
+// test/e2e/route.e2e-spec.ts
+import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
+import * as request from 'supertest';
+import { RestApiModule } from '@/presentation/rest-api/rest-api.module';
+describe('RouteController (e2e)', () => {
+  let app: INestApplication;
+  beforeAll(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [RestApiModule],
+    }).compile();
+    app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(
+      new ValidationPipe({
+        transform: true,
+        whitelist: true,
+        forbidNonWhitelisted: true,
+      }),
+    );
+    await app.init();
+  });
+  afterAll(async () => {
+    await app.close();
+  });
+  describe('POST /get-fastest-route', () => {
+    it('should return 200 with valid route', () => {
+      return request(app.getHttpServer())
+        .post('/get-fastest-route')
+        .send({
+          startCity: 'Paris',
+          endCity: 'Lyon',
+        })
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.totalDistance).toBeGreaterThan(0);
+        });
+    });
+    it('should return 400 when startCity is missing', () => {
+      return request(app.getHttpServer())
+        .post('/get-fastest-route')
+        .send({ endCity: 'Lyon' })
+        .expect(400);
+    });
+    it('should return 400 when cities are the same', () => {
+      return request(app.getHttpServer())
+        .post('/get-fastest-route')
+        .send({
+          startCity: 'Paris',
+          endCity: 'Paris',
+        })
+        .expect(400);
+    });
+    it('should return 404 when city not found', () => {
+      return request(app.getHttpServer())
+        .post('/get-fastest-route')
+        .send({
+          startCity: 'UnknownCity',
+          endCity: 'Lyon',
+        })
+        .expect(404);
+    });
+  });
+});
+```
+## Commands
+```bash
+# Unit tests (Use Cases)
+npm run test
+# Unit tests in watch mode
+npm run test:watch
+# E2E tests
+npm run test:e2e
+# Code coverage
+npm run test:cov
+```
+## Rules
+1. **No separate Domain tests** - Test via Use Cases
+2. **AAA Pattern** - Arrange, Act, Assert
+3. **Descriptive names** - `should <expected> when <condition>`
+4. **Typed mocks** - Use `jest.Mocked<T>`
+5. **Entity helpers** - Create utility functions for tests
+6. **Cover all error cases** - Every Domain error must be tested
+7. **E2E tests** - Validate HTTP codes and responses

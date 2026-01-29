@@ -1,8 +1,8 @@
 {
-  "name": "wavo-route-solver",
+  "name": "route-solver",
   "version": "0.0.1",
   "description": "",
-  "author": "",
+  "author": "Gary Bourgeat <gary.bourgeat@gmail.com>",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
@@ -12,19 +12,21 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/presentation/rest-api/rest-api.bootsrap.js",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
+    "lint": "eslint \"src/**/*.ts\" --fix",
+    "test": "npm run test:features",
+    "test:watch": "npm run test:features:watch",
+    "test:cov": "npm run test:features:cov",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:features": "jest --config test/features/jest.features.json",
+    "test:features:watch": "jest --config test/features/jest.features.json --watch",
+    "test:features:cov": "jest --config test/features/jest.features.json --coverage",
     "test:e2e": "jest --config test/e2e/jest-e2e.json",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli",
     "migration:generate": "npm run typeorm -- migration:generate -d src/infrastructure/database/data-source.ts",
     "migration:create": "npm run typeorm -- migration:create",
     "migration:run": "npm run typeorm -- migration:run -d src/infrastructure/database/data-source.ts",
     "migration:revert": "npm run typeorm -- migration:revert -d src/infrastructure/database/data-source.ts",
-    "migration:show": "npm run typeorm -- migration:show -d src/infrastructure/database/data-source.ts",
-    "db:init": "bash scripts/init-db.sh"
+    "migration:show": "npm run typeorm -- migration:show -d src/infrastructure/database/data-source.ts"
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.1",
@@ -76,15 +78,28 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
+    "rootDir": ".",
+    "roots": [
+      "<rootDir>/src",
+      "<rootDir>/test"
+    ],
     "testRegex": ".*\\.spec\\.ts$",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/test/features/",
+      "/test/e2e/"
+    ],
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "src/**/*.(t|j)s"
     ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "coverageDirectory": "./coverage",
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1",
+      "^@test/(.*)$": "<rootDir>/test/$1"
+    }
   }
 }

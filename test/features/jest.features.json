@@ -1,0 +1,32 @@
+{
+  "displayName": "Features Tests",
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": "../..",
+  "roots": ["<rootDir>/src", "<rootDir>/test"],
+  "testRegex": "test/features/.*\\.spec\\.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "collectCoverageFrom": [
+    "src/application/**/*.ts",
+    "src/domain/**/*.ts",
+    "!**/*.spec.ts",
+    "!**/*.e2e-spec.ts",
+    "!**/index.ts"
+  ],
+  "coverageDirectory": "./coverage/features",
+  "coverageReporters": ["text", "text-summary", "lcov", "html"],
+  "testEnvironment": "node",
+  "moduleNameMapper": {
+    "^@/(.*)$": "<rootDir>/src/$1",
+    "^@test/(.*)$": "<rootDir>/test/$1"
+  },
+  "coverageThreshold": {
+    "global": {
+      "branches": 97,
+      "functions": 97,
+      "lines": 97,
+      "statements": 97
+    }
+  }
+}

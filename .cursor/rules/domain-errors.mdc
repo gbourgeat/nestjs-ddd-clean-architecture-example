@@ -1,0 +1,149 @@
+---
+description: Rules for creating business errors in the Domain layer
+globs: ["src/domain/errors/**/*.ts"]
+alwaysApply: false
+---
+
+# Domain Business Errors
+
+## Business Error Structure
+
+Business errors use static factory methods to create contextual messages.
+
+```typescript
+import { RelatedValueObject } from '@/domain/value-objects';
+
+export class DomainNameError extends Error {
+  // Private constructor
+  private constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+  }
+
+  // Static factory methods for each error case
+  static forSpecificCase(context: RelatedValueObject): DomainNameError {
+    return new DomainNameError(
+      `Descriptive message with "${context.value}"`,
+    );
+  }
+
+  static forAnotherCase(): DomainNameError {
+    return new DomainNameError('Message for another case');
+  }
+}
+```
+
+## Examples from the project
+
+### Error with Value Object context
+```typescript
+// src/domain/errors/city-not-found.error.ts
+import { CityName } from '@/domain/value-objects';
+
+export class CityNotFoundError extends Error {
+  private constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+  }
+
+  static forCityName(cityName: CityName): CityNotFoundError {
+    return new CityNotFoundError(
+      `City with name "${cityName.value}" not found`,
+    );
+  }
+}
+```
+
+### Error with multiple factory methods
+```typescript
+// src/domain/errors/invalid-city-id.error.ts
+export class InvalidCityIdError extends Error {
+  private constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+  }
+
+  static emptyCityName(): InvalidCityIdError {
+    return new InvalidCityIdError('City name cannot be empty');
+  }
+
+  static emptyNormalizedValue(): InvalidCityIdError {
+    return new InvalidCityIdError('Normalized city ID cannot be empty');
+  }
+}
+```
+
+### Business validation error
+```typescript
+// src/domain/errors/same-start-and-end-city.error.ts
+import { CityName } from '@/domain/value-objects';
+
+export class SameStartAndEndCityError extends Error {
+  private constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+  }
+
+  static forCityName(cityName: CityName): SameStartAndEndCityError {
+    return new SameStartAndEndCityError(
+      `Start and end city cannot be the same: "${cityName.value}"`,
+    );
+  }
+}
+```
+
+## File naming convention
+
+- File: `<concept>-<type>.error.ts`
+- Examples:
+  - `city-not-found.error.ts`
+  - `invalid-city-id.error.ts`
+  - `invalid-distance.error.ts`
+
+## Class naming convention
+
+- Format: `<Concept><Type>Error`
+- Examples:
+  - `CityNotFoundError`
+  - `InvalidCityIdError`
+  - `InvalidDistanceError`
+
+## Rules
+
+1. **Private constructor** - Enforce factory method usage
+2. **Extend Error** - Always `extends Error`
+3. **Set this.name** - `this.name = this.constructor.name` for debugging
+4. **Descriptive factory methods** - Name should indicate context
+5. **Clear messages** - Include relevant information in message
+6. **One error per file** - Separation of concerns
+
+## Barrel export file
+
+```typescript
+// src/domain/errors/index.ts
+export * from './city-not-found.error';
+export * from './invalid-city-id.error';
+export * from './invalid-city-name.error';
+export * from './invalid-distance.error';
+export * from './same-start-and-end-city.error';
+```
+
+## Error handling in controllers
+
+Business errors are transformed into HTTP responses in the Presentation layer:
+
+```typescript
+// In a controller
+try {
+  const result = await this.useCase.execute(input);
+  return result;
+} catch (error) {
+  if (error instanceof CityNotFoundError) {
+    throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+  }
+  if (error instanceof InvalidCityNameError) {
+    throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+  }
+  throw error;
+}
+```

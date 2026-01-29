@@ -1,3 +1,5 @@
+import { InvalidDurationError, InvalidSpeedError } from '@/domain/errors';
+
 export class Duration {
   private readonly _value: number;
 
@@ -7,11 +9,11 @@ export class Duration {
 
   static fromHours(hours: number): Duration {
     if (hours < 0) {
-      throw new Error('Travel time cannot be negative');
+      throw InvalidDurationError.negative();
     }
 
     if (!isFinite(hours)) {
-      throw new Error('Travel time must be a finite number');
+      throw InvalidDurationError.notFinite();
     }
 
     return new Duration(hours);
@@ -22,7 +24,7 @@ export class Duration {
     speedKmPerHour: number,
   ): Duration {
     if (speedKmPerHour === 0) {
-      throw new Error('Speed cannot be zero');
+      throw InvalidSpeedError.zero();
     }
 
     return Duration.fromHours(distanceKm / speedKmPerHour);

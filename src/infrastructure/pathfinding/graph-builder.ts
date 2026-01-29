@@ -1,8 +1,7 @@
-import { Graph } from './types';
-import { RoadSegment } from '../../domain/entities/road-segment';
+import { Graph, SimplifiedSegmentData } from './types';
 
 export class GraphBuilder {
-  build(segments: RoadSegment[]): Graph {
+  build(segments: SimplifiedSegmentData[]): Graph {
     const graph: Graph = new Map();
 
     for (const segment of segments) {
@@ -12,8 +11,11 @@ export class GraphBuilder {
     return graph;
   }
 
-  private addSegmentToGraph(graph: Graph, segment: RoadSegment): void {
-    const fromCityName = segment.cities.name.value;
+  private addSegmentToGraph(
+    graph: Graph,
+    segment: SimplifiedSegmentData,
+  ): void {
+    const fromCityName = segment.fromCity;
     if (!graph.has(fromCityName)) {
       graph.set(fromCityName, []);
     }

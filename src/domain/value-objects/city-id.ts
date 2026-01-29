@@ -1,3 +1,5 @@
+import { InvalidCityIdError } from '@/domain/errors';
+
 export class CityId {
   private readonly _value: string;
   private readonly _normalizedName: string;
@@ -9,7 +11,7 @@ export class CityId {
 
   static fromCityName(cityName: string): CityId {
     if (!cityName || cityName.trim().length === 0) {
-      throw new Error('City name cannot be empty');
+      throw InvalidCityIdError.emptyCityName();
     }
 
     const normalized = CityId.normalize(cityName);
@@ -19,7 +21,7 @@ export class CityId {
 
   static fromNormalizedValue(normalizedValue: string): CityId {
     if (!normalizedValue || normalizedValue.trim().length === 0) {
-      throw new Error('Normalized value cannot be empty');
+      throw InvalidCityIdError.emptyNormalizedValue();
     }
 
     return new CityId(normalizedValue);

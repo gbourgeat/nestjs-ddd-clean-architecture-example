@@ -1,0 +1,90 @@
+---
+description: Rules for creating entities in the Domain layer
+globs: ["src/domain/entities/**/*.ts"]
+alwaysApply: false
+---
+
+# Domain Entities
+
+## Entity Structure
+
+Entities have a unique identity and use factory methods.
+
+```typescript
+import { EntityId, ValueObject1, ValueObject2 } from '@/domain/value-objects';
+import { EntityError } from '@/domain/errors';
+
+export class EntityName {
+  // Private constructor to enforce factory method usage
+  private constructor(
+    public readonly id: EntityId,
+    public readonly property1: ValueObject1,
+    private _property2: ValueObject2,
+  ) {}
+
+  // Static factory method for creation
+  static create(
+    id: EntityId,
+    property1: ValueObject1,
+    property2: ValueObject2,
+  ): EntityName {
+    // Business validation here if needed
+    return new EntityName(id, property1, property2);
+  }
+
+  // Getters for mutable properties
+  get property2(): ValueObject2 {
+    return this._property2;
+  }
+
+  // Mutation methods if needed
+  updateProperty2(newValue: ValueObject2): void {
+    this._property2 = newValue;
+  }
+
+  // Equality based on identity
+  equals(other: EntityName): boolean {
+    return this.id.equals(other.id);
+  }
+}
+```
+
+## Rules
+
+1. **Private constructor** - Always use `private constructor`
+2. **Factory methods** - Create via `static create()` or `static fromXxx()`
+3. **Value Objects** - All properties must be Value Objects
+4. **Immutability** - Prefer `readonly`, use explicit setters if mutation needed
+5. **Equality** - Implement `equals()` based on identity (ID)
+6. **No NestJS decorators** - No `@Injectable()`, `@Entity()` in domain
+
+## Real example from the project
+
+```typescript
+// src/domain/entities/city.ts
+import { CityId, CityName } from '@/domain/value-objects';
+
+export class City {
+  private constructor(
+    public readonly id: CityId,
+    public readonly name: CityName,
+  ) {}
+
+  static create(id: CityId, name: CityName): City {
+    return new City(id, name);
+  }
+
+  equals(other: City): boolean {
+    return this.id.equals(other.id);
+  }
+}
+```
+
+## Barrel export file
+
+Always export from `index.ts`:
+```typescript
+// src/domain/entities/index.ts
+export * from './city';
+export * from './road-segment';
+```

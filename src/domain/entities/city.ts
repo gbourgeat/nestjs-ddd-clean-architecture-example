@@ -1,5 +1,4 @@
-import { CityId } from '../value-objects/city-id';
-import { CityName } from '../value-objects/city-name';
+import { CityId, CityName } from '@/domain/value-objects';
 
 export class City {
   private constructor(

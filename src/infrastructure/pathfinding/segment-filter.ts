@@ -1,13 +1,18 @@
-import { RoadSegment } from '../../domain/entities/road-segment';
-import { WeatherCondition } from '../../domain/value-objects/weather-condition';
-import { RoadConstraints } from '../../domain/value-objects/road-constraints';
+import { SimplifiedSegmentData } from './types';
+import { WeatherCondition } from '@/domain/value-objects';
+
+export interface SimplifiedConstraints {
+  maxDistance?: number;
+  minSpeedLimit?: number;
+  excludeWeatherConditions?: WeatherCondition[];
+}
 
 export class SegmentFilter {
   filter(
-    segments: RoadSegment[],
+    segments: SimplifiedSegmentData[],
     weatherData: Map<string, WeatherCondition>,
-    constraints?: RoadConstraints,
-  ): RoadSegment[] {
+    constraints?: SimplifiedConstraints,
+  ): SimplifiedSegmentData[] {
     if (!constraints) {
       return segments;
     }
@@ -18,9 +23,9 @@ export class SegmentFilter {
   }
 
   private isSegmentValid(
-    segment: RoadSegment,
+    segment: SimplifiedSegmentData,
     weatherData: Map<string, WeatherCondition>,
-    constraints: RoadConstraints,
+    constraints: SimplifiedConstraints,
   ): boolean {
     return (
       this.isDistanceValid(segment, constraints) &&
@@ -30,31 +35,31 @@ export class SegmentFilter {
   }
 
   private isDistanceValid(
-    segment: RoadSegment,
-    constraints: RoadConstraints,
+    segment: SimplifiedSegmentData,
+    constraints: SimplifiedConstraints,
   ): boolean {
     if (!constraints.maxDistance) {
       return true;
     }
 
-    return segment.distance.kilometers <= constraints.maxDistance;
+    return segment.distance <= constraints.maxDistance;
   }
 
   private isSpeedValid(
-    segment: RoadSegment,
-    constraints: RoadConstraints,
+    segment: SimplifiedSegmentData,
+    constraints: SimplifiedConstraints,
   ): boolean {
     if (!constraints.minSpeedLimit) {
       return true;
     }
 
-    return segment.speedLimit.kmPerHour >= constraints.minSpeedLimit;
+    return segment.speedLimit >= constraints.minSpeedLimit;
   }
 
   private isWeatherValid(
-    segment: RoadSegment,
+    segment: SimplifiedSegmentData,
     weatherData: Map<string, WeatherCondition>,
-    constraints: RoadConstraints,
+    constraints: SimplifiedConstraints,
   ): boolean {
     if (
       !constraints.excludeWeatherConditions ||
@@ -63,7 +68,7 @@ export class SegmentFilter {
       return true;
     }
 
-    const destinationWeather = weatherData.get(segment.to.name.value);
+    const destinationWeather = weatherData.get(segment.toCity);
     if (!destinationWeather) {
       return true;
     }

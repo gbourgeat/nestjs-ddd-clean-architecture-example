@@ -1,0 +1,226 @@
+---
+description: Rules for creating Mappers in Application and Infrastructure layers
+globs: ["src/application/mappers/**/*.ts", "src/infrastructure/**/mappers/**/*.ts", "src/presentation/**/mappers/**/*.ts"]
+alwaysApply: false
+---
+
+# Mappers
+
+Mappers transform data between different application layers.
+
+## Types of Mappers
+
+### 1. Application Mappers
+Transformation Domain → Application Output and Application Input → Domain
+
+```
+src/application/mappers/
+├── <domain-concept>.mapper.ts
+└── index.ts
+```
+
+### 2. Infrastructure Mappers
+Internal infrastructure transformation (e.g., algorithms)
+
+```
+src/infrastructure/<module>/mappers/
+├── <concept>.mapper.ts
+└── index.ts
+```
+
+### 3. Presentation Mappers
+Transformation Application Output → Response DTO
+
+```
+src/presentation/rest-api/mappers/
+├── <resource>.mapper.ts
+└── index.ts
+```
+
+## Mapper Structure
+
+```typescript
+// Mapper with static methods (recommended pattern)
+export class ConceptMapper {
+  // Transform to domain
+  static toDomain(input: InputType): DomainType {
+    return DomainType.create(
+      ValueObject1.create(input.property1),
+      ValueObject2.create(input.property2),
+    );
+  }
+
+  // Transform from domain
+  static fromDomain(domain: DomainType): OutputType {
+    return {
+      property1: domain.property1.value,
+      property2: domain.property2.value,
+    };
+  }
+
+  // Array transformation
+  static toDomainArray(inputs: InputType[]): DomainType[] {
+    return inputs.map((input) => ConceptMapper.toDomain(input));
+  }
+
+  static fromDomainArray(domains: DomainType[]): OutputType[] {
+    return domains.map((domain) => ConceptMapper.fromDomain(domain));
+  }
+}
+```
+
+## Project Examples
+
+### Application Mapper: Domain → Output
+```typescript
+// src/application/mappers/pathfinding-result.mapper.ts
+import { PathfindingResult } from '@/domain/services';
+import { GetFastestRoadOutput } from '@/application/use-cases';
+import { RouteStepMapper } from '@/application/mappers';
+
+export class PathfindingResultMapper {
+  static toOutput(result: PathfindingResult | null): GetFastestRoadOutput {
+    if (!result) {
+      return {
+        totalDistance: 0,
+        estimatedDuration: 0,
+        steps: [],
+      };
+    }
+
+    return {
+      totalDistance: result.totalDistance.kilometers,
+      estimatedDuration: Math.round(result.estimatedTime.hours * 10) / 10,
+      steps: RouteStepMapper.toOutputArray(result.steps),
+    };
+  }
+}
+```
+
+### Application Mapper: Input → Domain
+```typescript
+// src/application/mappers/road-constraints.mapper.ts
+import { RoadConstraints, Distance, Speed, WeatherCondition } from '@/domain/value-objects';
+import { InvalidWeatherConditionError, isWeatherCondition } from '@/domain';
+
+interface ConstraintsInput {
+  excludeWeatherConditions?: string[];
+  maxDistance?: number;
+  minSpeedLimit?: number;
+}
+
+export class RoadConstraintsMapper {
+  static toDomain(input?: ConstraintsInput): RoadConstraints {
+    if (!input) {
+      return RoadConstraints.empty();
+    }
+
+    const excludeWeather = this.mapWeatherConditions(
+      input.excludeWeatherConditions,
+    );
+
+    return RoadConstraints.create({
+      excludeWeatherConditions: excludeWeather,
+      maxDistance: input.maxDistance
+        ? Distance.create(input.maxDistance)
+        : undefined,
+      minSpeedLimit: input.minSpeedLimit
+        ? Speed.create(input.minSpeedLimit)
+        : undefined,
+    });
+  }
+
+  private static mapWeatherConditions(
+    conditions?: string[],
+  ): WeatherCondition[] {
+    if (!conditions) return [];
+
+    return conditions.map((condition) => {
+      if (!isWeatherCondition(condition)) {
+        throw InvalidWeatherConditionError.forValue(condition);
+      }
+      return condition;
+    });
+  }
+}
+```
+
+### Application Mapper: RouteStep
+```typescript
+// src/application/mappers/route-step.mapper.ts
+import { RouteStep } from '@/domain/services';
+
+interface RouteStepOutput {
+  fromCity: string;
+  toCity: string;
+  distance: number;
+  speedLimit: number;
+  weatherCondition: string;
+}
+
+export class RouteStepMapper {
+  static toOutput(step: RouteStep): RouteStepOutput {
+    return {
+      fromCity: step.from.name.value,
+      toCity: step.to.name.value,
+      distance: step.distance.kilometers,
+      speedLimit: step.speedLimit.kmPerHour,
+      weatherCondition: step.weatherCondition,
+    };
+  }
+
+  static toOutputArray(steps: RouteStep[]): RouteStepOutput[] {
+    return steps.map((step) => RouteStepMapper.toOutput(step));
+  }
+}
+```
+
+### Presentation Mapper: Output → Response
+```typescript
+// src/presentation/rest-api/mappers/route-response.mapper.ts
+import { GetFastestRoadOutput } from '@/application/use-cases';
+import { GetFastestRouteResponse } from '../responses';
+import { RouteStep } from '../schemas';
+
+export class RouteResponseMapper {
+  static fromOutput(output: GetFastestRoadOutput): GetFastestRouteResponse {
+    const response = new GetFastestRouteResponse();
+
+    response.path = output.steps.map((step) => step.fromCity);
+    if (output.steps.length > 0) {
+      response.path.push(output.steps[output.steps.length - 1].toCity);
+    }
+
+    response.totalDistance = output.totalDistance;
+    response.estimatedTime = output.estimatedDuration;
+    response.steps = output.steps.map((step) => {
+      const routeStep = new RouteStep();
+      routeStep.from = step.fromCity;
+      routeStep.to = step.toCity;
+      routeStep.distance = step.distance;
+      routeStep.speed = step.speedLimit;
+      routeStep.weather = step.weatherCondition;
+      return routeStep;
+    });
+
+    return response;
+  }
+}
+```
+
+## Naming Convention
+
+| Layer | File | Class |
+|--------|---------|--------|
+| Application | `<concept>.mapper.ts` | `<Concept>Mapper` |
+| Infrastructure | `<concept>.mapper.ts` | `<Concept>Mapper` |
+| Presentation | `<resource>-response.mapper.ts` | `<Resource>ResponseMapper` |
+
+## Rules
+
+1. **Static methods** - No state, no dependency injection
+2. **Explicit naming** - `toDomain`, `fromDomain`, `toOutput`, `fromOutput`
+3. **Null handling** - Always handle `null` or `undefined` cases
+4. **No business logic** - Only transformation
+5. **Delegated validation** - Value Objects validate on creation
+6. **One mapper per concept** - Avoid "catch-all" mappers

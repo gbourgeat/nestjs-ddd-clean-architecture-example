@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CityRepository } from '../../../domain/repositories/city.repository';
-import { City } from '../../../domain/entities/city';
-import { CityId } from '../../../domain/value-objects/city-id';
-import { CityName } from '../../../domain/value-objects/city-name';
-import { CityNotFoundError } from '../../../domain/errors/city-not-found.error';
-import { CityTypeormEntity } from '../entities/city.typeorm-entity';
+import { CityRepository } from '@/domain/repositories';
+import { CityTypeormEntity } from '../entities';
+import { CityId, CityName } from '@/domain/value-objects';
+import { City } from '@/domain/entities';
+import { CityNotFoundError } from '@/domain/errors';
 
 @Injectable()
 export class CityTypeormRepository implements CityRepository {
@@ -19,6 +18,7 @@ export class CityTypeormRepository implements CityRepository {
     const city = await this.typeormRepository.findOne({
       where: { name: name.value },
     });
+
     if (!city) {
       throw CityNotFoundError.forCityName(name);
     }

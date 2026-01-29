@@ -1,31 +1,32 @@
-import { Duration } from '../value-objects/duration';
-import { WeatherCondition } from '../value-objects/weather-condition';
-import { RoadSegment } from '../entities/road-segment';
-import { CityId } from '../value-objects/city-id';
-import { RoadConstraints } from '../value-objects/road-constraints';
+import {
+  Duration,
+  WeatherCondition,
+  RoadConstraints,
+  Distance,
+  Speed,
+} from '@/domain/value-objects';
+import { RoadSegment, City } from '@/domain/entities';
 
 export interface PathfindingResult {
-  path: string[];
-  totalDistance: number;
-  estimatedTime: number;
+  totalDistance: Distance;
+  estimatedTime: Duration;
   steps: RouteStep[];
 }
 
 export interface RouteStep {
-  from: string;
-  to: string;
-  distance: number;
-  speed: number;
-  travelTime: Duration;
-  weather?: WeatherCondition;
+  from: City;
+  to: City;
+  distance: Distance;
+  speedLimit: Speed;
+  estimatedDuration: Duration;
+  weatherCondition: WeatherCondition;
 }
 
 export abstract class PathFinder {
   abstract findFastestRoute(
     segments: RoadSegment[],
-    startCityId: CityId,
-    endCityId: CityId,
-    weatherData: Map<string, WeatherCondition>,
+    startCity: City,
+    endCity: City,
     constraints?: RoadConstraints,
-  ): PathfindingResult | null;
+  ): Promise<PathfindingResult | null>;
 }

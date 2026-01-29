@@ -1,4 +1,4 @@
-import { CityName } from '../value-objects/city-name';
+import { CityName } from '@/domain/value-objects';
 
 export class CityNotFoundError extends Error {
   private constructor(message: string) {

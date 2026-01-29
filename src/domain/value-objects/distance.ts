@@ -1,3 +1,5 @@
+import { InvalidDistanceError } from '@/domain/errors';
+
 export class Distance {
   private readonly _value: number;
 
@@ -7,11 +9,11 @@ export class Distance {
 
   static fromKilometers(kilometers: number): Distance {
     if (kilometers < 0) {
-      throw new Error('Distance cannot be negative');
+      throw InvalidDistanceError.negative();
     }
 
     if (!isFinite(kilometers)) {
-      throw new Error('Distance must be a finite number');
+      throw InvalidDistanceError.notFinite();
     }
 
     return new Distance(kilometers);

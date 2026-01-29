@@ -3,8 +3,8 @@ import {
   INFINITE_DISTANCE,
   INITIAL_DISTANCE,
   PreviousCity,
+  SimplifiedSegmentData,
 } from './types';
-import { RoadSegment } from '../../domain/entities/road-segment';
 
 export class DijkstraAlgorithm {
   execute(
@@ -50,7 +50,9 @@ export class DijkstraAlgorithm {
 
     for (const [from, segments] of graph) {
       cities.add(from);
-      segments.forEach((segment) => cities.add(segment.to.name.value));
+      segments.forEach((segment: SimplifiedSegmentData) =>
+        cities.add(segment.toCity),
+      );
     }
 
     return cities;
@@ -127,7 +129,7 @@ export class DijkstraAlgorithm {
     const neighbors = graph.get(currentCity) || [];
 
     for (const segment of neighbors) {
-      if (!unvisited.has(segment.to.name.value)) {
+      if (!unvisited.has(segment.toCity)) {
         continue;
       }
 
@@ -137,17 +139,16 @@ export class DijkstraAlgorithm {
 
   private relaxEdge(
     currentCity: string,
-    segment: RoadSegment,
+    segment: SimplifiedSegmentData,
     distances: Map<string, number>,
     previous: Map<string, PreviousCity>,
   ): void {
-    const newDistance =
-      distances.get(currentCity)! + segment.estimatedDuration.hours;
-    const currentDistance = distances.get(segment.to.name.value)!;
+    const newDistance = distances.get(currentCity)! + segment.estimatedDuration;
+    const currentDistance = distances.get(segment.toCity)!;
 
     if (newDistance < currentDistance) {
-      distances.set(segment.to.name.value, newDistance);
-      previous.set(segment.to.name.value, { city: currentCity, segment });
+      distances.set(segment.toCity, newDistance);
+      previous.set(segment.toCity, { city: currentCity, segment });
     }
   }
 

@@ -1,5 +1,5 @@
-import { City } from '../entities/city';
-import { CityName } from '../value-objects/city-name';
+import { CityName } from '@/domain/value-objects';
+import { City } from '@/domain/entities';
 
 export abstract class CityRepository {
   abstract findByName(name: CityName): Promise<City>;

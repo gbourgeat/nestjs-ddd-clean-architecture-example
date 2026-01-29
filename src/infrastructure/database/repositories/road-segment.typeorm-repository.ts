@@ -1,16 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { RoadSegmentRepository } from '../../../domain/repositories/road-segment.repository';
-import { RoadSegment } from '../../../domain/entities/road-segment';
-import { RoadSegmentId } from '../../../domain/value-objects/road-segment-id';
-import { City } from '../../../domain/entities/city';
-import { CityId } from '../../../domain/value-objects/city-id';
-import { CityName } from '../../../domain/value-objects/city-name';
-import { Distance } from '../../../domain/value-objects/distance';
-import { Speed } from '../../../domain/value-objects/speed';
-import { RoadSegmentTypeormEntity } from '../entities/route.typeorm-entity';
-import { CityTypeormEntity } from '../entities/city.typeorm-entity';
+import { RoadSegmentRepository } from '@/domain/repositories';
+import {
+  CityTypeormEntity,
+  RoadSegmentTypeormEntity,
+} from '@/infrastructure/database';
+import { City, RoadSegment } from '@/domain/entities';
+import {
+  CityId,
+  CityName,
+  Distance,
+  RoadSegmentId,
+  Speed,
+} from '@/domain/value-objects';
+import { RoadSegmentNotFoundError } from '@/domain/errors';
 
 @Injectable()
 export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
@@ -25,14 +29,14 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
     const roadSegments = await this.roadSegmentTypeormEntityRepository.find();
     const cities = await this.cityTypeormEntityRepository.find();
 
-    const cityMap = new Map<string, { id: string; name: string }>();
+    const citiesIndexById = new Map<string, { id: string; name: string }>();
     cities.forEach((city) => {
-      cityMap.set(city.id, { id: city.id, name: city.name });
+      citiesIndexById.set(city.id, { id: city.id, name: city.name });
     });
 
     return roadSegments.map((route) => {
-      const cityA = cityMap.get(route.cityAId) || { id: '', name: '' };
-      const cityB = cityMap.get(route.cityBId) || { id: '', name: '' };
+      const cityA = citiesIndexById.get(route.cityAId) || { id: '', name: '' };
+      const cityB = citiesIndexById.get(route.cityBId) || { id: '', name: '' };
 
       return RoadSegment.create(
         RoadSegmentId.fromCityNames(cityA.name, cityB.name),
@@ -47,19 +51,94 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
           ),
         ],
         Distance.fromKilometers(Number(route.distance)),
-        Speed.fromKmPerHour(route.speed),
+        Speed.fromKmPerHour(route.speedLimit),
       );
     });
   }
 
-  async save(roadSegment: RoadSegment): Promise<void> {
-    const ormEntity = this.roadSegmentTypeormEntityRepository.create({
-      cityAId: roadSegment.cityA.id.value,
-      cityBId: roadSegment.cityB.id.value,
-      distance: roadSegment.distance.kilometers,
-      speed: roadSegment.speedLimit.kmPerHour,
+  async findById(id: RoadSegmentId): Promise<RoadSegment> {
+    // Parse the id to get city names (format: "cityA__cityB")
+    const [cityAName, cityBName] = id.value.split('__');
+
+    // Find cities
+    const cityA = await this.cityTypeormEntityRepository.findOne({
+      where: { name: cityAName },
+    });
+    const cityB = await this.cityTypeormEntityRepository.findOne({
+      where: { name: cityBName },
     });
 
-    await this.roadSegmentTypeormEntityRepository.save(ormEntity);
+    if (!cityA || !cityB) {
+      throw RoadSegmentNotFoundError.forRoadSegmentId(id);
+    }
+
+    // Find road segment connecting these cities
+    const roadSegment = await this.roadSegmentTypeormEntityRepository.findOne({
+      where: [
+        { cityAId: cityA.id, cityBId: cityB.id },
+        { cityAId: cityB.id, cityBId: cityA.id },
+      ],
+    });
+
+    if (!roadSegment) {
+      throw RoadSegmentNotFoundError.forRoadSegmentId(id);
+    }
+
+    return RoadSegment.create(
+      RoadSegmentId.fromCityNames(cityA.name, cityB.name),
+      [
+        City.create(
+          CityId.fromNormalizedValue(cityA.id),
+          CityName.create(cityA.name),
+        ),
+        City.create(
+          CityId.fromNormalizedValue(cityB.id),
+          CityName.create(cityB.name),
+        ),
+      ],
+      Distance.fromKilometers(Number(roadSegment.distance)),
+      Speed.fromKmPerHour(roadSegment.speedLimit),
+    );
+  }
+
+  async save(roadSegment: RoadSegment): Promise<void> {
+    // Find existing road segment to update
+    const [cityAName, cityBName] = roadSegment.id.value.split('__');
+
+    const cityA = await this.cityTypeormEntityRepository.findOne({
+      where: { name: cityAName },
+    });
+    const cityB = await this.cityTypeormEntityRepository.findOne({
+      where: { name: cityBName },
+    });
+
+    if (!cityA || !cityB) {
+      throw RoadSegmentNotFoundError.forRoadSegmentId(roadSegment.id);
+    }
+
+    const existingSegment =
+      await this.roadSegmentTypeormEntityRepository.findOne({
+        where: [
+          { cityAId: cityA.id, cityBId: cityB.id },
+          { cityAId: cityB.id, cityBId: cityA.id },
+        ],
+      });
+
+    if (existingSegment) {
+      // Update existing
+      existingSegment.speedLimit = roadSegment.speedLimit.kmPerHour;
+      existingSegment.distance = roadSegment.distance.kilometers;
+      await this.roadSegmentTypeormEntityRepository.save(existingSegment);
+    } else {
+      // Create new
+      const ormEntity = this.roadSegmentTypeormEntityRepository.create({
+        cityAId: roadSegment.cityA.id.value,
+        cityBId: roadSegment.cityB.id.value,
+        distance: roadSegment.distance.kilometers,
+        speedLimit: roadSegment.speedLimit.kmPerHour,
+      });
+
+      await this.roadSegmentTypeormEntityRepository.save(ormEntity);
+    }
   }
 }

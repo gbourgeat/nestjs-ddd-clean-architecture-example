@@ -1,0 +1,58 @@
+---
+description: Clean Architecture rules for the Route Solver project
+globs: ["src/**/*.ts"]
+alwaysApply: true
+---
+
+# Clean Architecture / Hexagonal Architecture
+
+## Layers and Responsibilities
+
+### Domain (`src/domain/`)
+- Contains pure business logic
+- **DEPENDS ON NOTHING** (no external imports except standard types)
+- Subfolders:
+  - `entities/` - Business entities with identity
+  - `value-objects/` - Immutable objects without identity
+  - `services/` - Abstract service interfaces
+  - `repositories/` - Abstract classes for data access
+  - `errors/` - Specific business errors
+
+### Application (`src/application/`)
+- Orchestrates use cases
+- **Depends only on Domain**
+- Subfolders:
+  - `use-cases/<use-case-name>/` - One folder per use case
+  - `mappers/` - Transformation between layers
+
+### Infrastructure (`src/infrastructure/`)
+- Implements domain interfaces
+- **Depends on Domain and Application**
+- Subfolders:
+  - `database/` - TypeORM, migrations, repositories
+  - `openweathermap/` - Weather API adapter
+  - `pathfinding/` - Pathfinding algorithms
+
+### Presentation (`src/presentation/`)
+- Interface with the outside world (HTTP, CLI, etc.)
+- **Depends on Application and Domain**
+- Subfolders:
+  - `rest-api/controllers/` - REST endpoints
+  - `rest-api/requests/` - Input DTOs
+  - `rest-api/responses/` - Output DTOs
+  - `rest-api/schemas/` - Shared Swagger schemas
+
+## Golden Rule of Imports
+
+```
+Presentation → Application → Domain ← Infrastructure
+                              ↑
+                              └──────────────┘
+```
+
+- ✅ `domain/` can import from `domain/`
+- ✅ `application/` can import from `domain/`
+- ✅ `infrastructure/` can import from `domain/` and `application/`
+- ✅ `presentation/` can import from `domain/` and `application/`
+- ❌ `domain/` CANNOT import from `application/`, `infrastructure/` or `presentation/`
+- ❌ `application/` CANNOT import from `infrastructure/` or `presentation/`

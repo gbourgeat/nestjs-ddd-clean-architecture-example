@@ -1,3 +1,5 @@
+import { InvalidSpeedError } from '@/domain/errors';
+
 export class Speed {
   private readonly _value: number;
 
@@ -7,11 +9,11 @@ export class Speed {
 
   static fromKmPerHour(kmPerHour: number): Speed {
     if (kmPerHour < 0) {
-      throw new Error('Speed cannot be negative');
+      throw InvalidSpeedError.negative();
     }
 
     if (!isFinite(kmPerHour)) {
-      throw new Error('Speed must be a finite number');
+      throw InvalidSpeedError.notFinite();
     }
 
     return new Speed(kmPerHour);

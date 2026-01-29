@@ -15,5 +15,5 @@ export class RoadSegmentTypeormEntity {
   distance: number;
 
   @Column('int')
-  speed: number;
+  speedLimit: number;
 }

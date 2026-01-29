@@ -1,0 +1,236 @@
+---
+description: Rules for creating NestJS Modules
+globs: ["src/**/*.module.ts"]
+alwaysApply: false
+---
+
+# NestJS Modules
+
+## Module Structure
+
+```typescript
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+
+// Local imports
+import { LocalProvider } from './local.provider';
+import { LocalController } from './local.controller';
+
+// Imports from other layers (respect dependencies)
+import { DomainRepository } from '@/domain/repositories';
+import { InfrastructureImpl } from '@/infrastructure/module';
+
+@Module({
+  imports: [
+    // Configuration modules
+    ConfigModule.forFeature(localConfig),
+    // Dependency modules
+    DependencyModule,
+  ],
+  providers: [
+    // Simple local providers
+    LocalProvider,
+    // Injection via useClass (interface → implementation)
+    {
+      provide: AbstractClass,
+      useClass: ConcreteImplementation,
+    },
+    // Injection via useFactory (complex dependencies)
+    {
+      provide: UseCase,
+      useFactory: (dep1: Dep1, dep2: Dep2) => {
+        return new UseCase(dep1, dep2);
+      },
+      inject: [Dep1, Dep2],
+    },
+  ],
+  controllers: [LocalController],
+  exports: [AbstractClass], // Export abstractions
+})
+export class LocalModule {}
+```
+
+## Project Examples
+
+### Infrastructure Module (Database)
+```typescript
+// src/infrastructure/database/database.module.ts
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { typeOrmConfig } from './database.config';
+import { CityRepository, RoadSegmentRepository } from '@/domain/repositories';
+import { DatabaseSeeder } from './seeders/database.seeder';
+import {
+  CityTypeormRepository,
+  RoadSegmentTypeormRepository,
+} from './repositories';
+import { CityTypeormEntity, RoadSegmentTypeormEntity } from './entities';
+
+@Module({
+  imports: [
+    TypeOrmModule.forRoot(typeOrmConfig),
+    TypeOrmModule.forFeature([CityTypeormEntity, RoadSegmentTypeormEntity]),
+  ],
+  providers: [
+    {
+      provide: CityRepository,           // Abstract interface
+      useClass: CityTypeormRepository,   // Implementation
+    },
+    {
+      provide: RoadSegmentRepository,
+      useClass: RoadSegmentTypeormRepository,
+    },
+    DatabaseSeeder,
+  ],
+  exports: [CityRepository, RoadSegmentRepository], // Export abstractions
+})
+export class DatabaseModule {}
+```
+
+### Infrastructure Module (Pathfinding)
+```typescript
+// src/infrastructure/pathfinding/pathfinding.module.ts
+import { Module } from '@nestjs/common';
+import { DijkstraPathFinder } from './dijkstra-path-finder';
+import { PathFinder } from '@/domain/services';
+import { OpenWeatherMapModule } from '../openweathermap/openweathermap.module';
+import { WeatherConditionProvider } from './weather-condition-provider';
+
+@Module({
+  imports: [OpenWeatherMapModule],
+  providers: [
+    {
+      provide: PathFinder,
+      useFactory: (weatherConditionProvider: WeatherConditionProvider) => {
+        return new DijkstraPathFinder(weatherConditionProvider);
+      },
+      inject: [WeatherConditionProvider],
+    },
+  ],
+  exports: [PathFinder],
+})
+export class PathfindingModule {}
+```
+
+### Infrastructure Module (External API)
+```typescript
+// src/infrastructure/openweathermap/openweathermap.module.ts
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { HttpModule } from '@nestjs/axios';
+import { CacheModule } from '@nestjs/cache-manager';
+import { OpenWeatherMapAdapter } from './openweathermap.adapter';
+import openweathermapConfig from './openweathermap.config';
+import { WeatherConditionProvider } from '../pathfinding/weather-condition-provider';
+
+@Module({
+  imports: [
+    ConfigModule.forFeature(openweathermapConfig),
+    HttpModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        timeout: configService.get<number>('openweathermap.timeout', 5000),
+        maxRedirects: configService.get<number>('openweathermap.maxRedirects', 5),
+      }),
+      inject: [ConfigService],
+    }),
+    CacheModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        ttl: configService.get<number>('openweathermap.cacheTtl', 600000),
+        max: configService.get<number>('openweathermap.cacheMax', 100),
+      }),
+      inject: [ConfigService],
+    }),
+  ],
+  providers: [
+    {
+      provide: WeatherConditionProvider,
+      useClass: OpenWeatherMapAdapter,
+    },
+  ],
+  exports: [WeatherConditionProvider],
+})
+export class OpenWeatherMapModule {}
+```
+
+### Presentation Module (REST API)
+```typescript
+// src/presentation/rest-api/rest-api.module.ts
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { RouteController } from './controllers';
+import { DatabaseModule } from '@/infrastructure/database/database.module';
+import { PathfindingModule } from '@/infrastructure/pathfinding/pathfinding.module';
+import { PathFinder } from '@/domain/services';
+import { RoadSegmentRepository, CityRepository } from '@/domain/repositories';
+import { GetFastestRouteUseCase } from '@/application/use-cases/get-fastest-route';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
+    DatabaseModule,
+    PathfindingModule,
+  ],
+  providers: [
+    {
+      provide: GetFastestRouteUseCase,
+      useFactory: (
+        pathFinder: PathFinder,
+        roadSegmentRepository: RoadSegmentRepository,
+        cityRepository: CityRepository,
+      ) => {
+        return new GetFastestRouteUseCase(
+          pathFinder,
+          roadSegmentRepository,
+          cityRepository,
+        );
+      },
+      inject: [PathFinder, RoadSegmentRepository, CityRepository],
+    },
+  ],
+  controllers: [RouteController],
+})
+export class RestApiModule {}
+```
+
+## Injection Patterns
+
+### 1. useClass - Interface → Simple implementation
+```typescript
+{
+  provide: CityRepository,      // Token (abstract interface)
+  useClass: CityTypeormRepository,  // Concrete class
+}
+```
+
+### 2. useFactory - Creation with logic
+```typescript
+{
+  provide: GetFastestRouteUseCase,
+  useFactory: (dep1: Dep1, dep2: Dep2, dep3: Dep3) => {
+    return new GetFastestRouteUseCase(dep1, dep2, dep3);
+  },
+  inject: [Dep1, Dep2, Dep3],  // Dependency tokens
+}
+```
+
+### 3. useValue - Constant value
+```typescript
+{
+  provide: 'CONFIG_OPTIONS',
+  useValue: { timeout: 5000 },
+}
+```
+
+## Rules
+
+1. **One module per technical domain** - Database, Pathfinding, OpenWeatherMap, etc.
+2. **Export abstractions** - Not concrete implementations
+3. **Injection via useFactory** for Use Cases
+4. **Injection via useClass** for Repositories
+5. **Respect layer dependencies**
+6. **ConfigModule.forFeature()** for local configurations

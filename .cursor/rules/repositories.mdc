@@ -1,0 +1,186 @@
+---
+description: Rules for creating repositories (interface and implementation)
+globs: ["src/domain/repositories/**/*.ts", "src/infrastructure/database/repositories/**/*.ts"]
+alwaysApply: false
+---
+
+# Repositories
+
+## 1. Repository Interface (Domain)
+
+The interface is defined in the Domain layer as an abstract class.
+
+```typescript
+// src/domain/repositories/<entity>.repository.ts
+import { ValueObject } from '@/domain/value-objects';
+import { Entity } from '@/domain/entities';
+
+export abstract class EntityRepository {
+  abstract findById(id: EntityId): Promise<Entity | null>;
+  abstract findByProperty(property: ValueObject): Promise<Entity>;
+  abstract findAll(): Promise<Entity[]>;
+  abstract save(entity: Entity): Promise<void>;
+  abstract delete(id: EntityId): Promise<void>;
+}
+```
+
+### Project Example
+```typescript
+// src/domain/repositories/city.repository.ts
+import { CityName } from '@/domain/value-objects';
+import { City } from '@/domain/entities';
+
+export abstract class CityRepository {
+  abstract findByName(name: CityName): Promise<City>;
+  abstract save(city: City): Promise<void>;
+}
+```
+
+## 2. TypeORM Implementation (Infrastructure)
+
+The implementation is in the Infrastructure layer.
+
+```typescript
+// src/infrastructure/database/repositories/<entity>.typeorm-repository.ts
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { EntityRepository } from '@/domain/repositories';
+import { Entity, EntityId, ValueObject } from '@/domain';
+import { EntityTypeormEntity } from '../entities';
+
+@Injectable()
+export class EntityTypeormRepository implements EntityRepository {
+  constructor(
+    @InjectRepository(EntityTypeormEntity)
+    private readonly typeormRepository: Repository<EntityTypeormEntity>,
+  ) {}
+
+  async findByProperty(property: ValueObject): Promise<Entity> {
+    const entity = await this.typeormRepository.findOne({
+      where: { property: property.value },
+    });
+
+    if (!entity) {
+      throw EntityNotFoundError.forProperty(property);
+    }
+
+    // Map TypeORM Entity → Domain Entity
+    return Entity.create(
+      EntityId.fromValue(entity.id),
+      ValueObject.create(entity.property),
+    );
+  }
+
+  async save(entity: Entity): Promise<void> {
+    const existingEntity = await this.typeormRepository.findOne({
+      where: { id: entity.id.value },
+    });
+
+    if (existingEntity) {
+      // Update
+      existingEntity.property = entity.property.value;
+      await this.typeormRepository.save(existingEntity);
+    } else {
+      // Insert
+      const newEntity = this.typeormRepository.create({
+        id: entity.id.value,
+        property: entity.property.value,
+      });
+      await this.typeormRepository.save(newEntity);
+    }
+  }
+}
+```
+
+### Project Example
+```typescript
+// src/infrastructure/database/repositories/city.typeorm-repository.ts
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { CityRepository } from '@/domain/repositories';
+import { City, CityId, CityName, CityNotFoundError } from '@/domain';
+import { CityTypeormEntity } from '../entities';
+
+@Injectable()
+export class CityTypeormRepository implements CityRepository {
+  constructor(
+    @InjectRepository(CityTypeormEntity)
+    private readonly typeormRepository: Repository<CityTypeormEntity>,
+  ) {}
+
+  async findByName(name: CityName): Promise<City> {
+    const city = await this.typeormRepository.findOne({
+      where: { name: name.value },
+    });
+
+    if (!city) {
+      throw CityNotFoundError.forCityName(name);
+    }
+
+    return City.create(
+      CityId.fromNormalizedValue(city.id),
+      CityName.create(city.name),
+    );
+  }
+
+  async save(city: City): Promise<void> {
+    const cityTypeormEntity = await this.typeormRepository.findOne({
+      where: { id: city.id.value },
+    });
+
+    if (cityTypeormEntity) {
+      cityTypeormEntity.name = city.name.value;
+      await this.typeormRepository.save(cityTypeormEntity);
+    } else {
+      const newCityTypeormEntity = this.typeormRepository.create({
+        id: city.id.value,
+        name: city.name.value,
+      });
+      await this.typeormRepository.save(newCityTypeormEntity);
+    }
+  }
+}
+```
+
+## 3. Module Registration
+
+```typescript
+// src/infrastructure/database/database.module.ts
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { CityRepository } from '@/domain/repositories';
+import { CityTypeormRepository } from './repositories';
+import { CityTypeormEntity } from './entities';
+
+@Module({
+  imports: [
+    TypeOrmModule.forFeature([CityTypeormEntity]),
+  ],
+  providers: [
+    {
+      provide: CityRepository,  // Abstract interface
+      useClass: CityTypeormRepository,  // Implementation
+    },
+  ],
+  exports: [CityRepository],  // Export the abstraction
+})
+export class DatabaseModule {}
+```
+
+## Naming Convention
+
+| Type | File | Class |
+|------|---------|--------|
+| Interface | `<entity>.repository.ts` | `EntityRepository` |
+| Implementation | `<entity>.typeorm-repository.ts` | `EntityTypeormRepository` |
+
+## Rules
+
+1. **Interface = abstract class** in Domain
+2. **Implementation = concrete class** in Infrastructure
+3. **Always map** TypeORM Entity → Domain Entity
+4. **Parameters = Value Objects** (no primitives)
+5. **Return = Domain Entities** (no TypeORM entities)
+6. **Throw business errors** (no generic exceptions)

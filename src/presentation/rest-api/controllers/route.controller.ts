@@ -2,45 +2,59 @@ import {
   Body,
   Controller,
   Post,
+  Patch,
   HttpException,
   HttpStatus,
-  UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
-import { GetFastestRouteDto } from '../dtos/get-fastest-route.dto';
-import { RouteResponseDto } from '../dtos/route-response.dto';
-import { RoadConstraints } from '../../../domain/value-objects/road-constraints';
-import { GetFastestRouteUseCase } from '../../../application/use-cases/get-fastest-route/get-fastest-route.use-case';
-import { CityNotFoundError } from '../../../domain/errors/city-not-found.error';
+import {
+  GetFastestRouteRequest,
+  UpdateRoadSegmentSpeedRequest,
+} from '@/presentation/rest-api/requests';
+import {
+  GetFastestRouteResponse,
+  UpdateRoadSegmentSpeedResponse,
+} from '@/presentation/rest-api/responses';
+import { GetFastestRouteUseCase } from '@/application/use-cases/get-fastest-route';
+import { UpdateRoadSegmentSpeedUseCase } from '@/application/use-cases/update-road-segment-speed';
+import {
+  CityNotFoundError,
+  InvalidWeatherConditionError,
+  SameStartAndEndCityError,
+  InvalidCityNameError,
+  RoadSegmentNotFoundError,
+  InvalidSpeedError,
+  InvalidRoadSegmentIdError,
+} from '@/domain/errors';
+import { RouteResponseMapper } from '@/presentation/rest-api/mappers';
 
 @ApiTags('Routes')
 @Controller()
 export class RouteController {
   constructor(
     private readonly getFastestRouteUseCase: GetFastestRouteUseCase,
+    private readonly updateRoadSegmentSpeedUseCase: UpdateRoadSegmentSpeedUseCase,
   ) {}
 
   @Post('/get-fastest-route')
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   @ApiOperation({
-    summary: "Calculer l'itinéraire le plus rapide",
+    summary: 'Calculate the fastest route',
     description:
-      "Calcule l'itinéraire le plus rapide entre deux villes en tenant compte de la météo et des contraintes optionnelles",
+      'Calculate the fastest route between two cities taking into account the weather and optional constraints',
   })
   @ApiBody({
-    type: GetFastestRouteDto,
-    description: "Données de la requête pour le calcul de l'itinéraire",
+    type: GetFastestRouteRequest,
+    description: 'Request data for route calculation',
     examples: {
       simple: {
-        summary: 'Requête simple',
+        summary: 'Simple request',
         value: {
           startCity: 'Paris',
           endCity: 'Marseille',
         },
       },
       withConstraints: {
-        summary: 'Requête avec contraintes',
+        summary: 'Request with constraints',
         value: {
           startCity: 'Paris',
           endCity: 'Marseille',
@@ -55,8 +69,8 @@ export class RouteController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Itinéraire calculé avec succès',
-    type: RouteResponseDto,
+    description: 'Route calculated successfully',
+    type: GetFastestRouteResponse,
     example: {
       path: ['Paris', 'Lyon', 'Marseille'],
       totalDistance: 775,
@@ -81,7 +95,7 @@ export class RouteController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Ville non trouvée',
+    description: 'City not found',
     schema: {
       example: {
         statusCode: 404,
@@ -92,7 +106,7 @@ export class RouteController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Données de requête invalides',
+    description: 'Invalid request data',
     schema: {
       example: {
         statusCode: 400,
@@ -103,7 +117,7 @@ export class RouteController {
   })
   @ApiResponse({
     status: 500,
-    description: 'Erreur interne du serveur',
+    description: 'Internal server error',
     schema: {
       example: {
         statusCode: 500,
@@ -113,40 +127,56 @@ export class RouteController {
     },
   })
   async getFastestRoute(
-    @Body() dto: GetFastestRouteDto,
-  ): Promise<RouteResponseDto> {
+    @Body() dto: GetFastestRouteRequest,
+  ): Promise<GetFastestRouteResponse> {
     try {
-      // Convert DTO constraints to domain value object
-      const constraints = dto.constraints
-        ? new RoadConstraints(
-            dto.constraints.excludeWeather,
-            dto.constraints.maxDistance,
-            dto.constraints.minSpeed,
-          )
-        : undefined;
-
-      // Execute use case
       const result = await this.getFastestRouteUseCase.execute({
         startCity: dto.startCity,
         endCity: dto.endCity,
-        constraints,
+        constraints: dto.constraints
+          ? {
+              excludeWeatherConditions: dto.constraints.excludeWeather,
+              maxDistance: dto.constraints.maxDistance,
+              minSpeedLimit: dto.constraints.minSpeed,
+            }
+          : undefined,
       });
 
-      if (!result.path.length) {
-        return {
-          path: [],
-        };
+      return RouteResponseMapper.toDto(result);
+    } catch (error) {
+      if (error instanceof InvalidCityNameError) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.BAD_REQUEST,
+            message: error.message,
+            error: 'Invalid City Name',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
-      // Map result to response DTO
-      return {
-        path: result.path,
-        totalDistance: result.totalDistance,
-        estimatedTime: result.estimatedTime,
-        steps: result.steps,
-      };
-    } catch (error) {
-      // Handle known errors
+      if (error instanceof InvalidWeatherConditionError) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.BAD_REQUEST,
+            message: error.message,
+            error: 'Invalid Weather Condition',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (error instanceof SameStartAndEndCityError) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.BAD_REQUEST,
+            message: error.message,
+            error: 'Same Start And End City',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
       if (error instanceof CityNotFoundError) {
         throw new HttpException(
           {
@@ -158,24 +188,126 @@ export class RouteController {
         );
       }
 
-      if (error instanceof Error) {
-        if (error.message.includes('not found in graph')) {
-          throw new HttpException(
-            {
-              statusCode: HttpStatus.NOT_FOUND,
-              message: error.message,
-              error: 'City Not Found',
-            },
-            HttpStatus.NOT_FOUND,
-          );
-        }
-      }
-
-      // Re-throw unexpected errors
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
           message: 'An error occurred while calculating the route',
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Patch('/road-segments/speed')
+  @ApiOperation({
+    summary: 'Update the speed limit of a road segment',
+    description:
+      'Update the speed limit between two cities. The order of cities does not matter.',
+  })
+  @ApiBody({
+    type: UpdateRoadSegmentSpeedRequest,
+    description: 'Request data for updating road segment speed',
+    examples: {
+      simple: {
+        summary: 'Update speed limit',
+        value: {
+          cityA: 'Paris',
+          cityB: 'Lyon',
+          newSpeedLimit: 130,
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Speed limit updated successfully',
+    type: UpdateRoadSegmentSpeedResponse,
+    example: {
+      roadSegmentId: 'lyon__paris',
+      cityA: 'Lyon',
+      cityB: 'Paris',
+      distance: 465,
+      speedLimit: 130,
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Road segment not found',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'Road segment with id "paris__unknowncity" not found',
+        error: 'Road Segment Not Found',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid input',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'Speed must be positive',
+        error: 'Invalid Speed',
+      },
+    },
+  })
+  async updateRoadSegmentSpeed(
+    @Body() dto: UpdateRoadSegmentSpeedRequest,
+  ): Promise<UpdateRoadSegmentSpeedResponse> {
+    try {
+      const result = await this.updateRoadSegmentSpeedUseCase.execute({
+        cityA: dto.cityA,
+        cityB: dto.cityB,
+        newSpeedLimit: dto.newSpeedLimit,
+      });
+
+      return {
+        roadSegmentId: result.roadSegmentId,
+        cityA: result.cityA,
+        cityB: result.cityB,
+        distance: result.distance,
+        speedLimit: result.speedLimit,
+      };
+    } catch (error) {
+      if (error instanceof InvalidRoadSegmentIdError) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.BAD_REQUEST,
+            message: error.message,
+            error: 'Invalid Road Segment ID',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (error instanceof InvalidSpeedError) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.BAD_REQUEST,
+            message: error.message,
+            error: 'Invalid Speed',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (error instanceof RoadSegmentNotFoundError) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_FOUND,
+            message: error.message,
+            error: 'Road Segment Not Found',
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'An error occurred while updating the road segment speed',
           error: error instanceof Error ? error.message : 'Unknown error',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,

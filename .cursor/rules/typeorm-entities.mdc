@@ -1,0 +1,161 @@
+---
+description: Rules for creating TypeORM entities in the Infrastructure layer
+globs: ["src/infrastructure/database/entities/**/*.ts"]
+alwaysApply: false
+---
+
+# TypeORM Entities (Infrastructure)
+
+## TypeORM Entity Structure
+
+TypeORM entities are distinct from Domain entities and serve only for persistence.
+
+```typescript
+// src/infrastructure/database/entities/<name>.typeorm-entity.ts
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+
+@Entity('table_name')
+export class EntityNameTypeormEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ unique: true })
+  uniqueProperty: string;
+
+  @Column()
+  regularProperty: string;
+
+  @Column('decimal', { precision: 10, scale: 2 })
+  numericProperty: number;
+
+  @Column({ nullable: true })
+  optionalProperty?: string;
+
+  @ManyToOne(() => OtherTypeormEntity, { eager: true })
+  @JoinColumn({ name: 'other_id' })
+  relatedEntity: OtherTypeormEntity;
+
+  @OneToMany(() => ChildTypeormEntity, (child) => child.parent)
+  children: ChildTypeormEntity[];
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+}
+```
+
+## Project Examples
+
+### Simple Entity
+```typescript
+// src/infrastructure/database/entities/city.typeorm-entity.ts
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+
+@Entity('cities')
+export class CityTypeormEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ unique: true })
+  name: string;
+}
+```
+
+### Entity with Relations
+```typescript
+// src/infrastructure/database/entities/road-segment.typeorm-entity.ts
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { CityTypeormEntity } from './city.typeorm-entity';
+
+@Entity('road_segments')
+export class RoadSegmentTypeormEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @ManyToOne(() => CityTypeormEntity, { eager: true })
+  @JoinColumn({ name: 'city_a_id' })
+  cityA: CityTypeormEntity;
+
+  @ManyToOne(() => CityTypeormEntity, { eager: true })
+  @JoinColumn({ name: 'city_b_id' })
+  cityB: CityTypeormEntity;
+
+  @Column('decimal', { precision: 10, scale: 2 })
+  distance: number;
+
+  @Column('integer')
+  speedLimit: number;
+}
+```
+
+## Naming Convention
+
+| Element | Convention |
+|---------|------------|
+| File | `<entity>.typeorm-entity.ts` |
+| Class | `<Entity>TypeormEntity` |
+| Table | `snake_case` plural (`cities`, `road_segments`) |
+| Columns | `snake_case` (`city_a_id`, `speed_limit`) |
+
+## Barrel export
+
+```typescript
+// src/infrastructure/database/entities/index.ts
+export * from './city.typeorm-entity';
+export * from './road-segment.typeorm-entity';
+```
+
+## Module Registration
+
+```typescript
+// src/infrastructure/database/database.module.ts
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { CityTypeormEntity, RoadSegmentTypeormEntity } from './entities';
+
+@Module({
+  imports: [
+    TypeOrmModule.forFeature([
+      CityTypeormEntity,
+      RoadSegmentTypeormEntity,
+    ]),
+  ],
+  // ...
+})
+export class DatabaseModule {}
+```
+
+## Rules
+
+1. **Mandatory suffix** - `TypeormEntity` to distinguish from Domain entities
+2. **No business logic** - Only TypeORM decorators
+3. **Primitive types** - No Value Objects, only `string`, `number`, `Date`
+4. **Mapping in Repository** - Domain ↔ TypeORM conversion happens in repository
+5. **Explicit relations** - Use `@JoinColumn` to name foreign keys
+
+## Difference with Domain Entity
+
+| Aspect | Domain Entity | TypeORM Entity |
+|--------|---------------|----------------|
+| Location | `src/domain/entities/` | `src/infrastructure/database/entities/` |
+| Suffix | None | `TypeormEntity` |
+| Properties | Value Objects | Primitives |
+| Logic | Factory methods, validation | None |
+| Decorators | None | `@Entity`, `@Column`, etc. |
+| Immutability | Preferred | Not required |

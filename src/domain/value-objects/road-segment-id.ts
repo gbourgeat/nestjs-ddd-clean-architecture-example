@@ -1,3 +1,5 @@
+import { InvalidRoadSegmentIdError } from '@/domain/errors';
+
 export class RoadSegmentId {
   private readonly _value: string;
 
@@ -7,17 +9,17 @@ export class RoadSegmentId {
 
   static fromCityNames(cityName1: string, cityName2: string): RoadSegmentId {
     if (!cityName1 || cityName1.trim().length === 0) {
-      throw new Error('First city name cannot be empty');
+      throw InvalidRoadSegmentIdError.emptyFirstCityName();
     }
 
     if (!cityName2 || cityName2.trim().length === 0) {
-      throw new Error('Second city name cannot be empty');
+      throw InvalidRoadSegmentIdError.emptySecondCityName();
     }
 
     const normalized1 = RoadSegmentId.normalize(cityName1);
     const normalized2 = RoadSegmentId.normalize(cityName2);
 
-    // Sort alphabetically to ensure consistency
+    // Sort alphabetically toCity ensure consistency
     const [first, second] =
       normalized1 <= normalized2
         ? [normalized1, normalized2]
@@ -30,11 +32,11 @@ export class RoadSegmentId {
 
   static fromValue(value: string): RoadSegmentId {
     if (!value || value.trim().length === 0) {
-      throw new Error('Road segment id value cannot be empty');
+      throw InvalidRoadSegmentIdError.emptyValue();
     }
 
     if (!value.includes('__')) {
-      throw new Error('Road segment id value must contain the separator "__"');
+      throw InvalidRoadSegmentIdError.missingSeparator();
     }
 
     return new RoadSegmentId(value);

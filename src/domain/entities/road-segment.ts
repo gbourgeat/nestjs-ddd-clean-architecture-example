@@ -1,8 +1,11 @@
 import { City } from './city';
-import { RoadSegmentId } from '../value-objects/road-segment-id';
-import { Distance } from '../value-objects/distance';
-import { Speed } from '../value-objects/speed';
-import { Duration } from '../value-objects/duration';
+import {
+  Distance,
+  Duration,
+  RoadSegmentId,
+  Speed,
+} from '@/domain/value-objects';
+import { InvalidRoadSegmentError } from '@/domain/errors';
 
 export class RoadSegment {
   private constructor(
@@ -20,12 +23,12 @@ export class RoadSegment {
   ): RoadSegment {
     this.ensureCitiesAreDistinct(cities);
 
-    const alphaNameSortedCities = this.sortByNames(cities);
+    const sortedCities = this.sortCitiesByNames(cities);
 
-    return new RoadSegment(id, alphaNameSortedCities, distance, speed);
+    return new RoadSegment(id, sortedCities, distance, speed);
   }
 
-  private static sortByNames(cities: [City, City]) {
+  private static sortCitiesByNames(cities: [City, City]) {
     const sortedCities: [City, City] =
       cities[0].name.compareTo(cities[1].name) <= 0
         ? [cities[0], cities[1]]
@@ -36,7 +39,7 @@ export class RoadSegment {
 
   private static ensureCitiesAreDistinct(cities: [City, City]) {
     if (cities[0].id.equals(cities[1].id)) {
-      throw new Error('Road segments must not connect two cities in a row');
+      throw InvalidRoadSegmentError.sameCityConnection();
     }
   }
 
@@ -52,8 +55,8 @@ export class RoadSegment {
     return this.cities[1];
   }
 
-  updateSpeed(newSpeed: Speed): void {
-    this._speedLimit = newSpeed;
+  updateSpeedLimit(newSpeedLimit: Speed): void {
+    this._speedLimit = newSpeedLimit;
   }
 
   get estimatedDuration(): Duration {

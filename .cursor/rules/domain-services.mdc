@@ -1,0 +1,158 @@
+---
+description: Rules for creating abstract services in the Domain layer
+globs: ["src/domain/services/**/*.ts"]
+alwaysApply: false
+---
+
+# Domain Services
+
+## Concept
+
+Domain services define **abstract interfaces** for complex business operations that cannot be encapsulated in a single entity.
+
+The implementation is in the Infrastructure layer.
+
+## Domain Service Structure
+
+```typescript
+// src/domain/services/<service-name>.ts
+import { Entity } from '@/domain/entities';
+import { ValueObject } from '@/domain/value-objects';
+
+// Result types if needed
+export interface ServiceResult {
+  property1: ValueObject;
+  property2: Entity;
+  details: ResultDetail[];
+}
+
+export interface ResultDetail {
+  from: Entity;
+  to: Entity;
+  value: ValueObject;
+}
+
+// Abstract service interface
+export abstract class ServiceName {
+  abstract doOperation(
+    input1: Entity[],
+    input2: Entity,
+    input3: Entity,
+    options?: ValueObject,
+  ): Promise<ServiceResult | null>;
+}
+```
+
+## Project example: PathFinder
+
+```typescript
+// src/domain/services/path-finder.ts
+import {
+  Duration,
+  WeatherCondition,
+  RoadConstraints,
+  Distance,
+  Speed,
+} from '@/domain/value-objects';
+import { RoadSegment, City } from '@/domain/entities';
+
+// Result type
+export interface PathfindingResult {
+  totalDistance: Distance;
+  estimatedTime: Duration;
+  steps: RouteStep[];
+}
+
+// Step detail
+export interface RouteStep {
+  from: City;
+  to: City;
+  distance: Distance;
+  speedLimit: Speed;
+  estimatedDuration: Duration;
+  weatherCondition: WeatherCondition;
+}
+
+// Abstract service
+export abstract class PathFinder {
+  abstract findFastestRoute(
+    segments: RoadSegment[],
+    startCity: City,
+    endCity: City,
+    constraints?: RoadConstraints,
+  ): Promise<PathfindingResult | null>;
+}
+```
+
+## Implementation (Infrastructure)
+
+```typescript
+// src/infrastructure/pathfinding/dijkstra-path-finder.ts
+import { PathFinder, PathfindingResult } from '@/domain/services';
+import { City, RoadSegment } from '@/domain/entities';
+import { RoadConstraints } from '@/domain/value-objects';
+import { WeatherConditionProvider } from './weather-condition-provider';
+
+export class DijkstraPathFinder implements PathFinder {
+  constructor(
+    private readonly weatherConditionProvider: WeatherConditionProvider,
+  ) {}
+
+  async findFastestRoute(
+    segments: RoadSegment[],
+    startCity: City,
+    endCity: City,
+    constraints?: RoadConstraints,
+  ): Promise<PathfindingResult | null> {
+    // Dijkstra algorithm implementation
+    // ...
+  }
+}
+```
+
+## Module Registration
+
+```typescript
+// src/infrastructure/pathfinding/pathfinding.module.ts
+import { Module } from '@nestjs/common';
+import { PathFinder } from '@/domain/services';
+import { DijkstraPathFinder } from './dijkstra-path-finder';
+
+@Module({
+  providers: [
+    {
+      provide: PathFinder,           // Abstraction
+      useFactory: (dep) => new DijkstraPathFinder(dep),
+      inject: [WeatherConditionProvider],
+    },
+  ],
+  exports: [PathFinder],
+})
+export class PathfindingModule {}
+```
+
+## Difference: Repository vs Service
+
+| Aspect | Repository | Service |
+|--------|------------|---------|
+| Responsibility | Data access (CRUD) | Complex business operations |
+| Inputs | Simple Value Objects | Entities, collections |
+| Outputs | Entities | Composite results |
+| Example | `findByName()`, `save()` | `findFastestRoute()` |
+
+## Rules
+
+1. **Abstract class** - Define as `abstract class`
+2. **Abstract methods** - All methods are `abstract`
+3. **Result types** - Define interfaces for complex results
+4. **Use Value Objects** - No primitives in signatures
+5. **No NestJS decorators** - No `@Injectable()` in domain
+6. **Separate implementation** - In `infrastructure/`
+
+## Barrel export file
+
+```typescript
+// src/domain/services/index.ts
+export * from './path-finder';
+// Export result types with the service
+```

@@ -6,7 +6,6 @@ import { RestApiModule } from './rest-api.module';
 async function bootstrap() {
   const app = await NestFactory.create(RestApiModule);
 
-  // Global validation pipe
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
@@ -16,12 +15,11 @@ async function bootstrap() {
   );
 
   const config = new DocumentBuilder()
-    .setTitle('Wavo Route Solver API')
+    .setTitle('Route Solver API')
     .setDescription(
-      'API pour calculer les itinéraires les plus rapides entre les villes en tenant compte de la météo et des contraintes',
+      'API to calculate the fastest routes between cities taking into account weather and constraints',
     )
     .setVersion('1.0')
-    .addTag('routes', "Endpoints pour le calcul d'itinéraires")
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

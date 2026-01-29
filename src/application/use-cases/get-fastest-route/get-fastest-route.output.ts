@@ -1,12 +1,11 @@
 export interface GetFastestRoadOutput {
-  path: string[];
   totalDistance: number;
-  estimatedTime: number;
-  steps: Array<{
-    from: string;
-    to: string;
+  estimatedDuration: number;
+  steps: {
+    fromCity: string;
+    toCity: string;
     distance: number;
-    speed: number;
-    weather: string;
-  }>;
+    speedLimit: number;
+    weatherCondition: string;
+  }[];
 }

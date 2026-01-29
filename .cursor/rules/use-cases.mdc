@@ -1,0 +1,220 @@
+---
+description: Rules for creating Use Cases in the Application layer
+globs: ["src/application/use-cases/**/*.ts"]
+alwaysApply: false
+---
+
+# Use Cases (Application Layer)
+
+## Use Case Structure
+
+Each use case has its own folder with 4 files:
+
+```
+src/application/use-cases/<use-case-name>/
+├── <use-case-name>.use-case.ts    # Use case logic
+├── <use-case-name>.input.ts       # Input interface
+├── <use-case-name>.output.ts      # Output interface
+└── index.ts                       # Barrel export
+```
+
+## 1. Input
+
+```typescript
+// src/application/use-cases/<use-case-name>/<use-case-name>.input.ts
+export interface UseCaseNameInput {
+  // Primitive properties (no Value Objects)
+  property1: string;
+  property2: number;
+  optionalProperty?: {
+    nested1?: string[];
+    nested2?: number;
+  };
+}
+```
+
+### Project Example
+```typescript
+// src/application/use-cases/get-fastest-route/get-fastest-route.input.ts
+export interface GetFastestRouteInput {
+  startCity: string;
+  endCity: string;
+  constraints?: {
+    excludeWeatherConditions?: string[];
+    maxDistance?: number;
+    minSpeedLimit?: number;
+  };
+}
+```
+
+## 2. Output
+
+```typescript
+// src/application/use-cases/<use-case-name>/<use-case-name>.output.ts
+export interface UseCaseNameOutput {
+  // Primitive properties (no Value Objects)
+  result: string;
+  details: {
+    property1: string;
+    property2: number;
+  }[];
+}
+```
+
+### Project Example
+```typescript
+// src/application/use-cases/get-fastest-route/get-fastest-route.output.ts
+export interface GetFastestRoadOutput {
+  totalDistance: number;
+  estimatedDuration: number;
+  steps: {
+    fromCity: string;
+    toCity: string;
+    distance: number;
+    speedLimit: number;
+    weatherCondition: string;
+  }[];
+}
+```
+
+## 3. Use Case (logic)
+
+```typescript
+// src/application/use-cases/<use-case-name>/<use-case-name>.use-case.ts
+import { DomainError } from '@/domain/errors';
+import { Repository1, Repository2 } from '@/domain/repositories';
+import { DomainService } from '@/domain/services';
+import { ValueObject1, ValueObject2 } from '@/domain/value-objects';
+import { UseCaseNameInput, UseCaseNameOutput } from './';
+import { OutputMapper } from '@/application/mappers';
+
+export class UseCaseNameUseCase {
+  constructor(
+    private readonly repository1: Repository1,
+    private readonly repository2: Repository2,
+    private readonly domainService: DomainService,
+  ) {}
+
+  /**
+   * Use case description
+   * @throws DomainError1 if condition 1
+   * @throws DomainError2 if condition 2
+   */
+  async execute(input: UseCaseNameInput): Promise<UseCaseNameOutput> {
+    // 1. Transform inputs to Value Objects
+    const valueObject1 = ValueObject1.create(input.property1);
+    const valueObject2 = ValueObject2.create(input.property2);
+
+    // 2. Validate business rules
+    this.ensureSomeCondition(valueObject1, valueObject2);
+
+    // 3. Retrieve data via repositories
+    const entity1 = await this.repository1.findByProperty(valueObject1);
+    const entities = await this.repository2.findAll();
+
+    // 4. Execute business logic
+    const result = await this.domainService.doSomething(
+      entity1,
+      entities,
+      valueObject2,
+    );
+
+    // 5. Map and return result
+    return OutputMapper.toOutput(result);
+  }
+
+  private ensureSomeCondition(vo1: ValueObject1, vo2: ValueObject2): void {
+    if (vo1.equals(vo2)) {
+      throw DomainError.forSomeReason(vo1);
+    }
+  }
+}
+```
+
+### Project Example
+```typescript
+// src/application/use-cases/get-fastest-route/get-fastest-route.use-case.ts
+import { SameStartAndEndCityError } from '@/domain/errors';
+import { RoadSegmentRepository, CityRepository } from '@/domain/repositories';
+import { PathFinder } from '@/domain/services';
+import { CityName } from '@/domain/value-objects';
+import { GetFastestRouteInput, GetFastestRoadOutput } from './';
+import { RoadConstraintsMapper, PathfindingResultMapper } from '@/application/mappers';
+
+export class GetFastestRouteUseCase {
+  constructor(
+    private readonly pathFinder: PathFinder,
+    private readonly roadSegmentRepository: RoadSegmentRepository,
+    private readonly cityRepository: CityRepository,
+  ) {}
+
+  async execute({
+    startCity,
+    endCity,
+    constraints,
+  }: GetFastestRouteInput): Promise<GetFastestRoadOutput> {
+    // 1. Transform to Value Objects
+    const startCityName = CityName.create(startCity);
+    const endCityName = CityName.create(endCity);
+
+    // 2. Validate
+    this.ensureThatStartAndEndCitiesAreDistinct(startCityName, endCityName);
+
+    // 3. Retrieve data
+    const [startCityEntity, endCityEntity] = await Promise.all([
+      this.cityRepository.findByName(startCityName),
+      this.cityRepository.findByName(endCityName),
+    ]);
+
+    const roadSegments = await this.roadSegmentRepository.findAll();
+
+    // 4. Execute logic
+    const routeConstraints = RoadConstraintsMapper.toDomain(constraints);
+    const pathFinderResult = await this.pathFinder.findFastestRoute(
+      roadSegments,
+      startCityEntity,
+      endCityEntity,
+      routeConstraints,
+    );
+
+    // 5. Map result
+    return PathfindingResultMapper.toOutput(pathFinderResult);
+  }
+
+  private ensureThatStartAndEndCitiesAreDistinct(
+    start: CityName,
+    end: CityName,
+  ): void {
+    if (start.equals(end)) {
+      throw SameStartAndEndCityError.forCityName(start);
+    }
+  }
+}
+```
+
+## 4. Barrel Export
+
+```typescript
+// src/application/use-cases/<use-case-name>/index.ts
+export * from './<use-case-name>.input';
+export * from './<use-case-name>.output';
+export * from './<use-case-name>.use-case';
+```
+
+## Naming Convention
+
+- Folder: `kebab-case` (e.g. `get-fastest-route`)
+- Files: `<use-case-name>.<type>.ts`
+- Class: `PascalCase` + `UseCase` (e.g. `GetFastestRouteUseCase`)
+- Input: `PascalCase` + `Input` (e.g. `GetFastestRouteInput`)
+- Output: `PascalCase` + `Output` (e.g. `GetFastestRouteOutput`)
+
+## Rules
+
+1. **One folder per use case** with Input/Output/UseCase
+2. **No NestJS decorators** in the use case itself
+3. **Constructor injection** of dependencies
+4. **Input/Output = primitives** (no Value Objects or Entities)
+5. **Map inputs** to Value Objects at the beginning
+6. **Map outputs** to primitives at the end
+7. **Document exceptions** with `@throws` in JSDoc

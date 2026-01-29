@@ -1,0 +1,111 @@
+# Windsurf Cascade Rules - Route Solver
+
+## Project Context
+NestJS API for optimal route planning between French cities using Dijkstra algorithm with weather conditions.
+
+## Architecture Rules
+
+### Layer Dependencies (STRICT)
+- `domain/` → imports NOTHING external
+- `application/` → imports only from `domain/`
+- `infrastructure/` → imports from `domain/` and `application/`
+- `presentation/` → imports from `domain/` and `application/`
+
+### Domain Layer (`src/domain/`)
+- Pure business logic, no NestJS decorators
+- Entities: private constructor + static `create()` factory method
+- Value Objects: immutable, private constructor + static `create()`
+- Errors: extend `Error`, private constructor + static factory methods
+- Repositories: abstract classes defining data access interface
+- Services: abstract classes defining complex operations interface
+
+### Application Layer (`src/application/`)
+- Use Cases: one folder per use case with `input.ts`, `output.ts`, `use-case.ts`
+- Mappers: static methods transforming Domain ↔ Application types
+- No NestJS decorators on use case classes
+
+### Infrastructure Layer (`src/infrastructure/`)
+- TypeORM entities: suffix `TypeormEntity`, primitive types only
+- Repositories: suffix `TypeormRepository`, implement abstract class
+- Adapters: implement domain interfaces for external services
+
+### Presentation Layer (`src/presentation/`)
+- Controllers: delegate to use cases, map domain errors to HTTP
+- Requests: class-validator decorators for validation
+- Responses: @ApiProperty decorators for Swagger
+- Schemas: shared DTO components
+
+## Code Patterns
+
+### Value Object
+```typescript
+export class ValueName {
+  private constructor(private readonly _value: Type) {}
+  static create(value: Type): ValueName { /* validate + return */ }
+  get value(): Type { return this._value; }
+  equals(other: ValueName): boolean { return this._value === other._value; }
+}
+```
+
+### Entity
+```typescript
+export class EntityName {
+  private constructor(public readonly id: EntityId, ...) {}
+  static create(id: EntityId, ...): EntityName { return new EntityName(...); }
+  equals(other: EntityName): boolean { return this.id.equals(other.id); }
+}
+```
+
+### Domain Error
+```typescript
+export class SpecificError extends Error {
+  private constructor(message: string) { super(message); this.name = this.constructor.name; }
+  static forContext(ctx: ValueObject): SpecificError { return new SpecificError(`Message ${ctx.value}`); }
+}
+```
+
+### Repository (Interface)
+```typescript
+export abstract class EntityRepository {
+  abstract findById(id: EntityId): Promise<Entity | null>;
+  abstract save(entity: Entity): Promise<void>;
+}
+```
+
+### Use Case
+```typescript
+export class ActionNameUseCase {
+  constructor(private readonly repo: Repository, private readonly service: Service) {}
+  async execute(input: ActionInput): Promise<ActionOutput> {
+    const vo = ValueObject.create(input.prop);
+    const entity = await this.repo.findByProp(vo);
+    const result = await this.service.doAction(entity);
+    return Mapper.toOutput(result);
+  }
+}
+```
+
+## Naming Conventions
+
+| Type | File | Class |
+|------|------|-------|
+| Domain Entity | `city.ts` | `City` |
+| Value Object | `city-id.ts` | `CityId` |
+| Error | `city-not-found.error.ts` | `CityNotFoundError` |
+| Repository Interface | `city.repository.ts` | `CityRepository` |
+| Repository Impl | `city.typeorm-repository.ts` | `CityTypeormRepository` |
+| TypeORM Entity | `city.typeorm-entity.ts` | `CityTypeormEntity` |
+| Use Case | `get-route.use-case.ts` | `GetRouteUseCase` |
+| Request DTO | `get-route.request.ts` | `GetRouteRequest` |
+| Response DTO | `get-route.response.ts` | `GetRouteResponse` |
+
+## Import Alias
+Always use `@/` for absolute imports: `import { City } from '@/domain/entities'`
+
+## Testing
+**Domain is tested INDIRECTLY through Use Case tests.**
+
+- ❌ NO `*.spec.ts` files in `src/domain/`
+- ✅ Use Case tests (`src/application/use-cases/<name>/<name>.use-case.spec.ts`) cover Domain
+- ✅ E2E tests: `test/e2e/*.e2e-spec.ts`
+- Mock dependencies with `jest.Mocked<T>`

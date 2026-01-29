@@ -1,9 +1,20 @@
 import { PreviousCity } from './types';
-import { WeatherCondition } from '../../domain/value-objects/weather-condition';
-import {
-  PathfindingResult,
-  RouteStep,
-} from '../../domain/services/path-finder';
+import { WeatherCondition } from '@/domain/value-objects';
+
+export interface InternalPathfindingResult {
+  totalDistance: number;
+  estimatedTime: number;
+  steps: InternalRouteStep[];
+}
+
+export interface InternalRouteStep {
+  from: string;
+  to: string;
+  distance: number;
+  speedLimit: number;
+  estimatedDuration: number;
+  weatherCondition?: WeatherCondition;
+}
 
 export class PathReconstructor {
   reconstruct(
@@ -12,7 +23,7 @@ export class PathReconstructor {
     endCity: string,
     totalTime: number,
     weatherData: Map<string, WeatherCondition>,
-  ): PathfindingResult {
+  ): InternalPathfindingResult {
     const path = this.buildPath(previous, startCity, endCity);
     const { steps, totalDistance } = this.buildSteps(
       path,
@@ -21,7 +32,6 @@ export class PathReconstructor {
     );
 
     return {
-      path,
       totalDistance,
       estimatedTime: totalTime,
       steps,
@@ -30,13 +40,13 @@ export class PathReconstructor {
 
   private buildPath(
     previous: Map<string, PreviousCity>,
-    startCity: string,
-    endCity: string,
+    fromCity: string,
+    toCity: string,
   ): string[] {
     const reversePath: string[] = [];
-    let currentCity = endCity;
+    let currentCity = toCity;
 
-    while (currentCity !== startCity) {
+    while (currentCity !== fromCity) {
       reversePath.push(currentCity);
       const prev = previous.get(currentCity);
       if (!prev) {
@@ -45,7 +55,7 @@ export class PathReconstructor {
       currentCity = prev.city;
     }
 
-    reversePath.push(startCity);
+    reversePath.push(fromCity);
 
     return reversePath.reverse();
   }
@@ -54,8 +64,8 @@ export class PathReconstructor {
     path: string[],
     previous: Map<string, PreviousCity>,
     weatherData: Map<string, WeatherCondition>,
-  ): { steps: RouteStep[]; totalDistance: number } {
-    const steps: RouteStep[] = [];
+  ): { steps: InternalRouteStep[]; totalDistance: number } {
+    const steps: InternalRouteStep[] = [];
     let totalDistance = 0;
 
     for (let pathIndex = 0; pathIndex < path.length - 1; pathIndex++) {
@@ -66,7 +76,7 @@ export class PathReconstructor {
       if (prev && prev.city === from) {
         const step = this.createStep(prev, weatherData);
         steps.push(step);
-        totalDistance += prev.segment.distance.kilometers;
+        totalDistance += prev.segment.distance;
       }
     }
 
@@ -76,14 +86,14 @@ export class PathReconstructor {
   private createStep(
     prev: PreviousCity,
     weatherData: Map<string, WeatherCondition>,
-  ): RouteStep {
+  ): InternalRouteStep {
     return {
-      from: prev.segment.cities.name.value,
-      to: prev.segment.to.name.value,
-      distance: prev.segment.distance.kilometers,
-      speed: prev.segment.speedLimit.kmPerHour,
-      travelTime: prev.segment.estimatedDuration,
-      weather: weatherData.get(prev.segment.to.name.value),
+      from: prev.segment.fromCity,
+      to: prev.segment.toCity,
+      distance: prev.segment.distance,
+      speedLimit: prev.segment.speedLimit,
+      estimatedDuration: prev.segment.estimatedDuration,
+      weatherCondition: weatherData.get(prev.segment.toCity),
     };
   }
 }

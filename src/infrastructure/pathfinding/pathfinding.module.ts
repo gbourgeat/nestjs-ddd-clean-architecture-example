@@ -1,22 +1,20 @@
 import { Module } from '@nestjs/common';
-import { DijkstraPathfindingService } from './dijkstra-pathfinding.service';
-import { DijkstraAlgorithm } from './dijkstra-algorithm';
-import { GraphBuilder } from './graph-builder';
-import { PathReconstructor } from './path-reconstructor';
-import { SegmentFilter } from './segment-filter';
+import { DijkstraPathFinder } from './dijkstra-path-finder';
+import { PathFinder } from '@/domain/services';
+import { OpenWeatherMapModule } from '../openweathermap/openweathermap.module';
+import { WeatherConditionProvider } from './weather-condition-provider';
 
 @Module({
+  imports: [OpenWeatherMapModule],
   providers: [
-    DijkstraPathfindingService,
-    DijkstraAlgorithm,
-    GraphBuilder,
-    PathReconstructor,
-    SegmentFilter,
     {
-      provide: 'PathFinder',
-      useClass: DijkstraPathfindingService,
+      provide: PathFinder,
+      useFactory: (weatherConditionProvider: WeatherConditionProvider) => {
+        return new DijkstraPathFinder(weatherConditionProvider);
+      },
+      inject: [WeatherConditionProvider],
     },
   ],
-  exports: [DijkstraPathfindingService, 'PathFinder'],
+  exports: [PathFinder],
 })
 export class PathfindingModule {}

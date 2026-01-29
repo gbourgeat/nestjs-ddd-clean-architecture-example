@@ -1,0 +1,318 @@
+---
+description: Rules for creating Controllers, Requests and Responses in the Presentation layer
+globs: ["src/presentation/**/*.ts"]
+alwaysApply: false
+---
+
+# Presentation Layer (REST API)
+
+## Structure
+
+```
+src/presentation/rest-api/
+├── controllers/           # REST endpoints
+│   ├── <resource>.controller.ts
+│   └── index.ts
+├── requests/              # Input DTOs (validation)
+│   ├── <action>.request.ts
+│   └── index.ts
+├── responses/             # Output DTOs (Swagger)
+│   ├── <action>.response.ts
+│   └── index.ts
+├── schemas/               # Shared schemas
+│   ├── <schema>.schema.ts
+│   └── index.ts
+├── mappers/               # Transformation Output → Response
+│   ├── <resource>.mapper.ts
+│   └── index.ts
+└── rest-api.module.ts     # NestJS module
+```
+
+## 1. Request DTO
+
+```typescript
+// src/presentation/rest-api/requests/<action>.request.ts
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsNumber,
+  IsArray,
+  ValidateNested,
+  Min,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { NestedSchema } from '../schemas';
+
+export class ActionNameRequest {
+  @ApiProperty({
+    description: 'Property description',
+    example: 'example value',
+    type: String,
+  })
+  @IsNotEmpty()
+  @IsString()
+  requiredProperty: string;
+
+  @ApiPropertyOptional({
+    description: 'Optional description',
+    type: () => NestedSchema,
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => NestedSchema)
+  optionalNested?: NestedSchema;
+}
+```
+
+### Project Example
+```typescript
+// src/presentation/rest-api/requests/get-fastest-route.request.ts
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { RouteConstraints } from '@/presentation/rest-api/schemas';
+
+export class GetFastestRouteRequest {
+  @ApiProperty({
+    description: 'Starting city name',
+    example: 'Paris',
+    type: String,
+  })
+  @IsNotEmpty()
+  @IsString()
+  startCity: string;
+
+  @ApiProperty({
+    description: 'Destination city name',
+    example: 'Lyon',
+    type: String,
+  })
+  @IsNotEmpty()
+  @IsString()
+  endCity: string;
+
+  @ApiPropertyOptional({
+    description: 'Optional constraints for route calculation',
+    type: () => RouteConstraints,
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => RouteConstraints)
+  constraints?: RouteConstraints;
+}
+```
+
+## 2. Response DTO
+
+```typescript
+// src/presentation/rest-api/responses/<action>.response.ts
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { NestedSchema } from '../schemas';
+
+export class ActionNameResponse {
+  @ApiProperty({
+    description: 'Field description',
+    example: ['value1', 'value2'],
+    type: [String],
+    isArray: true,
+  })
+  arrayProperty!: string[];
+
+  @ApiPropertyOptional({
+    description: 'Optional field',
+    example: 123,
+    type: Number,
+    required: false,
+  })
+  optionalNumber?: number;
+
+  @ApiPropertyOptional({
+    description: 'Nested details',
+    type: () => [NestedSchema],
+    isArray: true,
+    required: false,
+  })
+  nestedItems?: NestedSchema[];
+}
+```
+
+### Project Example
+```typescript
+// src/presentation/rest-api/responses/get-fastest-route.response.ts
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { RouteStep } from '../schemas/route-step.schema';
+
+export class GetFastestRouteResponse {
+  @ApiProperty({
+    description: 'List of cities in the optimal path',
+    example: ['Paris', 'Lyon', 'Marseille'],
+    type: [String],
+    isArray: true,
+  })
+  path!: string[];
+
+  @ApiPropertyOptional({
+    description: 'Total distance in kilometers',
+    example: 775,
+    type: Number,
+    required: false,
+  })
+  totalDistance?: number;
+
+  @ApiPropertyOptional({
+    description: 'Estimated total travel time in hours',
+    example: 7.1,
+    type: Number,
+    required: false,
+  })
+  estimatedTime?: number;
+
+  @ApiPropertyOptional({
+    description: 'Detailed journey steps',
+    type: () => [RouteStep],
+    isArray: true,
+    required: false,
+  })
+  steps?: RouteStep[];
+}
+```
+
+## 3. Controller
+
+```typescript
+// src/presentation/rest-api/controllers/<resource>.controller.ts
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Param,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { ActionNameRequest } from '../requests';
+import { ActionNameResponse } from '../responses';
+import { ActionNameUseCase } from '@/application/use-cases';
+import { DomainError1, DomainError2 } from '@/domain/errors';
+import { ResponseMapper } from '../mappers';
+
+@ApiTags('ResourceName')
+@Controller()
+export class ResourceController {
+  constructor(
+    private readonly actionNameUseCase: ActionNameUseCase,
+  ) {}
+
+  @Post('/action-name')
+  @ApiOperation({
+    summary: 'Action summary',
+    description: 'Detailed endpoint description',
+  })
+  @ApiBody({
+    type: ActionNameRequest,
+    description: 'Body description',
+    examples: {
+      simple: {
+        summary: 'Simple request',
+        value: { property: 'value' },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Success',
+    type: ActionNameResponse,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Resource not found',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid request',
+  })
+  async actionName(
+    @Body() request: ActionNameRequest,
+  ): Promise<ActionNameResponse> {
+    try {
+      const output = await this.actionNameUseCase.execute({
+        property1: request.property1,
+        property2: request.property2,
+      });
+      return ResponseMapper.fromOutput(output);
+    } catch (error) {
+      if (error instanceof DomainError1) {
+        throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+      }
+      if (error instanceof DomainError2) {
+        throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      }
+      throw error;
+    }
+  }
+}
+```
+
+## 4. Shared Schema
+
+```typescript
+// src/presentation/rest-api/schemas/<name>.schema.ts
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, IsArray, IsString, IsNumber, Min } from 'class-validator';
+
+export class RouteConstraints {
+  @ApiPropertyOptional({
+    description: 'Weather conditions to avoid',
+    example: ['rain', 'snow'],
+    type: [String],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  excludeWeather?: string[];
+
+  @ApiPropertyOptional({
+    description: 'Maximum distance per route in km',
+    example: 500,
+    type: Number,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  maxDistance?: number;
+}
+```
+
+## 5. Response Mapper
+
+```typescript
+// src/presentation/rest-api/mappers/<resource>.mapper.ts
+import { ActionNameResponse } from '../responses';
+import { ActionNameOutput } from '@/application/use-cases';
+
+export class ResponseMapper {
+  static fromOutput(output: ActionNameOutput): ActionNameResponse {
+    const response = new ActionNameResponse();
+    response.property1 = output.property1;
+    response.property2 = output.property2;
+    return response;
+  }
+}
+```
+
+## Rules
+
+1. **Requests** - Validation with `class-validator`, documentation with `@ApiProperty`
+2. **Responses** - Swagger documentation only (no validation)
+3. **Controllers** - Delegate to Use Cases, handle HTTP errors
+4. **Schemas** - Reusable across multiple requests/responses
+5. **No business logic** in controllers
+6. **Map Domain errors** to appropriate HTTP status codes

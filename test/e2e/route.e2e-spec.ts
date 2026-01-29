@@ -35,7 +35,7 @@ describe('RouteController (e2e)', () => {
         .expect((res) => {
           expect(res.body).toHaveProperty('path');
           expect(res.body).toHaveProperty('totalDistance');
-          expect(res.body).toHaveProperty('estimatedTime');
+          expect(res.body).toHaveProperty('estimatedDuration');
           expect(res.body).toHaveProperty('steps');
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           expect(Array.isArray(res.body.path)).toBe(true);
@@ -60,7 +60,7 @@ describe('RouteController (e2e)', () => {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           expect(res.body.totalDistance).toBeGreaterThan(0);
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          expect(res.body.estimatedTime).toBeGreaterThan(0);
+          expect(res.body.estimatedDuration).toBeGreaterThan(0);
         });
     });
 
@@ -121,6 +121,124 @@ describe('RouteController (e2e)', () => {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           expect(res.body.message).toContain('not found');
         });
+    });
+
+    it('should return 400 when start and end cities are the same', () => {
+      return request(app.getHttpServer())
+        .post('/get-fastest-route')
+        .send({
+          startCity: 'Paris',
+          endCity: 'Paris',
+        })
+        .expect(400)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('message');
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          expect(res.body.message).toContain('cannot be the same');
+        });
+    });
+  });
+
+  describe('/road-segments/speed (PATCH)', () => {
+    it('should update speed limit successfully', () => {
+      return request(app.getHttpServer())
+        .patch('/road-segments/speed')
+        .send({
+          cityA: 'Paris',
+          cityB: 'Lyon',
+          newSpeedLimit: 130,
+        })
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('roadSegmentId');
+          expect(res.body).toHaveProperty('cityA');
+          expect(res.body).toHaveProperty('cityB');
+          expect(res.body).toHaveProperty('distance');
+          expect(res.body).toHaveProperty('speedLimit');
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          expect(res.body.speedLimit).toBe(130);
+        });
+    });
+
+    it('should work with cities in reverse order', () => {
+      return request(app.getHttpServer())
+        .patch('/road-segments/speed')
+        .send({
+          cityA: 'Lyon',
+          cityB: 'Paris',
+          newSpeedLimit: 90,
+        })
+        .expect(200)
+        .expect((res) => {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          expect(res.body.speedLimit).toBe(90);
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          expect(res.body.roadSegmentId).toBe('lyon__paris');
+        });
+    });
+
+    it('should return 404 for non-existent road segment', () => {
+      return request(app.getHttpServer())
+        .patch('/road-segments/speed')
+        .send({
+          cityA: 'Paris',
+          cityB: 'UnknownCity',
+          newSpeedLimit: 130,
+        })
+        .expect(404)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('message');
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          expect(res.body.message).toContain('not found');
+        });
+    });
+
+    it('should return 400 for negative speed', () => {
+      return request(app.getHttpServer())
+        .patch('/road-segments/speed')
+        .send({
+          cityA: 'Paris',
+          cityB: 'Lyon',
+          newSpeedLimit: -10,
+        })
+        .expect(400)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('message');
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          expect(res.body.message).toContain('negative');
+        });
+    });
+
+    it('should return 400 for invalid request (missing fields)', () => {
+      return request(app.getHttpServer())
+        .patch('/road-segments/speed')
+        .send({
+          cityA: 'Paris',
+          // Missing cityB and newSpeedLimit
+        })
+        .expect(400);
+    });
+
+    it('should return 400 for empty city name', () => {
+      return request(app.getHttpServer())
+        .patch('/road-segments/speed')
+        .send({
+          cityA: '',
+          cityB: 'Lyon',
+          newSpeedLimit: 130,
+        })
+        .expect(400);
+    });
+
+    it('should validate that newSpeedLimit is a number', () => {
+      return request(app.getHttpServer())
+        .patch('/road-segments/speed')
+        .send({
+          cityA: 'Paris',
+          cityB: 'Lyon',
+          newSpeedLimit: 'not-a-number',
+        })
+        .expect(400);
     });
   });
 });

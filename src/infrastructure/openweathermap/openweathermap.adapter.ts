@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import type { Cache } from 'cache-manager';
@@ -6,9 +6,10 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { firstValueFrom } from 'rxjs';
 import { WeatherCodeMapper } from './weather-code.mapper';
 import type { OpenWeatherMapConfig } from './openweathermap.config';
-import { WeatherConditionProvider } from '../../domain/services/weather-condition-provider';
-import { WeatherCondition } from '../../domain/value-objects/weather-condition';
-import { City } from '../../domain/entities/city';
+import { WeatherServiceError } from './weather-service.error';
+import { WeatherConditionProvider } from '@/infrastructure/pathfinding';
+import { WeatherCondition } from '@/domain/value-objects';
+import { City } from '@/domain/entities';
 
 interface OpenWeatherMapResponse {
   weather: Array<{
@@ -27,9 +28,7 @@ interface OpenWeatherMapResponse {
   name: string;
 }
 
-@Injectable()
 export class OpenWeatherMapAdapter implements WeatherConditionProvider {
-  private readonly logger = new Logger(OpenWeatherMapAdapter.name);
   private readonly apiKey: string;
   private readonly baseUrl: string;
   private readonly cacheKeyPrefix = 'weather_';
@@ -47,12 +46,6 @@ export class OpenWeatherMapAdapter implements WeatherConditionProvider {
     this.baseUrl =
       config?.baseUrl || 'https://api.openweathermap.org/data/2.5/weather';
     this.cacheTtl = config?.cacheTtl || 600000;
-
-    if (!this.apiKey) {
-      this.logger.warn(
-        'OPENWEATHERMAP_API_KEY not set. Weather service will not work properly.',
-      );
-    }
   }
 
   async forCity(city: City): Promise<WeatherCondition> {
@@ -62,30 +55,14 @@ export class OpenWeatherMapAdapter implements WeatherConditionProvider {
       await this.cacheManager.get<WeatherCondition>(cacheKey);
 
     if (cachedWeather) {
-      this.logger.debug(`Cache hit for city: ${city.name.value}`);
-
       return cachedWeather;
     }
 
-    this.logger.debug(
-      `Cache miss for city: ${city.name.value}, fetching from API`,
-    );
+    const weather = await this.fetchWeatherFromApi(city.name.value);
 
-    try {
-      const weather = await this.fetchWeatherFromApi(city.name.value);
+    await this.cacheManager.set(cacheKey, weather, this.cacheTtl);
 
-      await this.cacheManager.set(cacheKey, weather, this.cacheTtl);
-
-      return weather;
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(
-        `Failed to fetch weather for ${city.name.value}: ${errorMessage}`,
-      );
-
-      throw new Error(`Failed to fetch weather for ${city.name.value}`);
-    }
+    return weather;
   }
 
   private async fetchWeatherFromApi(
@@ -107,14 +84,10 @@ export class OpenWeatherMapAdapter implements WeatherConditionProvider {
       !response.data.weather ||
       response.data.weather.length === 0
     ) {
-      throw new Error(`Invalid API response for city: ${cityName}`);
+      throw WeatherServiceError.invalidResponse(cityName);
     }
 
     const weatherMain = response.data.weather[0].main;
-
-    this.logger.debug(
-      `Weather for ${cityName}: ${weatherMain} (${response.data.weather[0].description})`,
-    );
 
     return WeatherCodeMapper.mapToWeatherCondition(weatherMain);
   }
