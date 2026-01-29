@@ -1,14 +1,11 @@
-import { WeatherCondition } from '../../domain/value-objects';
-import { PathfindingResult, RouteStep } from '../../domain/services';
 import { PreviousCity } from './types';
+import { WeatherCondition } from '../../domain/value-objects/weather-condition';
+import {
+  PathfindingResult,
+  RouteStep,
+} from '../../domain/services/path-finder';
 
-/**
- * Reconstructs the path from Dijkstra's algorithm results
- */
 export class PathReconstructor {
-  /**
-   * Reconstructs the complete path with all details
-   */
   reconstruct(
     previous: Map<string, PreviousCity>,
     startCity: string,
@@ -31,9 +28,6 @@ export class PathReconstructor {
     };
   }
 
-  /**
-   * Builds the path array by backtracking from end to start
-   */
   private buildPath(
     previous: Map<string, PreviousCity>,
     startCity: string,
@@ -56,9 +50,6 @@ export class PathReconstructor {
     return reversePath.reverse();
   }
 
-  /**
-   * Builds route steps with distance and weather information
-   */
   private buildSteps(
     path: string[],
     previous: Map<string, PreviousCity>,
@@ -67,35 +58,32 @@ export class PathReconstructor {
     const steps: RouteStep[] = [];
     let totalDistance = 0;
 
-    for (let i = 0; i < path.length - 1; i++) {
-      const from = path[i];
-      const to = path[i + 1];
+    for (let pathIndex = 0; pathIndex < path.length - 1; pathIndex++) {
+      const from = path[pathIndex];
+      const to = path[pathIndex + 1];
       const prev = previous.get(to);
 
       if (prev && prev.city === from) {
         const step = this.createStep(prev, weatherData);
         steps.push(step);
-        totalDistance += prev.route.distance;
+        totalDistance += prev.segment.distance.kilometers;
       }
     }
 
     return { steps, totalDistance };
   }
 
-  /**
-   * Creates a route step with all necessary information
-   */
   private createStep(
     prev: PreviousCity,
     weatherData: Map<string, WeatherCondition>,
   ): RouteStep {
     return {
-      from: prev.route.from,
-      to: prev.route.to,
-      distance: prev.route.distance,
-      speed: prev.route.speed,
-      travelTime: prev.route.travelTime,
-      weather: weatherData.get(prev.route.to),
+      from: prev.segment.cities.name.value,
+      to: prev.segment.to.name.value,
+      distance: prev.segment.distance.kilometers,
+      speed: prev.segment.speedLimit.kmPerHour,
+      travelTime: prev.segment.estimatedDuration,
+      weather: weatherData.get(prev.segment.to.name.value),
     };
   }
 }

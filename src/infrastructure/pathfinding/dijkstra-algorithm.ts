@@ -1,19 +1,12 @@
-import { Route } from '../../domain/entities';
 import {
   Graph,
   INFINITE_DISTANCE,
   INITIAL_DISTANCE,
   PreviousCity,
 } from './types';
+import { RoadSegment } from '../../domain/entities/road-segment';
 
-/**
- * Implements Dijkstra's algorithm for shortest path finding
- * Simple and clear implementation focused on correctness
- */
 export class DijkstraAlgorithm {
-  /**
-   * Finds the shortest path (by travel time) between two cities
-   */
   execute(
     graph: Graph,
     startCity: string,
@@ -36,9 +29,6 @@ export class DijkstraAlgorithm {
     return { distances, previous };
   }
 
-  /**
-   * Initializes data structures for Dijkstra algorithm
-   */
   private initialize(
     graph: Graph,
     startCity: string,
@@ -55,23 +45,17 @@ export class DijkstraAlgorithm {
     }
   }
 
-  /**
-   * Extracts all unique cities from the graph
-   */
   private extractAllCities(graph: Graph): Set<string> {
     const cities = new Set<string>();
 
-    for (const [from, routes] of graph) {
+    for (const [from, segments] of graph) {
       cities.add(from);
-      routes.forEach((route) => cities.add(route.to));
+      segments.forEach((segment) => cities.add(segment.to.name.value));
     }
 
     return cities;
   }
 
-  /**
-   * Main Dijkstra loop to find shortest paths
-   */
   private executeLoop(
     graph: Graph,
     endCity: string,
@@ -98,9 +82,6 @@ export class DijkstraAlgorithm {
     }
   }
 
-  /**
-   * Finds the unvisited city with minimum distance
-   */
   private findCityWithMinDistance(
     unvisited: Set<string>,
     distances: Map<string, number>,
@@ -119,9 +100,6 @@ export class DijkstraAlgorithm {
     return cityWithMinDistance;
   }
 
-  /**
-   * Determines if Dijkstra should stop early
-   */
   private shouldStop(
     currentCity: string | null,
     distances: Map<string, number>,
@@ -139,9 +117,6 @@ export class DijkstraAlgorithm {
     return currentCity === endCity;
   }
 
-  /**
-   * Updates distances for all neighbors of current city
-   */
   private updateNeighborDistances(
     graph: Graph,
     currentCity: string,
@@ -151,36 +126,31 @@ export class DijkstraAlgorithm {
   ): void {
     const neighbors = graph.get(currentCity) || [];
 
-    for (const route of neighbors) {
-      if (!unvisited.has(route.to)) {
+    for (const segment of neighbors) {
+      if (!unvisited.has(segment.to.name.value)) {
         continue;
       }
 
-      this.relaxEdge(currentCity, route, distances, previous);
+      this.relaxEdge(currentCity, segment, distances, previous);
     }
   }
 
-  /**
-   * Relaxes an edge (updates distance if a shorter path is found)
-   */
   private relaxEdge(
     currentCity: string,
-    route: Route,
+    segment: RoadSegment,
     distances: Map<string, number>,
     previous: Map<string, PreviousCity>,
   ): void {
-    const newDistance = distances.get(currentCity)! + route.travelTime;
-    const currentDistance = distances.get(route.to)!;
+    const newDistance =
+      distances.get(currentCity)! + segment.estimatedDuration.hours;
+    const currentDistance = distances.get(segment.to.name.value)!;
 
     if (newDistance < currentDistance) {
-      distances.set(route.to, newDistance);
-      previous.set(route.to, { city: currentCity, route });
+      distances.set(segment.to.name.value, newDistance);
+      previous.set(segment.to.name.value, { city: currentCity, segment });
     }
   }
 
-  /**
-   * Checks if a path exists between start and end
-   */
   private pathExists(
     previous: Map<string, PreviousCity>,
     startCity: string,

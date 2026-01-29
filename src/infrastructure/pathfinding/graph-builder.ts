@@ -1,44 +1,22 @@
-import { Route } from '../../domain/entities';
 import { Graph } from './types';
+import { RoadSegment } from '../../domain/entities/road-segment';
 
-/**
- * Builds graph data structures from routes
- */
 export class GraphBuilder {
-  /**
-   * Builds an adjacency list representation of the graph
-   */
-  build(routes: Route[]): Graph {
+  build(segments: RoadSegment[]): Graph {
     const graph: Graph = new Map();
 
-    for (const route of routes) {
-      this.addRouteToGraph(graph, route);
+    for (const segment of segments) {
+      this.addSegmentToGraph(graph, segment);
     }
 
     return graph;
   }
 
-  /**
-   * Adds a route to the graph adjacency list
-   */
-  private addRouteToGraph(graph: Graph, route: Route): void {
-    if (!graph.has(route.from)) {
-      graph.set(route.from, []);
+  private addSegmentToGraph(graph: Graph, segment: RoadSegment): void {
+    const fromCityName = segment.cities.name.value;
+    if (!graph.has(fromCityName)) {
+      graph.set(fromCityName, []);
     }
-    graph.get(route.from)!.push(route);
-  }
-
-  /**
-   * Extracts all unique cities from the graph
-   */
-  extractAllCities(graph: Graph): Set<string> {
-    const cities = new Set<string>();
-
-    for (const [from, routes] of graph) {
-      cities.add(from);
-      routes.forEach((route) => cities.add(route.to));
-    }
-
-    return cities;
+    graph.get(fromCityName)!.push(segment);
   }
 }

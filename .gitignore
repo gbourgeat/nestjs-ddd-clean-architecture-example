@@ -46,7 +46,7 @@ lerna-debug.log*
 .temp
 .tmp
 
-# Runtime data
+# Runtime static-graph-data
 pids
 *.pid
 *.seed

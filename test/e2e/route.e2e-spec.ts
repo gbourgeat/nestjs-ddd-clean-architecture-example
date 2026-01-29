@@ -2,14 +2,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { AppModule } from '../../src/app.module';
+import { RestApiModule } from '../../src/presentation/rest-api/rest-api.module';
 
 describe('RouteController (e2e)', () => {
   let app: INestApplication<App>;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [RestApiModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -85,7 +85,7 @@ describe('RouteController (e2e)', () => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(step.distance).toBeLessThanOrEqual(500);
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            expect(step.speed).toBeGreaterThanOrEqual(100);
+            expect(step.speedLimit).toBeGreaterThanOrEqual(100);
           });
         });
     });

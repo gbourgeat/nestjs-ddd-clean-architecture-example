@@ -1,59 +1,54 @@
 import { Injectable } from '@nestjs/common';
-import { Route } from '../../domain/entities';
-import { PathfindingResult, PathfindingService } from '../../domain/services';
-import { RouteConstraints, WeatherCondition } from '../../domain/value-objects';
 import { DijkstraAlgorithm } from './dijkstra-algorithm';
 import { GraphBuilder } from './graph-builder';
 import { PathReconstructor } from './path-reconstructor';
-import { RouteFilter } from './route-filter';
+import { SegmentFilter } from './segment-filter';
+import {
+  PathFinder,
+  PathfindingResult,
+} from '../../domain/services/path-finder';
+import { RoadSegment } from '../../domain/entities/road-segment';
+import { CityId } from '../../domain/value-objects/city-id';
+import { WeatherCondition } from '../../domain/value-objects/weather-condition';
+import { RoadConstraints } from '../../domain/value-objects/road-constraints';
 
-/**
- * Concrete implementation of PathfindingService using Dijkstra's algorithm
- * This is the infrastructure layer implementation
- */
 @Injectable()
-export class DijkstraPathfindingService implements PathfindingService {
-  private readonly routeFilter = new RouteFilter();
+export class DijkstraPathfindingService implements PathFinder {
+  private readonly segmentFilter = new SegmentFilter();
   private readonly graphBuilder = new GraphBuilder();
   private readonly dijkstraAlgorithm = new DijkstraAlgorithm();
   private readonly pathReconstructor = new PathReconstructor();
 
-  /**
-   * Finds the fastest route between two cities
-   * @param routes - Available routes in the graph
-   * @param startCity - Starting city name
-   * @param endCity - Destination city name
-   * @param weatherData - Map of city names to their weather conditions
-   * @param constraints - Optional route constraints (weather, distance, speed)
-   * @returns PathfindingResult or null if no path exists
-   */
   findFastestRoute(
-    routes: Route[],
-    startCity: string,
-    endCity: string,
+    segments: RoadSegment[],
+    startCityId: CityId,
+    endCityId: CityId,
     weatherData: Map<string, WeatherCondition>,
-    constraints?: RouteConstraints,
+    constraints?: RoadConstraints,
   ): PathfindingResult | null {
-    const validRoutes = this.routeFilter.filter(
-      routes,
+    const validSegments = this.segmentFilter.filter(
+      segments,
       weatherData,
       constraints,
     );
 
-    const graph = this.graphBuilder.build(validRoutes);
+    const graph = this.graphBuilder.build(validSegments);
 
-    const result = this.dijkstraAlgorithm.execute(graph, startCity, endCity);
-
+    const result = this.dijkstraAlgorithm.execute(
+      graph,
+      startCity.name.value,
+      endCity.name.value,
+    );
     if (!result) {
       return null;
     }
 
-    const totalTime = result.distances.get(endCity) || 0;
+    const totalTime = result.distances.get(endCity.name.value) || 0;
 
     return this.pathReconstructor.reconstruct(
       result.previous,
-      startCity,
-      endCity,
+      startCity.name.value,
+      endCity.name.value,
       totalTime,
       weatherData,
     );

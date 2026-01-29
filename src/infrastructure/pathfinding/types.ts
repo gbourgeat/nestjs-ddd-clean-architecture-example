@@ -1,20 +1,11 @@
-import { Route } from '../../domain/entities';
+import { RoadSegment } from '../../domain/entities/road-segment';
 
-/**
- * Internal type for tracking previous cities in Dijkstra
- */
 export interface PreviousCity {
   city: string;
-  route: Route;
+  segment: RoadSegment;
 }
 
-/**
- * Graph represented as adjacency list
- */
-export type Graph = Map<string, Route[]>;
+export type Graph = Map<string, RoadSegment[]>;
 
-/**
- * Constants for Dijkstra algorithm
- */
 export const INFINITE_DISTANCE = Infinity;
 export const INITIAL_DISTANCE = 0;
