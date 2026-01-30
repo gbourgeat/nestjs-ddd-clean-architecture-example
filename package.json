@@ -1,10 +1,10 @@
 {
   "name": "route-solver",
   "version": "0.0.1",
-  "description": "",
+  "description": "A NestJS API for planning optimal routes between French cities using Clean Architecture, DDD patterns, and the Dijkstra algorithm with real-time weather conditions",
   "author": "Gary Bourgeat <gary.bourgeat@gmail.com>",
-  "private": true,
-  "license": "UNLICENSED",
+  "private": false,
+  "license": "MIT",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",

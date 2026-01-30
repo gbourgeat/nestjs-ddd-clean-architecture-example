@@ -644,4 +644,6 @@ curl -X POST http://localhost:3000/get-fastest-route \
 
 ## License
 
-This project is unlicensed and intended for educational purposes.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+This project is intended for educational purposes as a reference implementation of Clean Architecture and Domain-Driven Design patterns with NestJS.
