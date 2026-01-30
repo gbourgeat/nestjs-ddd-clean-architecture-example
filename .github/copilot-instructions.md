@@ -263,12 +263,12 @@ export class CityNotFoundError extends Error {
 
 ### 6. Controllers (Presentation)
 
-Controllers delegate to use cases and handle HTTP errors.
+Controllers delegate to use cases and handle HTTP errors. **One controller = one route/endpoint.**
 
 ```typescript
 @ApiTags('Routes')
 @Controller()
-export class RouteController {
+export class GetFastestRouteController {
   constructor(
     private readonly getFastestRouteUseCase: GetFastestRouteUseCase,
   ) {}
@@ -296,6 +296,8 @@ export class RouteController {
   }
 }
 ```
+
+**Naming:** `<action>.controller.ts` (e.g., `get-fastest-route.controller.ts`, `update-road-segment-speed.controller.ts`)
 
 ## 📝 Coding Rules
 
@@ -389,6 +391,7 @@ describe('GetFastestRouteUseCase', () => {
 5. **❌ Don't create entities with `new Entity()`** (use factory methods)
 6. **❌ Don't throw generic exceptions** (create dedicated business errors)
 7. **❌ Don't create separate tests for Domain** (test via Use Cases)
+8. **❌ Don't group multiple routes in a single controller** (one controller per route)
 
 ## 📚 References
 

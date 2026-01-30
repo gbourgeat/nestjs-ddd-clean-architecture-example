@@ -30,17 +30,19 @@ export class CityTypeormRepository implements CityRepository {
   }
 
   async save(city: City): Promise<void> {
+    // Try to find by name instead of id, since id in domain is name-based
+    // but id in database is UUID-based
     const cityTypeormEntity = await this.typeormRepository.findOne({
-      where: { id: city.id.value },
+      where: { name: city.name.value },
     });
 
     if (cityTypeormEntity) {
+      // City already exists, update it
       cityTypeormEntity.name = city.name.value;
-
       await this.typeormRepository.save(cityTypeormEntity);
     } else {
+      // New city, let PostgreSQL generate the UUID
       const newCityTypeormEntity = this.typeormRepository.create({
-        id: city.id.value,
         name: city.name.value,
       });
 

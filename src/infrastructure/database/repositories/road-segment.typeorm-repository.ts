@@ -57,20 +57,28 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
   }
 
   async findById(id: RoadSegmentId): Promise<RoadSegment> {
-    // Parse the id to get city names (format: "cityA__cityB")
-    const [cityAName, cityBName] = id.value.split('__');
+    // Parse the id to get normalized city names (format: "cityA__cityB")
+    const [normalizedCityAName, normalizedCityBName] = id.value.split('__');
 
-    // Find cities
-    const cityA = await this.cityTypeormEntityRepository.findOne({
-      where: { name: cityAName },
-    });
-    const cityB = await this.cityTypeormEntityRepository.findOne({
-      where: { name: cityBName },
-    });
+    // Find cities using case-insensitive search
+    // The ID contains normalized names (lowercase), but database has original case
+    const cities = await this.cityTypeormEntityRepository
+      .createQueryBuilder('city')
+      .where('LOWER(city.name) IN (:...names)', {
+        names: [normalizedCityAName, normalizedCityBName],
+      })
+      .getMany();
 
-    if (!cityA || !cityB) {
+    if (cities.length !== 2) {
       throw RoadSegmentNotFoundError.forRoadSegmentId(id);
     }
+
+    const cityA = cities.find(
+      (c) => c.name.toLowerCase() === normalizedCityAName,
+    )!;
+    const cityB = cities.find(
+      (c) => c.name.toLowerCase() === normalizedCityBName,
+    )!;
 
     // Find road segment connecting these cities
     const roadSegment = await this.roadSegmentTypeormEntityRepository.findOne({
@@ -102,14 +110,12 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
   }
 
   async save(roadSegment: RoadSegment): Promise<void> {
-    // Find existing road segment to update
-    const [cityAName, cityBName] = roadSegment.id.value.split('__');
-
+    // Find cities by name (since domain IDs are name-based, not UUIDs)
     const cityA = await this.cityTypeormEntityRepository.findOne({
-      where: { name: cityAName },
+      where: { name: roadSegment.cityA.name.value },
     });
     const cityB = await this.cityTypeormEntityRepository.findOne({
-      where: { name: cityBName },
+      where: { name: roadSegment.cityB.name.value },
     });
 
     if (!cityA || !cityB) {
@@ -130,10 +136,10 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
       existingSegment.distance = roadSegment.distance.kilometers;
       await this.roadSegmentTypeormEntityRepository.save(existingSegment);
     } else {
-      // Create new
+      // Create new - use the database UUIDs, not domain IDs
       const ormEntity = this.roadSegmentTypeormEntityRepository.create({
-        cityAId: roadSegment.cityA.id.value,
-        cityBId: roadSegment.cityB.id.value,
+        cityAId: cityA.id,
+        cityBId: cityB.id,
         distance: roadSegment.distance.kilometers,
         speedLimit: roadSegment.speedLimit.kmPerHour,
       });

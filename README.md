@@ -79,7 +79,7 @@ src/
 │
 └── presentation/                # User interface (HTTP)
     └── rest-api/
-        ├── controllers/         # HTTP endpoint handlers
+        ├── controllers/         # HTTP endpoint handlers (one per route)
         ├── requests/            # Request DTOs
         ├── responses/           # Response DTOs
         └── schemas/             # Shared Swagger schemas
@@ -413,12 +413,96 @@ describe('GetFastestRouteUseCase', () => {
 });
 ```
 
+## Docker Environments
+
+This project uses three separate Docker Compose configurations for different contexts:
+
+- **`docker-compose.dev.yml`** - Development environment (port 54320)
+- **`docker-compose.e2e.yml`** - End-to-End tests (port 54321, ephemeral)
+- **`docker-compose.integration.yml`** - Integration tests (port 54322, ephemeral, to be implemented)
+
+**Port choice:** Ports 54320-54322 are used to avoid conflicts with local PostgreSQL (5432) or other services.
+
+### Quick Start with Docker
+
+```bash
+# Start development database
+npm run docker:dev:up
+
+# Start E2E test database
+npm run docker:e2e:up
+
+# Stop environments
+npm run docker:dev:down
+npm run docker:e2e:down
+```
+
+**📖 Full Docker documentation:** See [DOCKER.md](./docs/DOCKER.md) for detailed usage and configuration.
+
+## Task Runner (Alternative to Make)
+
+This project includes a `Taskfile.yml` for modern task automation (alternative to Makefile).
+
+### Install Task
+
+```bash
+# macOS
+brew install go-task
+
+# Linux (snap)
+snap install task --classic
+
+# Or use the project's installation script
+./scripts/install-task.sh
+```
+
+### Verify Installation
+
+```bash
+# Check Task version
+task --version
+
+# Verify complete environment
+./scripts/check-task-env.sh
+```
+
+### Quick Commands with Task
+
+```bash
+# Show all available commands
+task --list
+
+# Full project setup (install + env + database + migrations)
+task setup
+
+# Start development server
+task dev
+
+# Run tests with coverage
+task test:cov
+
+# Run E2E tests
+task test:e2e
+
+# Database management
+task docker:dev:up        # Start dev database
+task migration:run        # Run migrations
+task db:reset            # Reset database completely
+
+# Code quality
+task check               # Lint + format + test
+```
+
+**📋 See all available tasks:** Run `task --list` or check `Taskfile.yml`  
+**📖 Full documentation:** See [docs/TASKFILE.md](./docs/TASKFILE.md)  
+**⚡ Quick reference:** See [docs/TASK-QUICKREF.md](./docs/TASK-QUICKREF.md)
+
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js 20+
-- PostgreSQL 15+
+- Docker & Docker Compose (recommended) **OR** PostgreSQL 15+
 - OpenWeatherMap API key
 
 ### Installation
@@ -427,12 +511,13 @@ describe('GetFastestRouteUseCase', () => {
 # Install dependencies
 npm install
 
+# Start database (with Docker)
+npm run docker:dev:up
+
 # Configure environment
 cp .env.example .env
 # Edit .env with your database and OpenWeatherMap credentials
-
-# Initialize database
-npm run db:init
+# (Docker default: DB_PORT=54320, DB_NAME=route_solver_dev)
 
 # Run migrations
 npm run migration:run
@@ -441,13 +526,19 @@ npm run migration:run
 npm run start:dev
 ```
 
+**Without Docker:** Manually create a PostgreSQL database and update `.env` with your credentials.
+
 ### Available Scripts
+
+> **💡 Tip:** You can also use **Task** commands (see `task --list`) for a more convenient alternative to npm scripts.
 
 | Command | Description |
 |---------|-------------|
+| **Development** | |
 | `npm run start:dev` | Start in development mode (watch) |
 | `npm run build` | Build for production |
 | `npm run start:prod` | Run production build |
+| **Testing** | |
 | `npm run test` | Run all tests |
 | `npm run test:watch` | Run tests in watch mode |
 | `npm run test:cov` | Run all tests with coverage |
@@ -455,9 +546,23 @@ npm run start:dev
 | `npm run test:features:watch` | Run feature tests in watch mode |
 | `npm run test:features:cov` | Run feature tests with coverage (Application + Domain) |
 | `npm run test:e2e` | Run end-to-end tests |
+| **Docker** | |
+| `npm run docker:dev:up` | Start development database |
+| `npm run docker:dev:down` | Stop development database |
+| `npm run docker:dev:logs` | View development database logs |
+| `npm run docker:e2e:up` | Start E2E test database |
+| `npm run docker:e2e:down` | Stop E2E test database |
+| `npm run docker:e2e:restart` | Restart E2E database (clean state) |
+| `npm run docker:integration:up` | Start integration test database |
+| `npm run docker:integration:down` | Stop integration test database |
+| `npm run docker:integration:restart` | Restart integration database (clean state) |
+| **Database** | |
 | `npm run lint` | Lint and fix code |
 | `npm run migration:run` | Run database migrations |
-| `npm run db:init` | Initialize database |
+| `npm run migration:generate` | Generate migration from entities |
+| `npm run migration:create` | Create empty migration |
+| `npm run migration:revert` | Revert last migration |
+| `npm run migration:show` | Show migrations status |
 
 ## API Documentation
 

@@ -1,0 +1,7 @@
+# Task Runner Configuration
+# Version: 1.0.0
+# Date: 2026-01-30
+# Project: Route Solver
+
+TASKFILE_VERSION=1.0.0
+TASKFILE_DATE=2026-01-30

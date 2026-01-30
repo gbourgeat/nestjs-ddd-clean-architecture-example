@@ -1,0 +1,410 @@
+version: '3'
+
+# Route Solver - Taskfile
+# Alternative moderne au Makefile
+# Installation: https://taskfile.dev/installation/
+
+vars:
+  DOCKER_DEV_FILE: docker-compose.dev.yml
+  DOCKER_E2E_FILE: docker-compose.e2e.yml
+  DOCKER_INTEGRATION_FILE: docker-compose.integration.yml
+
+tasks:
+  # ============================================================================
+  # 📦 Installation & Setup
+  # ============================================================================
+
+  install:
+    desc: Installer les dépendances npm
+    cmds:
+      - npm install
+
+  setup:
+    desc: Configuration initiale du projet (install + env + db)
+    cmds:
+      - task: install
+      - task: env:create
+      - task: docker:dev:up
+      - echo "⏳ Attente du démarrage de la base de données..."
+      - sleep 3
+      - task: migration:run
+      - echo "✅ Projet configuré avec succès!"
+
+  env:create:
+    desc: Créer le fichier .env depuis .env.example
+    cmds:
+      - |
+        if [ ! -f .env ]; then
+          cp .env.example .env
+          echo "✅ Fichier .env créé. Pensez à configurer vos variables!"
+        else
+          echo "⚠️  Le fichier .env existe déjà"
+        fi
+    preconditions:
+      - sh: test -f .env.example
+        msg: "Le fichier .env.example n'existe pas"
+
+  # ============================================================================
+  # 🚀 Développement
+  # ============================================================================
+
+  dev:
+    desc: Démarrer le serveur en mode développement
+    deps: [docker:dev:up]
+    cmds:
+      - npm run start:dev
+
+  start:
+    desc: Démarrer le serveur (alias de dev)
+    cmds:
+      - task: dev
+
+  start:prod:
+    desc: Démarrer le serveur en mode production
+    cmds:
+      - npm run start:prod
+
+  build:
+    desc: Compiler le projet pour la production
+    cmds:
+      - npm run build
+
+  clean:
+    desc: Nettoyer les fichiers générés (dist, coverage, node_modules)
+    cmds:
+      - rm -rf dist
+      - rm -rf coverage
+      - echo "✅ Dossiers dist/ et coverage/ supprimés"
+
+  clean:all:
+    desc: Nettoyage complet (clean + node_modules)
+    cmds:
+      - task: clean
+      - rm -rf node_modules
+      - echo "✅ Nettoyage complet effectué"
+
+  # ============================================================================
+  # 🧪 Tests
+  # ============================================================================
+
+  test:
+    desc: Lancer tous les tests (features)
+    cmds:
+      - npm run test:features
+
+  test:watch:
+    desc: Lancer les tests en mode watch
+    cmds:
+      - npm run test:features:watch
+
+  test:cov:
+    desc: Lancer les tests avec couverture de code
+    cmds:
+      - npm run test:features:cov
+
+  test:features:
+    desc: Lancer les tests features (Use Cases)
+    cmds:
+      - npm run test:features
+
+  test:features:cov:
+    desc: Lancer les tests features avec couverture
+    cmds:
+      - npm run test:features:cov
+
+  test:e2e:
+    desc: Lancer les tests end-to-end
+    deps: [docker:e2e:restart]
+    cmds:
+      - sleep 2
+      - npm run test:e2e
+      - task: docker:e2e:down
+
+  test:all:
+    desc: Lancer tous les types de tests avec couverture
+    cmds:
+      - task: test:features:cov
+      - task: test:e2e
+
+  # ============================================================================
+  # 🐳 Docker - Développement
+  # ============================================================================
+
+  docker:dev:up:
+    desc: Démarrer la base de données de développement
+    cmds:
+      - docker-compose -f {{.DOCKER_DEV_FILE}} up -d
+      - echo "✅ Base de données de développement démarrée (port 54320)"
+
+  docker:dev:down:
+    desc: Arrêter la base de données de développement
+    cmds:
+      - docker-compose -f {{.DOCKER_DEV_FILE}} down
+      - echo "✅ Base de données de développement arrêtée"
+
+  docker:dev:logs:
+    desc: Afficher les logs de la base de données de développement
+    cmds:
+      - docker-compose -f {{.DOCKER_DEV_FILE}} logs -f
+
+  docker:dev:restart:
+    desc: Redémarrer la base de données de développement
+    cmds:
+      - task: docker:dev:down
+      - task: docker:dev:up
+
+  docker:dev:clean:
+    desc: Nettoyer la base de données de développement (supprime les volumes)
+    cmds:
+      - docker-compose -f {{.DOCKER_DEV_FILE}} down -v
+      - echo "✅ Base de données de développement nettoyée"
+
+  # ============================================================================
+  # 🐳 Docker - E2E Tests
+  # ============================================================================
+
+  docker:e2e:up:
+    desc: Démarrer la base de données pour les tests E2E
+    cmds:
+      - docker-compose -f {{.DOCKER_E2E_FILE}} up -d
+      - echo "✅ Base de données E2E démarrée (port 54321)"
+
+  docker:e2e:down:
+    desc: Arrêter la base de données pour les tests E2E
+    cmds:
+      - docker-compose -f {{.DOCKER_E2E_FILE}} down
+      - echo "✅ Base de données E2E arrêtée"
+
+  docker:e2e:restart:
+    desc: Redémarrer la base de données pour les tests E2E
+    cmds:
+      - docker-compose -f {{.DOCKER_E2E_FILE}} down
+      - docker-compose -f {{.DOCKER_E2E_FILE}} up -d
+      - echo "✅ Base de données E2E redémarrée"
+
+  # ============================================================================
+  # 🐳 Docker - Integration Tests
+  # ============================================================================
+
+  docker:integration:up:
+    desc: Démarrer la base de données pour les tests d'intégration
+    cmds:
+      - docker-compose -f {{.DOCKER_INTEGRATION_FILE}} up -d
+      - echo "✅ Base de données d'intégration démarrée (port 54322)"
+
+  docker:integration:down:
+    desc: Arrêter la base de données pour les tests d'intégration
+    cmds:
+      - docker-compose -f {{.DOCKER_INTEGRATION_FILE}} down
+      - echo "✅ Base de données d'intégration arrêtée"
+
+  docker:integration:restart:
+    desc: Redémarrer la base de données pour les tests d'intégration
+    cmds:
+      - docker-compose -f {{.DOCKER_INTEGRATION_FILE}} down
+      - docker-compose -f {{.DOCKER_INTEGRATION_FILE}} up -d
+      - echo "✅ Base de données d'intégration redémarrée"
+
+  # ============================================================================
+  # 🐳 Docker - Gestion globale
+  # ============================================================================
+
+  docker:up:
+    desc: Démarrer tous les services Docker
+    cmds:
+      - task: docker:dev:up
+      - task: docker:e2e:up
+      - task: docker:integration:up
+
+  docker:down:
+    desc: Arrêter tous les services Docker
+    cmds:
+      - task: docker:dev:down
+      - task: docker:e2e:down
+      - task: docker:integration:down
+
+  docker:clean:
+    desc: Nettoyer tous les volumes Docker
+    cmds:
+      - docker-compose -f {{.DOCKER_DEV_FILE}} down -v
+      - docker-compose -f {{.DOCKER_E2E_FILE}} down -v
+      - docker-compose -f {{.DOCKER_INTEGRATION_FILE}} down -v
+      - echo "✅ Tous les volumes Docker nettoyés"
+
+  # ============================================================================
+  # 🐳 Docker - Build & Run Application
+  # ============================================================================
+
+  docker:build:
+    desc: Construire l'image Docker de l'application
+    cmds:
+      - docker build -t route-solver:latest .
+      - echo "✅ Image Docker construite: route-solver:latest"
+
+  docker:build:no-cache:
+    desc: Construire l'image Docker sans cache
+    cmds:
+      - docker build --no-cache -t route-solver:latest .
+      - echo "✅ Image Docker construite (sans cache): route-solver:latest"
+
+  docker:run:
+    desc: Lancer l'application dans un conteneur Docker
+    deps: [docker:dev:up]
+    cmds:
+      - |
+        docker run --rm \
+          --name route-solver-app \
+          --network host \
+          -e DATABASE_HOST=localhost \
+          -e DATABASE_PORT=54320 \
+          -e DATABASE_USER=postgres \
+          -e DATABASE_PASSWORD=postgres \
+          -e DATABASE_NAME=route_solver_dev \
+          -p 3000:3000 \
+          route-solver:latest
+    interactive: true
+
+  docker:run:detached:
+    desc: Lancer l'application en arrière-plan
+    deps: [docker:dev:up]
+    cmds:
+      - |
+        docker run -d \
+          --name route-solver-app \
+          --network host \
+          -e DATABASE_HOST=localhost \
+          -e DATABASE_PORT=54320 \
+          -e DATABASE_USER=postgres \
+          -e DATABASE_PASSWORD=postgres \
+          -e DATABASE_NAME=route_solver_dev \
+          -p 3000:3000 \
+          route-solver:latest
+      - echo "✅ Application démarrée en arrière-plan"
+      - echo "   Logs: task docker:app:logs"
+      - echo "   Stop: task docker:app:stop"
+
+  docker:app:stop:
+    desc: Arrêter le conteneur de l'application
+    cmds:
+      - docker stop route-solver-app 2>/dev/null || true
+      - docker rm route-solver-app 2>/dev/null || true
+      - echo "✅ Application arrêtée"
+
+  docker:app:logs:
+    desc: Afficher les logs de l'application
+    cmds:
+      - docker logs -f route-solver-app
+
+  # ============================================================================
+  # 🗄️ Base de données - Migrations
+  # ============================================================================
+
+  migration:run:
+    desc: Exécuter les migrations de base de données
+    cmds:
+      - npm run migration:run
+
+  migration:revert:
+    desc: Annuler la dernière migration
+    cmds:
+      - npm run migration:revert
+
+  migration:show:
+    desc: Afficher le statut des migrations
+    cmds:
+      - npm run migration:show
+
+  migration:generate:
+    desc: Générer une migration depuis les entités TypeORM
+    cmds:
+      - |
+        read -p "Nom de la migration: " name
+        npm run migration:generate src/infrastructure/database/migrations/$name
+
+  migration:create:
+    desc: Créer une migration vide
+    cmds:
+      - |
+        read -p "Nom de la migration: " name
+        npm run migration:create src/infrastructure/database/migrations/$name
+
+  db:reset:
+    desc: Réinitialiser la base de données (clean + up + migrate)
+    cmds:
+      - task: docker:dev:clean
+      - task: docker:dev:up
+      - echo "⏳ Attente du démarrage de la base de données..."
+      - sleep 3
+      - task: migration:run
+      - echo "✅ Base de données réinitialisée"
+
+  # ============================================================================
+  # 🔍 Qualité du code
+  # ============================================================================
+
+  lint:
+    desc: Linter et corriger le code
+    cmds:
+      - npm run lint
+
+  format:
+    desc: Formater le code avec Prettier
+    cmds:
+      - npm run format
+
+  check:
+    desc: Vérifier la qualité du code (lint + format + test)
+    cmds:
+      - task: lint
+      - task: format
+      - task: test:cov
+
+  # ============================================================================
+  # 📚 Documentation
+  # ============================================================================
+
+  docs:
+    desc: Ouvrir la documentation Swagger (nécessite que le serveur tourne)
+    cmds:
+      - echo "📖 Documentation Swagger disponible sur http://localhost:3000/api"
+      - |
+        if command -v xdg-open > /dev/null; then
+          xdg-open http://localhost:3000/api
+        elif command -v open > /dev/null; then
+          open http://localhost:3000/api
+        else
+          echo "Ouvrez manuellement http://localhost:3000/api dans votre navigateur"
+        fi
+
+  # ============================================================================
+  # 🛠️ Utilitaires
+  # ============================================================================
+
+  info:
+    desc: Afficher les informations du projet
+    cmds:
+      - echo "📦 Route Solver - NestJS Clean Architecture"
+      - echo ""
+      - echo "Ports utilisés:"
+      - echo "  - Application: 3000"
+      - echo "  - DB Dev: 54320"
+      - echo "  - DB E2E: 54321"
+      - echo "  - DB Integration: 54322"
+      - echo ""
+      - echo "Documentation:"
+      - echo "  - Swagger: http://localhost:3000/api"
+      - echo "  - README: ./README.md"
+      - echo "  - Docker: ./docs/DOCKER.md"
+      - echo ""
+      - node -v | xargs echo "Node version:"
+      - npm -v | xargs echo "NPM version:"
+
+  help:
+    desc: Afficher ce message d'aide
+    cmds:
+      - task --list
+
+  default:
+    desc: Commande par défaut (affiche l'aide)
+    cmds:
+      - task: help

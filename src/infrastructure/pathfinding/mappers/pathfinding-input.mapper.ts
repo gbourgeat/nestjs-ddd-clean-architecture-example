@@ -17,13 +17,36 @@ export interface SimplifiedConstraints {
 
 export class PathfindingInputMapper {
   static toSimplifiedSegments(segments: RoadSegment[]): SimplifiedSegment[] {
-    return segments.map((segment) => ({
-      fromCity: segment.cityA.name.value,
-      toCity: segment.cityB.name.value,
-      distance: segment.distance.kilometers,
-      speedLimit: segment.speedLimit.kmPerHour,
-      estimatedDuration: segment.estimatedDuration.hours,
-    }));
+    // Roads are bidirectional, so we create two segments for each RoadSegment
+    const simplifiedSegments: SimplifiedSegment[] = [];
+
+    for (const segment of segments) {
+      const cityAName = segment.cityA.name.value;
+      const cityBName = segment.cityB.name.value;
+      const distance = segment.distance.kilometers;
+      const speedLimit = segment.speedLimit.kmPerHour;
+      const estimatedDuration = segment.estimatedDuration.hours;
+
+      // Direction A -> B
+      simplifiedSegments.push({
+        fromCity: cityAName,
+        toCity: cityBName,
+        distance,
+        speedLimit,
+        estimatedDuration,
+      });
+
+      // Direction B -> A
+      simplifiedSegments.push({
+        fromCity: cityBName,
+        toCity: cityAName,
+        distance,
+        speedLimit,
+        estimatedDuration,
+      });
+    }
+
+    return simplifiedSegments;
   }
 
   static toSimplifiedCityName(city: City): string {

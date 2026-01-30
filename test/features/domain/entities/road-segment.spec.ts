@@ -1,5 +1,11 @@
 import { RoadSegment } from '@/domain/entities';
-import { RoadSegmentId, Distance, Speed, CityName, CityId } from '@/domain/value-objects';
+import {
+  RoadSegmentId,
+  Distance,
+  Speed,
+  CityName,
+  CityId,
+} from '@/domain/value-objects';
 import { InvalidRoadSegmentError } from '@/domain/errors';
 import { CityBuilder } from '@test/fixtures';
 

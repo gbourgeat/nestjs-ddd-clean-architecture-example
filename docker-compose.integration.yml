@@ -1,0 +1,24 @@
+services:
+  postgres-integration:
+    image: postgres:16-alpine
+    container_name: route-solver-postgres-integration
+    restart: no
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: route_solver_integration_test
+    ports:
+      - '54322:5432'
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - route-solver-integration
+
+networks:
+  route-solver-integration:
+    driver: bridge

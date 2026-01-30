@@ -11,23 +11,17 @@ export class UpdateRoadSegmentSpeedUseCase {
   async execute(
     input: UpdateRoadSegmentSpeedInput,
   ): Promise<UpdateRoadSegmentSpeedOutput> {
-    // 1. Create road segment ID from city names
     const roadSegmentId = RoadSegmentId.fromCityNames(input.cityA, input.cityB);
 
-    // 2. Find the road segment
     const roadSegment =
       await this.roadSegmentRepository.findById(roadSegmentId);
 
-    // 3. Create new speed value object with validation
     const newSpeedLimit = Speed.fromKmPerHour(input.newSpeedLimit);
 
-    // 4. Update the speed limit
     roadSegment.updateSpeedLimit(newSpeedLimit);
 
-    // 5. Save the updated road segment
     await this.roadSegmentRepository.save(roadSegment);
 
-    // 6. Return the result
     return {
       roadSegmentId: roadSegment.id.value,
       cityA: roadSegment.cityA.name.value,

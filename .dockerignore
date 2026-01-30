@@ -1,0 +1,65 @@
+# =============================================================================
+# Route Solver - Docker Ignore
+# Fichiers et dossiers exclus du contexte de build Docker
+# =============================================================================
+
+# Dépendances
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build
+dist
+*.tsbuildinfo
+
+# Coverage et tests
+coverage
+.nyc_output
+
+# IDE et éditeurs
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Docker (éviter la récursion)
+Dockerfile*
+docker-compose*.yml
+.docker
+.dockerignore
+
+# Documentation
+docs
+*.md
+!README.md
+
+# Scripts et outils de dev
+scripts
+Taskfile.yml
+
+# Variables d'environnement (ne pas inclure les secrets)
+.env
+.env.*
+!.env.example
+
+# Logs
+logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tests
+test
+*.spec.ts
+*.e2e-spec.ts
+jest.config.*
+jest-e2e.json

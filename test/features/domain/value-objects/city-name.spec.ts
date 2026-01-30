@@ -30,9 +30,7 @@ describe('CityName', () => {
   });
 
   it('should throw InvalidCityNameError for multiple consecutive spaces', () => {
-    expect(() => CityName.create('Saint  Denis')).toThrow(
-      InvalidCityNameError,
-    );
+    expect(() => CityName.create('Saint  Denis')).toThrow(InvalidCityNameError);
   });
 
   it('should compare city names', () => {

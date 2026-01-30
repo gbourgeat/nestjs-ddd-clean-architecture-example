@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { RouteController } from './controllers';
+import {
+  GetFastestRouteController,
+  UpdateRoadSegmentSpeedController,
+} from './controllers';
 import { DatabaseModule } from '@/infrastructure/database/database.module';
 import { PathfindingModule } from '@/infrastructure/pathfinding/pathfinding.module';
 import { PathFinder } from '@/domain/services';
@@ -41,6 +44,6 @@ import { UpdateRoadSegmentSpeedUseCase } from '@/application/use-cases/update-ro
       inject: [RoadSegmentRepository],
     },
   ],
-  controllers: [RouteController],
+  controllers: [GetFastestRouteController, UpdateRoadSegmentSpeedController],
 })
 export class RestApiModule {}
