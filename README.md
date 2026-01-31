@@ -295,7 +295,8 @@ export class InfrastructureModule {}
 | Test Type | Description | Location | Command |
 |-----------|-------------|----------|---------|
 | **Feature Tests** (Use Cases) | Test business logic by testing use cases, which exercise domain entities, value objects, and errors | `test/features/application/**/*.spec.ts` | `npm run test:features:cov` |
-| **E2E Tests** | Test complete HTTP flows | `test/e2e/**/*.e2e-spec.ts` | `npm run test:e2e` |
+| **Integration Tests** | Test infrastructure integrations (database, external APIs, algorithms) in isolation | `test/integration/**/*.spec.ts` | `npm run test:integration:cov` |
+| **E2E Tests** | Test complete HTTP flows from request to response | `test/e2e/**/*.e2e-spec.ts` | `npm run test:e2e:cov` |
 
 ### Test Structure
 
@@ -305,11 +306,18 @@ test/
 │   ├── application/
 │   │   └── use-cases/    # Use Case tests
 │   └── domain/           # (future) Domain-specific tests
+├── integration/          # Integration tests
+│   ├── database/         # Database repository tests
+│   ├── openweathermap/   # Weather API adapter tests
+│   └── pathfinding/      # Dijkstra algorithm tests
 ├── fixtures/             # Test doubles (Fakes & Builders)
 │   ├── builders/         # Builders for test data
 │   ├── repositories/     # In-memory repositories
 │   └── services/         # Service fakes
 └── e2e/                  # End-to-end tests
+    ├── get-fastest-route.e2e-spec.ts
+    ├── create-road-segment.e2e-spec.ts
+    └── update-road-segment-speed.e2e-spec.ts
 ```
 
 ### Feature Tests with Fakes & Builders
@@ -379,51 +387,16 @@ This command will:
 - Use cases (tested directly)
 - Application mappers (tested indirectly)
 
-### Test Structure
-
-```
-src/application/use-cases/<use-case>/
-├── <use-case>.use-case.ts
-├── <use-case>.use-case.spec.ts    # ✅ Functional tests here
-├── <use-case>.input.ts
-└── <use-case>.output.ts
-
-test/e2e/
-├── route.e2e-spec.ts              # ✅ E2E tests here
-└── jest-e2e.json
-```
-
-Use Case tests mock repository and service dependencies, but exercise real Value Objects and Entities:
-
-```typescript
-describe('GetFastestRouteUseCase', () => {
-  it('should throw InvalidCityNameError for empty city', async () => {
-    // ✅ This test covers CityName.create() from domain
-    await expect(useCase.execute({
-      startCity: '',
-      endCity: 'Lyon',
-    })).rejects.toThrow(InvalidCityNameError);
-  });
-
-  it('should throw SameStartAndEndCityError when cities match', async () => {
-    // ✅ This test covers CityName.equals() from domain
-    await expect(useCase.execute({
-      startCity: 'Paris',
-      endCity: 'Paris',
-    })).rejects.toThrow(SameStartAndEndCityError);
-  });
-});
-```
 
 ## Docker Environments
 
 This project uses three separate Docker Compose configurations for different contexts:
 
-- **`docker-compose.dev.yml`** - Development environment (port 54320)
-- **`docker-compose.e2e.yml`** - End-to-End tests (port 54321, ephemeral)
-- **`docker-compose.integration.yml`** - Integration tests (port 54322, ephemeral, to be implemented)
+- **`docker-compose.dev.yml`** - Development environment (PostgreSQL on port 54320)
+- **`docker-compose.e2e.yml`** - End-to-End tests (PostgreSQL on port 54321, ephemeral)
+- **`docker-compose.integration.yml`** - Integration tests (PostgreSQL on port 54322, ephemeral)
 
-**Port choice:** Ports 54320-54322 are used to avoid conflicts with local PostgreSQL (5432) or other services.
+**Port strategy:** Ports 54320-54322 are used to avoid conflicts with local PostgreSQL (5432) or other services. Each environment has its own isolated database.
 
 ### Quick Start with Docker
 
@@ -434,12 +407,20 @@ npm run docker:dev:up
 # Start E2E test database
 npm run docker:e2e:up
 
+# Start integration test database
+npm run docker:integration:up
+
 # Stop environments
 npm run docker:dev:down
 npm run docker:e2e:down
+npm run docker:integration:down
+
+# Restart with clean state (useful for tests)
+npm run docker:e2e:restart
+npm run docker:integration:restart
 ```
 
-**📖 Full Docker documentation:** See [DOCKER.md](./docs/DOCKER.md) for detailed usage and configuration.
+**Full Docker documentation:** See [docs/DOCKER.md](./docs/DOCKER.md) for detailed usage and configuration.
 
 ## Task Runner (Alternative to Make)
 
@@ -495,9 +476,9 @@ task db:reset            # Reset database completely
 task check               # Lint + format + test
 ```
 
-**📋 See all available tasks:** Run `task --list` or check `Taskfile.yml`  
-**📖 Full documentation:** See [docs/TASKFILE.md](./docs/TASKFILE.md)  
-**⚡ Quick reference:** See [docs/TASK-QUICKREF.md](./docs/TASK-QUICKREF.md)
+**See all available tasks:** Run `task --list` or check `Taskfile.yml`  
+**Full documentation:** See [docs/TASKFILE.md](./docs/TASKFILE.md)  
+**Quick reference:** See [docs/TASK-QUICKREF.md](./docs/TASK-QUICKREF.md)
 
 ## Getting Started
 
@@ -519,10 +500,18 @@ npm run docker:dev:up
 # Configure environment
 cp .env.example .env
 # Edit .env with your database and OpenWeatherMap credentials
-# (Docker default: DB_PORT=54320, DB_NAME=route_solver_dev)
+# Docker defaults:
+#   DB_HOST=localhost
+#   DB_PORT=54320
+#   DB_USERNAME=route_solver
+#   DB_PASSWORD=route_solver_password
+#   DB_NAME=route_solver_dev
 
 # Run migrations
 npm run migration:run
+
+# Seed database with initial data (optional)
+npm run seed:run
 
 # Start development server
 npm run start:dev
@@ -530,11 +519,11 @@ npm run start:dev
 
 **Without Docker:** Manually create a PostgreSQL database and update `.env` with your credentials.
 
-> **💡 Code Quality:** Pre-commit hooks are automatically configured to format and lint your code before each commit. See [Pre-Commit Hooks Guide](docs/PRE-COMMIT-HOOKS.md) for details.
+**Code Quality:** Pre-commit hooks are automatically configured to format and lint your code before each commit. See [docs/PRE-COMMIT-HOOKS.md](docs/PRE-COMMIT-HOOKS.md) for details.
 
 ### Available Scripts
 
-> **💡 Tip:** You can also use **Task** commands (see `task --list`) for a more convenient alternative to npm scripts.
+**Tip:** You can also use Task commands (see `task --list`) for a more convenient alternative to npm scripts.
 
 | Command | Description |
 |---------|-------------|
@@ -543,13 +532,18 @@ npm run start:dev
 | `npm run build` | Build for production |
 | `npm run start:prod` | Run production build |
 | **Testing** | |
-| `npm run test` | Run all tests |
-| `npm run test:watch` | Run tests in watch mode |
-| `npm run test:cov` | Run all tests with coverage |
+| `npm run test` | Run feature tests (default) |
+| `npm run test:watch` | Run feature tests in watch mode |
+| `npm run test:cov` | Run feature tests with coverage |
 | `npm run test:features` | Run feature tests (Use Cases) |
 | `npm run test:features:watch` | Run feature tests in watch mode |
 | `npm run test:features:cov` | Run feature tests with coverage (Application + Domain) |
+| `npm run test:integration` | Run integration tests |
+| `npm run test:integration:watch` | Run integration tests in watch mode |
+| `npm run test:integration:cov` | Run integration tests with coverage |
 | `npm run test:e2e` | Run end-to-end tests |
+| `npm run test:e2e:cov` | Run end-to-end tests with coverage |
+| `npm run test:all` | Run all tests with coverage |
 | **Docker** | |
 | `npm run docker:dev:up` | Start development database |
 | `npm run docker:dev:down` | Stop development database |
@@ -575,11 +569,16 @@ npm run start:dev
 Once the server is running, Swagger documentation is available at:
 
 ```
-http://localhost:3000/api
+http://localhost:3000/docs
 ```
 
-### Example Request
+### Available Endpoints
 
+#### POST /get-fastest-route
+
+Calculate the fastest route between two cities taking into account weather conditions and optional constraints.
+
+**Request:**
 ```bash
 curl -X POST http://localhost:3000/get-fastest-route \
   -H "Content-Type: application/json" \
@@ -594,8 +593,7 @@ curl -X POST http://localhost:3000/get-fastest-route \
   }'
 ```
 
-### Example Response
-
+**Response:**
 ```json
 {
   "path": ["Paris", "Lyon", "Marseille"],
@@ -618,6 +616,35 @@ curl -X POST http://localhost:3000/get-fastest-route \
     }
   ]
 }
+```
+
+#### POST /road-segments
+
+Create a new road segment between two cities.
+
+**Request:**
+```bash
+curl -X POST http://localhost:3000/road-segments \
+  -H "Content-Type: application/json" \
+  -d '{
+    "startCity": "Paris",
+    "endCity": "Lyon",
+    "distance": 465,
+    "defaultSpeed": 110
+  }'
+```
+
+#### PATCH /road-segments/:id/speed
+
+Update the speed limit of an existing road segment.
+
+**Request:**
+```bash
+curl -X PATCH http://localhost:3000/road-segments/123/speed \
+  -H "Content-Type: application/json" \
+  -d '{
+    "speed": 130
+  }'
 ```
 
 ## Key Principles Summary
@@ -648,18 +675,24 @@ curl -X POST http://localhost:3000/get-fastest-route \
 - [NestJS Documentation](https://docs.nestjs.com)
 - [TypeORM Documentation](https://typeorm.io)
 
-## 📚 Documentation
+## Documentation
 
 ### Project Documentation
-- [Pre-Commit Hooks](docs/PRE-COMMIT-HOOKS.md) - Configuration automatique du formatage et lint avant commit
-- [Git Workflow & Strategy](docs/GIT-WORKFLOW.md) - Convention de branches, commits et PRs
-- [Git Cheat Sheet](docs/GIT-CHEAT-SHEET.md) - Référence rapide des commandes Git
-- [Git Command Examples](docs/GIT-COMMANDS-EXAMPLES.md) - Exemples détaillés de workflows
-- [Create Road Segment Feature](docs/CREATE-ROAD-SEGMENT-FEATURE.md) - Documentation de la feature POST /road-segments
+- [Pre-Commit Hooks](docs/PRE-COMMIT-HOOKS.md) - Automatic code formatting and linting before commits
+- [Git Workflow & Strategy](docs/GIT-WORKFLOW.md) - Branch conventions, commits, and PRs
+- [Git Cheat Sheet](docs/GIT-CHEAT-SHEET.md) - Quick reference for Git commands
+- [Git Command Examples](docs/GIT-COMMANDS-EXAMPLES.md) - Detailed workflow examples
+- [Docker Guide](docs/DOCKER.md) - Complete Docker setup and usage
+- [Task Runner](docs/TASKFILE.md) - Task automation with Taskfile
+- [Migration Guide](docs/MIGRATION.md) - Database migration management
+- [CI/CD Guide](docs/CI.md) - Continuous Integration setup
+
+### Feature Documentation
+- [Create Road Segment Feature](docs/CREATE-ROAD-SEGMENT-FEATURE.md) - POST /road-segments endpoint documentation
 
 ### GitHub Configuration
-- [Pull Request Template](.github/PULL_REQUEST_TEMPLATE.md) - Template pour les PRs
-- [Code Owners](.github/CODEOWNERS) - Définition des reviewers par défaut
+- [Pull Request Template](.github/PULL_REQUEST_TEMPLATE.md) - PR template
+- [Code Owners](.github/CODEOWNERS) - Default reviewers definition
 
 ## License
 
