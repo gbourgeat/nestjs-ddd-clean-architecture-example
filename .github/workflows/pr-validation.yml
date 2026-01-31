@@ -76,7 +76,7 @@ jobs:
             const fs = require('fs');
             const path = require('path');
             
-            let coverageInfo = '📊 **Coverage Report**\n\n';
+            let coverageInfo = '**Coverage Report**\n\n';
             coverageInfo += 'Features tests coverage has been generated.\n';
             coverageInfo += 'See the full CI workflow for complete coverage across all test types.\n';
             
@@ -89,16 +89,16 @@ jobs:
         continue-on-error: true
 
   # ==========================================================================
-  # 📋 PR Info
+  # PR Info
   # ==========================================================================
   pr-info:
-    name: 📋 PR Info
+    name: PR Info
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     steps:
-      - name: 📋 Add PR summary
+      - name: Add PR summary
         run: |
-          echo "## 📋 Pull Request Validation" >> $GITHUB_STEP_SUMMARY
+          echo "## Pull Request Validation" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**PR:** #${{ github.event.pull_request.number }}" >> $GITHUB_STEP_SUMMARY
           echo "**Title:** ${{ github.event.pull_request.title }}" >> $GITHUB_STEP_SUMMARY

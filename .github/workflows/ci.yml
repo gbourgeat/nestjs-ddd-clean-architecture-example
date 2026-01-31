@@ -36,14 +36,14 @@ jobs:
       - name: 🔍 Run ESLint
         run: npm run lint
 
-      - name: 🏗️ Build project
+      - name: Build project
         run: npm run build
 
   # ==========================================================================
-  # 🧪 Features Tests (Domain + Application)
+  # Features Tests (Domain + Application)
   # ==========================================================================
   test-features:
-    name: 🧪 Features Tests
+    name: Features Tests
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout code
@@ -298,19 +298,19 @@ jobs:
       - name: Check all jobs status
         run: |
           if [[ "${{ needs.lint-build.result }}" != "success" ]]; then
-            echo "❌ Lint & Build failed"
+            echo "Lint & Build failed"
             exit 1
           fi
           if [[ "${{ needs.test-features.result }}" != "success" ]]; then
-            echo "❌ Features tests failed"
+            echo "Features tests failed"
             exit 1
           fi
           if [[ "${{ needs.test-integration.result }}" != "success" ]]; then
-            echo "❌ Integration tests failed"
+            echo "Integration tests failed"
             exit 1
           fi
           if [[ "${{ needs.test-e2e.result }}" != "success" ]]; then
-            echo "❌ E2E tests failed"
+            echo "E2E tests failed"
             exit 1
           fi
-          echo "✅ All CI checks passed!"
+          echo "All CI checks passed!"
