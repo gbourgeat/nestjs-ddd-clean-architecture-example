@@ -5,15 +5,15 @@ export class RoadSegmentTypeormEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ name: 'city_a_id' })
   cityAId: string;
 
-  @Column()
+  @Column({ name: 'city_b_id' })
   cityBId: string;
 
   @Column('decimal', { precision: 10, scale: 2 })
   distance: number;
 
-  @Column('int')
+  @Column('int', { name: 'speed_limit' })
   speedLimit: number;
 }
