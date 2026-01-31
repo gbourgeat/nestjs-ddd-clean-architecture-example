@@ -13,13 +13,4 @@ export class RoadSegmentNotFoundError extends Error {
       `Road segment with id "${roadSegmentId.value}" not found`,
     );
   }
-
-  static forCityNames(
-    cityName1: string,
-    cityName2: string,
-  ): RoadSegmentNotFoundError {
-    return new RoadSegmentNotFoundError(
-      `Road segment between "${cityName1}" and "${cityName2}" not found`,
-    );
-  }
 }
