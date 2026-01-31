@@ -4,14 +4,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { RestApiModule } from '../../src/presentation/rest-api/rest-api.module';
 import { WeatherConditionProvider } from '@/infrastructure/pathfinding/weather-condition-provider';
-import { WeatherCondition } from '@/domain/value-objects';
-import { City } from '@/domain/entities';
-
-class FakeWeatherConditionProvider implements WeatherConditionProvider {
-  async forCity(_city: City): Promise<WeatherCondition> {
-    return 'sunny';
-  }
-}
+import { FakeWeatherConditionProvider } from '@test/fixtures/services';
 
 describe('POST /get-fastest-route (e2e)', () => {
   let app: INestApplication<App>;
