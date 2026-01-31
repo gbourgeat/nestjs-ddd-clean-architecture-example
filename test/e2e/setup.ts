@@ -5,7 +5,6 @@ import { join } from 'path';
 dotenv.config({
   path: join(__dirname, '../../.env.e2e'),
   override: true,
-  silent: true, // Éviter les warnings dans les logs de la CI
 });
 
 // Désactiver les logs de la console dans les tests pour réduire le bruit

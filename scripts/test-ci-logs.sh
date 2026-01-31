@@ -42,16 +42,8 @@ test_config "src/infrastructure/database/data-source.ts" \
 
 echo ""
 
-# Test 2: Dotenv silent mode
-echo "2️⃣  Vérification de la configuration dotenv..."
-test_config "test/e2e/setup.ts" \
-    "silent: true" \
-    "Dotenv en mode silent pour E2E"
-
-echo ""
-
-# Test 3: Console logs désactivés
-echo "3️⃣  Vérification de la désactivation des logs console..."
+# Test 2: Console logs désactivés
+echo "2️⃣  Vérification de la désactivation des logs console..."
 test_config "test/e2e/setup.ts" \
     "global.console = {" \
     "Console logs désactivés en E2E"
@@ -62,8 +54,8 @@ test_config "test/integration/setup.ts" \
 
 echo ""
 
-# Test 4: NestJS logger désactivé
-echo "4️⃣  Vérification de la désactivation du logger NestJS..."
+# Test 3: NestJS logger désactivé
+echo "3️⃣  Vérification de la désactivation du logger NestJS..."
 test_config "test/e2e/get-fastest-route.e2e-spec.ts" \
     "logger: false" \
     "Logger NestJS désactivé dans get-fastest-route"
@@ -78,8 +70,8 @@ test_config "test/e2e/create-road-segment.e2e-spec.ts" \
 
 echo ""
 
-# Test 5: Jest configuration
-echo "5️⃣  Vérification de la configuration Jest..."
+# Test 4: Jest configuration
+echo "4️⃣  Vérification de la configuration Jest..."
 test_config "test/e2e/jest-e2e.json" \
     '"silent": false' \
     "Jest E2E en mode silent configuré"
@@ -90,8 +82,8 @@ test_config "test/integration/jest.integration.json" \
 
 echo ""
 
-# Test 6: GitHub Actions CI variable
-echo "6️⃣  Vérification de la variable CI dans GitHub Actions..."
+# Test 5: GitHub Actions CI variable
+echo "5️⃣  Vérification de la variable CI dans GitHub Actions..."
 test_config ".github/workflows/ci.yml" \
     "CI: true" \
     "Variable CI définie dans workflow"
