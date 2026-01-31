@@ -34,7 +34,7 @@ describe('POST /get-fastest-route (e2e)', () => {
       .expect((res) => {
         expect(res.body).toHaveProperty('path');
         expect(res.body).toHaveProperty('totalDistance');
-        expect(res.body).toHaveProperty('estimatedDuration');
+        expect(res.body).toHaveProperty('estimatedTime');
         expect(res.body).toHaveProperty('steps');
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(Array.isArray(res.body.path)).toBe(true);
@@ -59,7 +59,7 @@ describe('POST /get-fastest-route (e2e)', () => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(res.body.totalDistance).toBeGreaterThan(0);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        expect(res.body.estimatedDuration).toBeGreaterThan(0);
+        expect(res.body.estimatedTime).toBeGreaterThan(0);
       });
   });
 
@@ -84,7 +84,7 @@ describe('POST /get-fastest-route (e2e)', () => {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           expect(step.distance).toBeLessThanOrEqual(500);
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          expect(step.speedLimit).toBeGreaterThanOrEqual(100);
+          expect(step.speed).toBeGreaterThanOrEqual(100);
         });
       });
   });
