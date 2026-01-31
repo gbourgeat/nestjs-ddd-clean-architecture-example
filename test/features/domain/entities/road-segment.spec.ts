@@ -1,4 +1,4 @@
-import { RoadSegment } from '@/domain/entities';
+import { RoadSegment, City } from '@/domain/entities';
 import {
   RoadSegmentId,
   Distance,
@@ -10,8 +10,8 @@ import { InvalidRoadSegmentError } from '@/domain/errors';
 import { CityBuilder } from '@test/fixtures';
 
 describe('RoadSegment', () => {
-  let parisCity: ReturnType<typeof CityBuilder.aCity>;
-  let lyonCity: ReturnType<typeof CityBuilder.aCity>;
+  let parisCity: City;
+  let lyonCity: City;
 
   beforeEach(() => {
     parisCity = CityBuilder.aCity()

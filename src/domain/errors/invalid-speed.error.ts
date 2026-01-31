@@ -1,5 +1,5 @@
 export class InvalidSpeedError extends Error {
-  private constructor(message: string) {
+  public constructor(message: string) {
     super(message);
     this.name = this.constructor.name;
   }
