@@ -12,5 +12,5 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
   migrations: ['./migrations/*.{ts,js}'],
   migrationsRun: true, // Automatically run migrations on app start
   synchronize: true, // Enable synchronize toCity auto-create tables (for development)
-  logging: process.env.NODE_ENV !== 'production',
+  logging: process.env.NODE_ENV === 'development',
 };
