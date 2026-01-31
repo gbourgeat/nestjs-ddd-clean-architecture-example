@@ -13,11 +13,16 @@ export class SegmentFilter {
     weatherData: Map<string, WeatherCondition>,
     constraints?: SimplifiedConstraints,
   ): SimplifiedSegmentData[] {
+    // First filter out segments with speedLimit = 0 (non-traversable)
+    const traversableSegments = segments.filter(
+      (segment) => segment.speedLimit > 0,
+    );
+
     if (!constraints) {
-      return segments;
+      return traversableSegments;
     }
 
-    return segments.filter((segment) =>
+    return traversableSegments.filter((segment) =>
       this.isSegmentValid(segment, weatherData, constraints),
     );
   }

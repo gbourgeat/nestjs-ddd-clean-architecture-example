@@ -3,13 +3,18 @@ import { WeatherCondition } from '@/domain/value-objects';
 import { City } from '@/domain/entities';
 
 export class FakeWeatherConditionProvider implements WeatherConditionProvider {
-  private fakeCondition: WeatherCondition = WeatherCondition.create('Clear');
+  private weatherByCity: Map<string, WeatherCondition> = new Map();
+  private defaultCondition: WeatherCondition = 'sunny';
 
-  setCondition(condition: 'Clear' | 'Rain' | 'Snow' | 'Clouds'): void {
-    this.fakeCondition = WeatherCondition.create(condition);
+  setCondition(condition: WeatherCondition): void {
+    this.defaultCondition = condition;
   }
 
-  async forCity(_city: City): Promise<WeatherCondition> {
-    return this.fakeCondition;
+  setWeather(cityName: string, condition: WeatherCondition): void {
+    this.weatherByCity.set(cityName, condition);
+  }
+
+  async forCity(city: City): Promise<WeatherCondition> {
+    return this.weatherByCity.get(city.name.value) || this.defaultCondition;
   }
 }

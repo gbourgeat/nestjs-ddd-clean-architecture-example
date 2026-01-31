@@ -4,14 +4,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { RestApiModule } from '../../src/presentation/rest-api/rest-api.module';
 import { WeatherConditionProvider } from '@/infrastructure/pathfinding/weather-condition-provider';
-import { WeatherCondition } from '@/domain/value-objects';
-import { City } from '@/domain/entities';
-
-class FakeWeatherConditionProvider implements WeatherConditionProvider {
-  async forCity(_city: City): Promise<WeatherCondition> {
-    return 'sunny';
-  }
-}
+import { FakeWeatherConditionProvider } from '@test/fixtures/services';
 
 describe('POST /get-fastest-route (e2e)', () => {
   let app: INestApplication<App>;
@@ -28,14 +21,14 @@ describe('POST /get-fastest-route (e2e)', () => {
       .compile();
 
     app = moduleFixture.createNestApplication({
-      logger: false, // Désactiver les logs NestJS dans les tests
+      logger: false, // Disable NestJS logs in tests
     });
     app.useGlobalPipes(
       new ValidationPipe({ transform: true, whitelist: true }),
     );
     await app.init();
 
-    // Créer les segments de route nécessaires pour les tests
+    // Create necessary road segments for tests
     await request(app.getHttpServer()).post('/road-segments').send({
       cityA: 'Paris',
       cityB: 'Lyon',
@@ -64,7 +57,7 @@ describe('POST /get-fastest-route (e2e)', () => {
       speedLimit: 120,
     });
 
-    // Attendre un peu pour s'assurer que toutes les données sont bien écrites
+    // Wait a bit to ensure all data is properly written
     await new Promise((resolve) => setTimeout(resolve, 500));
   });
 

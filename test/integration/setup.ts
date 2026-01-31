@@ -8,7 +8,7 @@ process.env.DATABASE_PASSWORD = 'postgres';
 process.env.DATABASE_NAME = 'route_solver_integration_test';
 process.env.NODE_ENV = 'test';
 
-// Désactiver les logs de la console dans les tests pour réduire le bruit
+// Disable console logs in tests to reduce noise
 if (process.env.CI === 'true' || process.env.NODE_ENV === 'test') {
   const originalConsole = global.console;
   global.console = {
@@ -17,7 +17,7 @@ if (process.env.CI === 'true' || process.env.NODE_ENV === 'test') {
     debug: jest.fn(),
     info: jest.fn(),
     warn: jest.fn(),
-    // Conserver error pour les vrais problèmes
+    // Keep error for real issues
     error: originalConsole.error,
   };
 }
