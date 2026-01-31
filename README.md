@@ -1,5 +1,7 @@
 # Route Solver
 
+[![CI](https://github.com/gbourgeat/nestjs-ddd-clean-architecture-example/actions/workflows/ci.yml/badge.svg)](https://github.com/gbourgeat/nestjs-ddd-clean-architecture-example/actions/workflows/ci.yml)
+
 > A NestJS example implementation of Clean Architecture and Domain-Driven Design (DDD)
 
 Route Solver is an API for planning optimal routes between French cities, using the Dijkstra algorithm with real-time weather conditions from OpenWeatherMap.

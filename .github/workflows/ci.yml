@@ -1,0 +1,312 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # ==========================================================================
+  # 🔍 Lint & Build
+  # ==========================================================================
+  lint-build:
+    name: 🔍 Lint & Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Run ESLint
+        run: npm run lint
+
+      - name: 🏗️ Build project
+        run: npm run build
+
+  # ==========================================================================
+  # 🧪 Features Tests (Domain + Application)
+  # ==========================================================================
+  test-features:
+    name: 🧪 Features Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 🧪 Run features tests with coverage
+        run: npm run test:features:cov
+
+      - name: 📊 Upload features coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-features
+          path: coverage/features/
+          retention-days: 7
+
+  # ==========================================================================
+  # 🔌 Integration Tests (Infrastructure)
+  # ==========================================================================
+  test-integration:
+    name: 🔌 Integration Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: route_solver_integration_test
+        ports:
+          - 54322:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      NODE_ENV: test
+      DATABASE_HOST: localhost
+      DATABASE_PORT: 54322
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_NAME: route_solver_integration_test
+      OPENWEATHERMAP_API_KEY: ${{ secrets.OPENWEATHERMAP_API_KEY }}
+      OPENWEATHERMAP_BASE_URL: https://api.openweathermap.org/data/2.5/weather
+      OPENWEATHERMAP_TIMEOUT: 5000
+      OPENWEATHERMAP_CACHE_TTL: 600000
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 📝 Create .env.integration file
+        run: |
+          cat > .env.integration << EOF
+          NODE_ENV=test
+          DATABASE_HOST=localhost
+          DATABASE_PORT=54322
+          DATABASE_USERNAME=postgres
+          DATABASE_PASSWORD=postgres
+          DATABASE_NAME=route_solver_integration_test
+          OPENWEATHERMAP_API_KEY=${{ secrets.OPENWEATHERMAP_API_KEY }}
+          OPENWEATHERMAP_BASE_URL=https://api.openweathermap.org/data/2.5/weather
+          OPENWEATHERMAP_TIMEOUT=5000
+          OPENWEATHERMAP_CACHE_TTL=600000
+          EOF
+
+      - name: ⏳ Wait for PostgreSQL
+        run: |
+          until pg_isready -h localhost -p 54322 -U postgres; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+
+      - name: 🔌 Run integration tests with coverage
+        run: npm run test:integration:cov
+
+      - name: 📊 Upload integration coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-integration
+          path: coverage/integration/
+          retention-days: 7
+
+  # ==========================================================================
+  # 🚀 E2E Tests (Presentation)
+  # ==========================================================================
+  test-e2e:
+    name: 🚀 E2E Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: route_solver_e2e_test
+        ports:
+          - 54321:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      NODE_ENV: test
+      DATABASE_HOST: localhost
+      DATABASE_PORT: 54321
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_NAME: route_solver_e2e_test
+      OPENWEATHERMAP_API_KEY: ${{ secrets.OPENWEATHERMAP_API_KEY }}
+      OPENWEATHERMAP_BASE_URL: https://api.openweathermap.org/data/2.5/weather
+      OPENWEATHERMAP_TIMEOUT: 5000
+      OPENWEATHERMAP_CACHE_TTL: 600000
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 📝 Create .env.e2e file
+        run: |
+          cat > .env.e2e << EOF
+          NODE_ENV=test
+          DATABASE_HOST=localhost
+          DATABASE_PORT=54321
+          DATABASE_USERNAME=postgres
+          DATABASE_PASSWORD=postgres
+          DATABASE_NAME=route_solver_e2e_test
+          OPENWEATHERMAP_API_KEY=${{ secrets.OPENWEATHERMAP_API_KEY }}
+          OPENWEATHERMAP_BASE_URL=https://api.openweathermap.org/data/2.5/weather
+          OPENWEATHERMAP_TIMEOUT=5000
+          OPENWEATHERMAP_CACHE_TTL=600000
+          EOF
+
+      - name: ⏳ Wait for PostgreSQL
+        run: |
+          until pg_isready -h localhost -p 54321 -U postgres; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+
+      - name: 🚀 Run E2E tests with coverage
+        run: npm run test:e2e:cov
+
+      - name: 📊 Upload E2E coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-e2e
+          path: coverage/e2e/
+          retention-days: 7
+
+  # ==========================================================================
+  # 📊 Coverage Report
+  # ==========================================================================
+  coverage-report:
+    name: 📊 Coverage Report
+    needs: [test-features, test-integration, test-e2e]
+    runs-on: ubuntu-latest
+    if: always() && !cancelled()
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📥 Download features coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-features
+          path: coverage/features/
+        continue-on-error: true
+
+      - name: 📥 Download integration coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-integration
+          path: coverage/integration/
+        continue-on-error: true
+
+      - name: 📥 Download E2E coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-e2e
+          path: coverage/e2e/
+        continue-on-error: true
+
+      - name: 📊 Display coverage summary
+        run: |
+          echo "## 📊 Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f coverage/features/lcov.info ]; then
+            echo "### Features Tests (Domain + Application)" >> $GITHUB_STEP_SUMMARY
+            echo "✅ Coverage report generated" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### Features Tests" >> $GITHUB_STEP_SUMMARY
+            echo "❌ No coverage report found" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ -f coverage/integration/lcov.info ]; then
+            echo "### Integration Tests (Infrastructure)" >> $GITHUB_STEP_SUMMARY
+            echo "✅ Coverage report generated" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### Integration Tests" >> $GITHUB_STEP_SUMMARY
+            echo "❌ No coverage report found" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ -f coverage/e2e/lcov.info ]; then
+            echo "### E2E Tests (Presentation)" >> $GITHUB_STEP_SUMMARY
+            echo "✅ Coverage report generated" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### E2E Tests" >> $GITHUB_STEP_SUMMARY
+            echo "❌ No coverage report found" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # ==========================================================================
+  # ✅ CI Success Gate
+  # ==========================================================================
+  ci-success:
+    name: ✅ CI Success
+    needs: [lint-build, test-features, test-integration, test-e2e]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check all jobs status
+        run: |
+          if [[ "${{ needs.lint-build.result }}" != "success" ]]; then
+            echo "❌ Lint & Build failed"
+            exit 1
+          fi
+          if [[ "${{ needs.test-features.result }}" != "success" ]]; then
+            echo "❌ Features tests failed"
+            exit 1
+          fi
+          if [[ "${{ needs.test-integration.result }}" != "success" ]]; then
+            echo "❌ Integration tests failed"
+            exit 1
+          fi
+          if [[ "${{ needs.test-e2e.result }}" != "success" ]]; then
+            echo "❌ E2E tests failed"
+            exit 1
+          fi
+          echo "✅ All CI checks passed!"
