@@ -8,19 +8,11 @@ import {
 } from '@/domain/value-objects';
 import { City, RoadSegment } from '@/domain/entities';
 import { PathfindingResult } from '@/domain/services';
-import { CityBuilder, RoadSegmentBuilder } from '@test/fixtures';
-
-class FakeWeatherConditionProvider implements WeatherConditionProvider {
-  private weatherByCity: Map<string, WeatherCondition> = new Map();
-
-  setWeather(cityName: string, condition: WeatherCondition): void {
-    this.weatherByCity.set(cityName, condition);
-  }
-
-  async forCity(city: City): Promise<WeatherCondition> {
-    return this.weatherByCity.get(city.name.value) || 'sunny';
-  }
-}
+import {
+  CityBuilder,
+  RoadSegmentBuilder,
+  FakeWeatherConditionProvider,
+} from '@test/fixtures';
 
 // Helper function to extract path from steps
 function extractPath(result: PathfindingResult): City[] {
