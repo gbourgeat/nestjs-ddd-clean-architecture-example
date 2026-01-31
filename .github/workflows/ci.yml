@@ -92,6 +92,7 @@ jobs:
       NODE_ENV: test
       DATABASE_HOST: localhost
       DATABASE_PORT: 54322
+      DATABASE_USER: postgres
       DATABASE_USERNAME: postgres
       DATABASE_PASSWORD: postgres
       DATABASE_NAME: route_solver_integration_test
@@ -118,6 +119,7 @@ jobs:
           NODE_ENV=test
           DATABASE_HOST=localhost
           DATABASE_PORT=54322
+          DATABASE_USER=postgres
           DATABASE_USERNAME=postgres
           DATABASE_PASSWORD=postgres
           DATABASE_NAME=route_solver_integration_test
@@ -168,6 +170,7 @@ jobs:
       NODE_ENV: test
       DATABASE_HOST: localhost
       DATABASE_PORT: 54321
+      DATABASE_USER: postgres
       DATABASE_USERNAME: postgres
       DATABASE_PASSWORD: postgres
       DATABASE_NAME: route_solver_e2e_test
@@ -194,6 +197,7 @@ jobs:
           NODE_ENV=test
           DATABASE_HOST=localhost
           DATABASE_PORT=54321
+          DATABASE_USER=postgres
           DATABASE_USERNAME=postgres
           DATABASE_PASSWORD=postgres
           DATABASE_NAME=route_solver_e2e_test
