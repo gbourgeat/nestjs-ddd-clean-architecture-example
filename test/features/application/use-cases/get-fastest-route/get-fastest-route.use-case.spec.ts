@@ -86,7 +86,7 @@ describe('GetFastestRouteUseCase', () => {
             .withDistance(465)
             .withSpeedLimit(130)
             .withEstimatedDuration(3.58)
-            .withWeatherCondition('clear')
+            .withWeatherCondition('sunny')
             .build(),
         )
         .build();
@@ -106,7 +106,7 @@ describe('GetFastestRouteUseCase', () => {
             toCity: 'Lyon',
             distance: 465,
             speedLimit: 130,
-            weatherCondition: 'clear',
+            weatherCondition: 'sunny',
           },
         ],
       });
@@ -134,7 +134,7 @@ describe('GetFastestRouteUseCase', () => {
             .withDistance(465)
             .withSpeedLimit(130)
             .withEstimatedDuration(3.58)
-            .withWeatherCondition('clear')
+            .withWeatherCondition('sunny')
             .build(),
         )
         .build();
@@ -251,7 +251,7 @@ describe('GetFastestRouteUseCase', () => {
             .withDistance(465)
             .withSpeedLimit(130)
             .withEstimatedDuration(3.58)
-            .withWeatherCondition('clear')
+            .withWeatherCondition('sunny')
             .build(),
           RouteStepBuilder.aRouteStep()
             .withFrom(lyonCity)

@@ -374,7 +374,7 @@ describe('SegmentFilter (Integration)', () => {
       ]);
 
       const constraints = {
-        excludeWeatherConditions: ['rain', 'snow'],
+        excludeWeatherConditions: ['rain', 'snow'] as WeatherCondition[],
       };
 
       const filtered = segmentFilter.filter(segments, weatherData, constraints);
@@ -425,7 +425,7 @@ describe('SegmentFilter (Integration)', () => {
       const constraints = {
         maxDistance: 500,
         minSpeedLimit: 100,
-        excludeWeatherConditions: ['rain'],
+        excludeWeatherConditions: ['rain'] as WeatherCondition[],
       };
 
       const filtered = segmentFilter.filter(segments, weatherData, constraints);

@@ -14,7 +14,7 @@ export class RoadSegmentBuilder {
 
   withId(id: string | RoadSegmentId): this {
     this.id =
-      typeof id === 'string' ? RoadSegmentId.fromNormalizedValue(id) : id;
+      typeof id === 'string' ? RoadSegmentId.fromValue(id) : id;
     return this;
   }
 

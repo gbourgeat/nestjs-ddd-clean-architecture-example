@@ -1,7 +1,7 @@
 import { CityName } from '@/domain/value-objects';
 
 export class SameStartAndEndCityError extends Error {
-  private constructor(message: string) {
+  public constructor(message: string) {
     super(message);
     this.name = this.constructor.name;
   }
