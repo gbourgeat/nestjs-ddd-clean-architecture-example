@@ -1,90 +1,90 @@
-## 📋 Description
+## Description
 
-<!-- Décrivez clairement les changements apportés -->
+<!-- Clearly describe the changes made -->
 
 
-## 🎯 Type de changement
+## Type of Change
 
-- [ ] 🚀 Feature (nouvelle fonctionnalité)
-- [ ] 🐛 Fix (correction de bug)
-- [ ] 🔥 Hotfix (correction urgente)
-- [ ] ♻️ Refactor (refactoring)
-- [ ] 📝 Documentation
-- [ ] ✅ Tests
-- [ ] 🔧 Chore (maintenance)
-- [ ] ⚡️ Performance
+- [ ] Feature (new functionality)
+- [ ] Fix (bug fix)
+- [ ] Hotfix (urgent fix)
+- [ ] Refactor (code refactoring)
+- [ ] Documentation
+- [ ] Tests
+- [ ] Chore (maintenance)
+- [ ] Performance
 
-## 🔗 Issue liée
+## Related Issue
 
 Closes #
 
-## ✨ Changements
+## Changes
 
-<!-- Liste détaillée des modifications -->
+<!-- Detailed list of modifications -->
 
 - 
 - 
 - 
 
-## 🏗️ Architecture
+## Architecture
 
-<!-- Si applicable, décrivez l'impact sur l'architecture -->
+<!-- If applicable, describe the impact on architecture -->
 
-**Couches affectées :**
+**Affected Layers:**
 - [ ] Domain
 - [ ] Application
 - [ ] Infrastructure
 - [ ] Presentation
 
-## ✅ Checklist
+## Checklist
 
-- [ ] Le code compile sans erreurs
-- [ ] Les tests passent (unit + integration + e2e)
-- [ ] La couverture de tests est maintenue/améliorée
-- [ ] La documentation est à jour
-- [ ] Le code suit les conventions du projet
-- [ ] Les règles de l'architecture hexagonale sont respectées
-- [ ] Les commits suivent la convention Conventional Commits
-- [ ] J'ai testé manuellement les changements
+- [ ] Code compiles without errors
+- [ ] Tests pass (unit + integration + e2e)
+- [ ] Test coverage is maintained/improved
+- [ ] Documentation is up to date
+- [ ] Code follows project conventions
+- [ ] Hexagonal architecture rules are respected
+- [ ] Commits follow Conventional Commits convention
+- [ ] I have manually tested the changes
 
-## 📸 Screenshots / Logs
+## Screenshots / Logs
 
-<!-- Si applicable, ajoutez des captures d'écran ou logs -->
+<!-- If applicable, add screenshots or logs -->
 
 ```
-<!-- Collez vos logs ici -->
+<!-- Paste your logs here -->
 ```
 
-## 🧪 Tests
+## Tests
 
-**Tests ajoutés/modifiés :**
-- [ ] Tests unitaires
-- [ ] Tests d'intégration
-- [ ] Tests E2E
+**Tests added/modified:**
+- [ ] Unit tests
+- [ ] Integration tests
+- [ ] E2E tests
 
-**Couverture :**
-- Avant : XX%
-- Après : XX%
+**Coverage:**
+- Before: XX%
+- After: XX%
 
-## 📚 Documentation
+## Documentation
 
-- [ ] README mis à jour si nécessaire
-- [ ] Documentation API mise à jour
-- [ ] Commentaires ajoutés dans le code si nécessaire
-- [ ] Documentation technique créée/mise à jour
+- [ ] README updated if necessary
+- [ ] API documentation updated
+- [ ] Comments added in code if necessary
+- [ ] Technical documentation created/updated
 
-## 🔍 Notes pour les Reviewers
+## Notes for Reviewers
 
-<!-- Informations importantes pour faciliter la review -->
+<!-- Important information to facilitate review -->
 
 
 ---
 
-### 📋 Review Checklist (pour les reviewers)
+### Review Checklist (for reviewers)
 
-- [ ] Le code est lisible et maintenable
-- [ ] Les tests sont suffisants et pertinents
-- [ ] L'architecture est respectée
-- [ ] Les performances ne sont pas dégradées
-- [ ] La sécurité est assurée
-- [ ] Les erreurs sont bien gérées
+- [ ] Code is readable and maintainable
+- [ ] Tests are sufficient and relevant
+- [ ] Architecture is respected
+- [ ] Performance is not degraded
+- [ ] Security is ensured
+- [ ] Errors are properly handled
