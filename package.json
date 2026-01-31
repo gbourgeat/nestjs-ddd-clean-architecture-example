@@ -5,6 +5,36 @@
   "author": "Gary Bourgeat <gary.bourgeat@gmail.com>",
   "private": false,
   "license": "MIT",
+  "keywords": [
+    "nestjs",
+    "typescript",
+    "clean-architecture",
+    "domain-driven-design",
+    "hexagonal-architecture",
+    "ddd",
+    "postgresql",
+    "typeorm",
+    "dijkstra-algorithm",
+    "route-planning",
+    "rest-api",
+    "swagger",
+    "openapi",
+    "dependency-injection",
+    "repository-pattern",
+    "value-objects",
+    "docker",
+    "testing",
+    "solid-principles",
+    "backend"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gbourgeat/route-solver.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gbourgeat/route-solver/issues"
+  },
+  "homepage": "https://github.com/gbourgeat/route-solver#readme",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
