@@ -30,6 +30,16 @@ Ce dossier contient toute la documentation technique du projet Route Solver.
 |----------|-------------|
 | **[REORGANISATION.md](./REORGANISATION.md)** | 📦 Historique de la réorganisation des fichiers du projet |
 
+### 🔧 Git & Code Quality
+
+| Document | Description |
+|----------|-------------|
+| **[PRE-COMMIT-HOOKS.md](./PRE-COMMIT-HOOKS.md)** | ✅ Configuration automatique du formatage et lint avant commit (husky + lint-staged) |
+| **[GIT-WORKFLOW.md](./GIT-WORKFLOW.md)** | 🌿 Conventions de branches, commits et Pull Requests |
+| **[GIT-CHEAT-SHEET.md](./GIT-CHEAT-SHEET.md)** | ⚡ Référence rapide des commandes Git |
+| **[GIT-COMMANDS-EXAMPLES.md](./GIT-COMMANDS-EXAMPLES.md)** | 📋 Exemples détaillés de workflows Git |
+| **[GIT-VISUAL-GUIDE.md](./GIT-VISUAL-GUIDE.md)** | 🎨 Guide visuel des workflows Git |
+
 ### 🤖 AI & Development
 
 | Document | Description |

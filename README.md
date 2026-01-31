@@ -530,6 +530,8 @@ npm run start:dev
 
 **Without Docker:** Manually create a PostgreSQL database and update `.env` with your credentials.
 
+> **💡 Code Quality:** Pre-commit hooks are automatically configured to format and lint your code before each commit. See [Pre-Commit Hooks Guide](docs/PRE-COMMIT-HOOKS.md) for details.
+
 ### Available Scripts
 
 > **💡 Tip:** You can also use **Task** commands (see `task --list`) for a more convenient alternative to npm scripts.
@@ -558,8 +560,10 @@ npm run start:dev
 | `npm run docker:integration:up` | Start integration test database |
 | `npm run docker:integration:down` | Stop integration test database |
 | `npm run docker:integration:restart` | Restart integration database (clean state) |
+| **Code Quality** | |
+| `npm run format` | Format code with Prettier |
+| `npm run lint` | Lint and fix code with ESLint |
 | **Database** | |
-| `npm run lint` | Lint and fix code |
 | `npm run migration:run` | Run database migrations |
 | `npm run migration:generate` | Generate migration from entities |
 | `npm run migration:create` | Create empty migration |
@@ -643,6 +647,19 @@ curl -X POST http://localhost:3000/get-fastest-route \
 - [Domain-Driven Design by Eric Evans](https://domainlanguage.com/ddd/)
 - [NestJS Documentation](https://docs.nestjs.com)
 - [TypeORM Documentation](https://typeorm.io)
+
+## 📚 Documentation
+
+### Project Documentation
+- [Pre-Commit Hooks](docs/PRE-COMMIT-HOOKS.md) - Configuration automatique du formatage et lint avant commit
+- [Git Workflow & Strategy](docs/GIT-WORKFLOW.md) - Convention de branches, commits et PRs
+- [Git Cheat Sheet](docs/GIT-CHEAT-SHEET.md) - Référence rapide des commandes Git
+- [Git Command Examples](docs/GIT-COMMANDS-EXAMPLES.md) - Exemples détaillés de workflows
+- [Create Road Segment Feature](docs/CREATE-ROAD-SEGMENT-FEATURE.md) - Documentation de la feature POST /road-segments
+
+### GitHub Configuration
+- [Pull Request Template](.github/PULL_REQUEST_TEMPLATE.md) - Template pour les PRs
+- [Code Owners](.github/CODEOWNERS) - Définition des reviewers par défaut
 
 ## License
 
