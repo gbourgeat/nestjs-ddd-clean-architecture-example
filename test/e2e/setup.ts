@@ -1,4 +1,5 @@
 import { join } from 'path';
+import { existsSync } from 'fs';
 
 // Désactiver les logs de la console dans les tests AVANT de charger dotenv
 // pour éviter que dotenv n'affiche ses propres logs
@@ -17,7 +18,10 @@ if (process.env.CI === 'true' || process.env.NODE_ENV === 'test') {
 
 // Charger les variables d'environnement depuis .env.e2e APRÈS avoir désactivé console.log
 import dotenv from 'dotenv';
-dotenv.config({
-  path: join(__dirname, '../../.env.e2e'),
-  override: true,
-});
+const envFile = join(__dirname, '../../.env.e2e');
+if (existsSync(envFile)) {
+  dotenv.config({
+    path: envFile,
+    override: true,
+  });
+}

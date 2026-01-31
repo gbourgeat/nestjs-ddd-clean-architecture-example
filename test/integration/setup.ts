@@ -10,6 +10,7 @@ process.env.NODE_ENV = 'test';
 
 // Désactiver les logs de la console dans les tests pour réduire le bruit
 if (process.env.CI === 'true' || process.env.NODE_ENV === 'test') {
+  const originalConsole = global.console;
   global.console = {
     ...console,
     log: jest.fn(),
@@ -17,5 +18,6 @@ if (process.env.CI === 'true' || process.env.NODE_ENV === 'test') {
     info: jest.fn(),
     warn: jest.fn(),
     // Conserver error pour les vrais problèmes
+    error: originalConsole.error,
   };
 }
