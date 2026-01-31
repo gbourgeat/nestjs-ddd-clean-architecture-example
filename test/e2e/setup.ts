@@ -1,8 +1,8 @@
 import { join } from 'path';
 import { existsSync } from 'fs';
 
-// Désactiver les logs de la console dans les tests AVANT de charger dotenv
-// pour éviter que dotenv n'affiche ses propres logs
+// Disable console logs in tests BEFORE loading dotenv
+// to prevent dotenv from displaying its own logs
 if (process.env.CI === 'true' || process.env.NODE_ENV === 'test') {
   const originalConsole = global.console;
   global.console = {
@@ -11,12 +11,12 @@ if (process.env.CI === 'true' || process.env.NODE_ENV === 'test') {
     debug: jest.fn(),
     info: jest.fn(),
     warn: jest.fn(),
-    // Conserver error pour les vrais problèmes
+    // Keep error for real issues
     error: originalConsole.error,
   };
 }
 
-// Charger les variables d'environnement depuis .env.e2e APRÈS avoir désactivé console.log
+// Load environment variables from .env.e2e AFTER disabling console.log
 import dotenv from 'dotenv';
 const envFile = join(__dirname, '../../.env.e2e');
 if (existsSync(envFile)) {

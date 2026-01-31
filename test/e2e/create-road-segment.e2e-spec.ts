@@ -12,7 +12,7 @@ describe('POST /road-segments (E2E)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication({
-      logger: false, // Désactiver les logs NestJS dans les tests
+      logger: false, // Disable NestJS logs in tests
     });
     app.useGlobalPipes(
       new ValidationPipe({

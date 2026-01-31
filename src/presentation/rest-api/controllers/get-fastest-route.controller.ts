@@ -4,6 +4,7 @@ import {
   Post,
   HttpException,
   HttpStatus,
+  HttpCode,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { GetFastestRouteRequest } from '@/presentation/rest-api/requests';
@@ -25,6 +26,7 @@ export class GetFastestRouteController {
   ) {}
 
   @Post('/get-fastest-route')
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Calculate the fastest route',
     description:

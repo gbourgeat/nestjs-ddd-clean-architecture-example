@@ -60,6 +60,13 @@ export class RoadSegment {
   }
 
   get estimatedDuration(): Duration {
+    // Segments with speedLimit = 0 should not be used in pathfinding
+    if (this.speedLimit.kmPerHour === 0) {
+      throw new Error(
+        'Cannot calculate duration for a segment with zero speed limit',
+      );
+    }
+
     return Duration.fromDistanceAndSpeed(
       this.distance.kilometers,
       this.speedLimit.kmPerHour,

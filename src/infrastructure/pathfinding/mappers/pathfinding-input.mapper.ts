@@ -25,7 +25,11 @@ export class PathfindingInputMapper {
       const cityBName = segment.cityB.name.value;
       const distance = segment.distance.kilometers;
       const speedLimit = segment.speedLimit.kmPerHour;
-      const estimatedDuration = segment.estimatedDuration.hours;
+
+      // For segments with speedLimit = 0, use Infinity as duration
+      // These segments will be filtered later, but we need to be able to map them
+      const estimatedDuration =
+        speedLimit > 0 ? segment.estimatedDuration.hours : Infinity;
 
       // Direction A -> B
       simplifiedSegments.push({
