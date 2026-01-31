@@ -88,7 +88,9 @@ describe('PATCH /road-segments/speed (e2e)', () => {
       .expect((res) => {
         expect(res.body).toHaveProperty('message');
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        expect(res.body.message).toContain('newSpeedLimit must not be less than 1');
+        expect(res.body.message).toContain(
+          'newSpeedLimit must not be less than 1',
+        );
       });
   });
 
