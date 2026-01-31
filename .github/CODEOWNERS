@@ -1,0 +1,34 @@
+# CODEOWNERS
+#
+# Ce fichier définit qui doit reviewer les modifications dans certaines parties du code.
+# Plus d'infos : https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Global owners - reviewers par défaut pour tout le repository
+* @gbourgeat
+
+# Architecture et Domain - Nécessite une review architecture
+/src/domain/ @gbourgeat
+/src/application/ @gbourgeat
+
+# Infrastructure - Nécessite une review infrastructure
+/src/infrastructure/ @gbourgeat
+
+# Configuration CI/CD
+/.github/ @gbourgeat
+/.github/workflows/ @gbourgeat
+
+# Documentation
+/docs/ @gbourgeat
+
+# Configuration et dépendances
+package.json @gbourgeat
+package-lock.json @gbourgeat
+tsconfig.json @gbourgeat
+nest-cli.json @gbourgeat
+
+# Tests
+/test/ @gbourgeat
+
+# Docker
+Dockerfile @gbourgeat
+docker-compose*.yml @gbourgeat

@@ -15,5 +15,5 @@ export const AppDataSource = new DataSource({
   entities: [CityTypeormEntity, RoadSegmentTypeormEntity],
   migrations: ['./migrations/*.{ts,js}'],
   synchronize: false,
-  logging: process.env.NODE_ENV !== 'production',
+  logging: process.env.NODE_ENV === 'development',
 });

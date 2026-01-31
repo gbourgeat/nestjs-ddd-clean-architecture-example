@@ -12,7 +12,9 @@ describe('PATCH /road-segments/speed (e2e)', () => {
       imports: [RestApiModule],
     }).compile();
 
-    app = moduleFixture.createNestApplication();
+    app = moduleFixture.createNestApplication({
+      logger: false, // Désactiver les logs NestJS dans les tests
+    });
     app.useGlobalPipes(
       new ValidationPipe({ transform: true, whitelist: true }),
     );

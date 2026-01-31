@@ -352,6 +352,16 @@ tasks:
     cmds:
       - npm run format
 
+  lint-staged:
+    desc: Exécuter lint-staged manuellement
+    cmds:
+      - npx lint-staged
+
+  test-hooks:
+    desc: Tester la configuration des pre-commit hooks
+    cmds:
+      - ./scripts/test-pre-commit-hooks.sh
+
   check:
     desc: Vérifier la qualité du code (lint + format + test)
     cmds:
