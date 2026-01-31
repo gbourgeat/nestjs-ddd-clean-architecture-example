@@ -1,5 +1,5 @@
 {
-  "name": "route-solver",
+  "name": "nestjs-ddd-clean-architecture-example",
   "version": "0.0.1",
   "description": "A NestJS API for planning optimal routes between French cities using Clean Architecture, DDD patterns, and the Dijkstra algorithm with real-time weather conditions",
   "author": "Gary Bourgeat <gary.bourgeat@gmail.com>",
@@ -29,12 +29,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/gbourgeat/route-solver.git"
+    "url": "https://github.com/gbourgeat/nestjs-ddd-clean-architecture-example.git"
   },
   "bugs": {
-    "url": "https://github.com/gbourgeat/route-solver/issues"
+    "url": "https://github.com/gbourgeat/nestjs-ddd-clean-architecture-example/issues"
   },
-  "homepage": "https://github.com/gbourgeat/route-solver#readme",
+  "homepage": "https://github.com/gbourgeat/nestjs-ddd-clean-architecture-example#readme",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",

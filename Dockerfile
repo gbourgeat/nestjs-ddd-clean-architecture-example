@@ -1,10 +1,10 @@
 # =============================================================================
 # Route Solver - Dockerfile
-# Multi-stage build optimisé pour NestJS
+# Optimized multi-stage build for NestJS
 # =============================================================================
 
 # -----------------------------------------------------------------------------
-# Stage 1: Base - Image de base avec Node.js
+# Stage 1: Base - Base image with Node.js
 # -----------------------------------------------------------------------------
 FROM node:22-alpine AS base
 
@@ -13,7 +13,7 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # -----------------------------------------------------------------------------
-# Stage 2: Dependencies - Installation des dépendances
+# Stage 2: Dependencies - Install dependencies
 # -----------------------------------------------------------------------------
 FROM base AS deps
 
@@ -22,7 +22,7 @@ COPY package.json package-lock.json* ./
 RUN npm ci
 
 # -----------------------------------------------------------------------------
-# Stage 3: Builder - Compilation du projet TypeScript
+# Stage 3: Builder - Compile TypeScript project
 # -----------------------------------------------------------------------------
 FROM base AS builder
 
@@ -37,7 +37,7 @@ COPY src ./src
 RUN npm run build
 
 # -----------------------------------------------------------------------------
-# Stage 4: Production dependencies - Dépendances de production uniquement
+# Stage 4: Production dependencies - Production dependencies only
 # -----------------------------------------------------------------------------
 FROM base AS prod-deps
 
