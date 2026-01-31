@@ -3,14 +3,29 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { RestApiModule } from '../../src/presentation/rest-api/rest-api.module';
+import { WeatherConditionProvider } from '@/infrastructure/pathfinding/weather-condition-provider';
+import { WeatherCondition } from '@/domain/value-objects';
+import { City } from '@/domain/entities';
+
+class FakeWeatherConditionProvider implements WeatherConditionProvider {
+  async forCity(_city: City): Promise<WeatherCondition> {
+    return 'sunny';
+  }
+}
 
 describe('POST /get-fastest-route (e2e)', () => {
   let app: INestApplication<App>;
+  let fakeWeatherProvider: FakeWeatherConditionProvider;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
+    fakeWeatherProvider = new FakeWeatherConditionProvider();
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [RestApiModule],
-    }).compile();
+    })
+      .overrideProvider(WeatherConditionProvider)
+      .useValue(fakeWeatherProvider)
+      .compile();
 
     app = moduleFixture.createNestApplication({
       logger: false, // Désactiver les logs NestJS dans les tests
@@ -19,30 +34,61 @@ describe('POST /get-fastest-route (e2e)', () => {
       new ValidationPipe({ transform: true, whitelist: true }),
     );
     await app.init();
+
+    // Créer les segments de route nécessaires pour les tests
+    await request(app.getHttpServer()).post('/road-segments').send({
+      cityA: 'Paris',
+      cityB: 'Lyon',
+      distance: 465,
+      speedLimit: 130,
+    });
+
+    await request(app.getHttpServer()).post('/road-segments').send({
+      cityA: 'Lyon',
+      cityB: 'Marseille',
+      distance: 310,
+      speedLimit: 130,
+    });
+
+    await request(app.getHttpServer()).post('/road-segments').send({
+      cityA: 'Paris',
+      cityB: 'Nice',
+      distance: 930,
+      speedLimit: 130,
+    });
+
+    await request(app.getHttpServer()).post('/road-segments').send({
+      cityA: 'Lyon',
+      cityB: 'Nice',
+      distance: 470,
+      speedLimit: 120,
+    });
+
+    // Attendre un peu pour s'assurer que toutes les données sont bien écrites
+    await new Promise((resolve) => setTimeout(resolve, 500));
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await app.close();
   });
 
-  it('should return a valid route between two cities', () => {
-    return request(app.getHttpServer())
+  it('should return a valid route between two cities', async () => {
+    const res = await request(app.getHttpServer())
       .post('/get-fastest-route')
       .send({
         startCity: 'Paris',
         endCity: 'Lyon',
-      })
-      .expect(201)
-      .expect((res) => {
-        expect(res.body).toHaveProperty('path');
-        expect(res.body).toHaveProperty('totalDistance');
-        expect(res.body).toHaveProperty('estimatedTime');
-        expect(res.body).toHaveProperty('steps');
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        expect(Array.isArray(res.body.path)).toBe(true);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        expect(Array.isArray(res.body.steps)).toBe(true);
       });
+
+    expect(res.status).toBe(201);
+    expect(res.body).toHaveProperty('path');
+    expect(res.body).toHaveProperty('totalDistance');
+    expect(res.body).toHaveProperty('estimatedTime');
+    expect(res.body).toHaveProperty('steps');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    expect(Array.isArray(res.body.path)).toBe(true);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    expect(Array.isArray(res.body.steps)).toBe(true);
   });
 
   it('should return a direct route when available', () => {
