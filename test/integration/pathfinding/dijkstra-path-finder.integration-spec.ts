@@ -3,7 +3,7 @@ import { PathfindingResult } from '@/domain/services';
 import { Distance, RoadConstraints, Speed } from '@/domain/value-objects';
 import { DijkstraPathFinder } from '@/infrastructure/pathfinding/dijkstra-path-finder';
 import {
-  CityBuilder,
+  CityFixtures,
   FakeWeatherConditionProvider,
   RoadSegmentBuilder,
 } from '@test/fixtures';
@@ -36,13 +36,13 @@ describe('DijkstraPathFinder (Integration)', () => {
     pathFinder = new DijkstraPathFinder(weatherProvider);
 
     // Initialize cities
-    paris = CityBuilder.aCity().withIdFromName('Paris').build();
-    lyon = CityBuilder.aCity().withIdFromName('Lyon').build();
-    marseille = CityBuilder.aCity().withIdFromName('Marseille').build();
-    nice = CityBuilder.aCity().withIdFromName('Nice').build();
-    toulouse = CityBuilder.aCity().withIdFromName('Toulouse').build();
-    bordeaux = CityBuilder.aCity().withIdFromName('Bordeaux').build();
-    dijon = CityBuilder.aCity().withIdFromName('Dijon').build();
+    paris = CityFixtures.paris();
+    lyon = CityFixtures.lyon();
+    marseille = CityFixtures.marseille();
+    nice = CityFixtures.nice();
+    toulouse = CityFixtures.toulouse();
+    bordeaux = CityFixtures.bordeaux();
+    dijon = CityFixtures.dijon();
   });
 
   describe('findFastestRoute', () => {

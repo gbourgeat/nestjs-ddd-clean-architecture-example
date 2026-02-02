@@ -9,6 +9,7 @@ const CITY_UUIDS = {
   nice: '44444444-4444-4444-4444-444444444444',
   toulouse: '55555555-5555-5555-5555-555555555555',
   bordeaux: '66666666-6666-6666-6666-666666666666',
+  dijon: '77777777-7777-7777-7777-777777777777',
 } as const;
 
 export class CityBuilder {
@@ -57,6 +58,8 @@ export const CityFixtures = {
       .withId(CITY_UUIDS.bordeaux)
       .withName('Bordeaux')
       .build(),
+  dijon: () =>
+    CityBuilder.aCity().withId(CITY_UUIDS.dijon).withName('Dijon').build(),
 };
 
 // Export UUIDs for test assertions

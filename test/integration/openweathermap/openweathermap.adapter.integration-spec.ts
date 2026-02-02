@@ -4,7 +4,7 @@ import { HttpModule, HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { CityBuilder } from '@test/fixtures';
+import { CityBuilder, CityFixtures } from '@test/fixtures';
 import { AxiosHeaders, AxiosResponse } from 'axios';
 import { Cache } from 'cache-manager';
 import { of, throwError } from 'rxjs';
@@ -52,7 +52,7 @@ describe('OpenWeatherMapAdapter (Integration)', () => {
   describe('forCity', () => {
     it('should return cached weather condition if available', async () => {
       // Arrange
-      const city = CityBuilder.aCity().withIdFromName('Paris').build();
+      const city = CityFixtures.paris();
       mockCacheManager.get.mockResolvedValue('sunny');
 
       // Act
@@ -65,7 +65,7 @@ describe('OpenWeatherMapAdapter (Integration)', () => {
 
     it('should fetch from API when cache is empty', async () => {
       // Arrange
-      const city = CityBuilder.aCity().withIdFromName('Paris').build();
+      const city = CityFixtures.paris();
       mockCacheManager.get.mockResolvedValue(null);
 
       const mockResponse: AxiosResponse = {
@@ -120,7 +120,7 @@ describe('OpenWeatherMapAdapter (Integration)', () => {
       ];
 
       for (const { main, cityName, expected } of weatherConditions) {
-        const city = CityBuilder.aCity().withIdFromName(cityName).build();
+        const city = CityBuilder.aCity().withName(cityName).build();
 
         const mockResponse: AxiosResponse = {
           data: {
@@ -153,7 +153,7 @@ describe('OpenWeatherMapAdapter (Integration)', () => {
 
     it('should throw WeatherServiceError when API returns invalid response', async () => {
       // Arrange
-      const city = CityBuilder.aCity().withIdFromName('InvalidCity').build();
+      const city = CityBuilder.aCity().withName('InvalidCity').build();
       mockCacheManager.get.mockResolvedValue(null);
 
       const mockResponse: AxiosResponse = {
@@ -176,7 +176,7 @@ describe('OpenWeatherMapAdapter (Integration)', () => {
 
     it('should throw error when API call fails', async () => {
       // Arrange
-      const city = CityBuilder.aCity().withIdFromName('Paris').build();
+      const city = CityFixtures.paris();
       mockCacheManager.get.mockResolvedValue(null);
 
       jest
@@ -189,7 +189,7 @@ describe('OpenWeatherMapAdapter (Integration)', () => {
 
     it('should use correct cache key with trimmed lowercase city name', async () => {
       // Arrange
-      const city = CityBuilder.aCity().withIdFromName('  PARIS  ').build();
+      const city = CityBuilder.aCity().withName('  PARIS  ').build();
       mockCacheManager.get.mockResolvedValue('rain');
 
       // Act
@@ -201,7 +201,7 @@ describe('OpenWeatherMapAdapter (Integration)', () => {
 
     it('should correctly construct API request parameters', async () => {
       // Arrange
-      const city = CityBuilder.aCity().withIdFromName('Lyon').build();
+      const city = CityFixtures.lyon();
       mockCacheManager.get.mockResolvedValue(null);
 
       const mockResponse: AxiosResponse = {
