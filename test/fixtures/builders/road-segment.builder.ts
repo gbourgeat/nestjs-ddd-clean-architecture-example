@@ -5,15 +5,15 @@ export class RoadSegmentBuilder {
   private id?: RoadSegmentId;
   private cityA?: City;
   private cityB?: City;
-  private distance: Distance = Distance.fromKilometers(100);
-  private speedLimit: Speed = Speed.fromKmPerHour(110);
+  private distance: Distance = Distance.fromKilometersOrThrow(100);
+  private speedLimit: Speed = Speed.fromKmPerHourOrThrow(110);
 
   static aRoadSegment(): RoadSegmentBuilder {
     return new RoadSegmentBuilder();
   }
 
   withId(id: string | RoadSegmentId): this {
-    this.id = typeof id === 'string' ? RoadSegmentId.fromValue(id) : id;
+    this.id = typeof id === 'string' ? RoadSegmentId.fromValueOrThrow(id) : id;
     return this;
   }
 
@@ -34,12 +34,12 @@ export class RoadSegmentBuilder {
   }
 
   withDistance(kilometers: number): this {
-    this.distance = Distance.fromKilometers(kilometers);
+    this.distance = Distance.fromKilometersOrThrow(kilometers);
     return this;
   }
 
   withSpeedLimit(kmPerHour: number): this {
-    this.speedLimit = Speed.fromKmPerHour(kmPerHour);
+    this.speedLimit = Speed.fromKmPerHourOrThrow(kmPerHour);
     return this;
   }
 
@@ -50,7 +50,10 @@ export class RoadSegmentBuilder {
 
     const id =
       this.id ||
-      RoadSegmentId.fromCityNames(this.cityA.name.value, this.cityB.name.value);
+      RoadSegmentId.fromCityNamesOrThrow(
+        this.cityA.name.value,
+        this.cityB.name.value,
+      );
 
     return RoadSegment.create(
       id,

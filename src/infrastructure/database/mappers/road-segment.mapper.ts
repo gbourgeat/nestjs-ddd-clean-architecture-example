@@ -22,19 +22,19 @@ export class RoadSegmentMapper {
     cityB: CityTypeormEntity,
   ): RoadSegment {
     return RoadSegment.reconstitute(
-      RoadSegmentId.fromCityNames(cityA.name, cityB.name),
+      RoadSegmentId.fromCityNamesOrThrow(cityA.name, cityB.name),
       [
         City.reconstitute(
-          CityId.fromNormalizedValue(cityA.id),
-          CityName.create(cityA.name),
+          CityId.fromNormalizedValueOrThrow(cityA.id),
+          CityName.createOrThrow(cityA.name),
         ),
         City.reconstitute(
-          CityId.fromNormalizedValue(cityB.id),
-          CityName.create(cityB.name),
+          CityId.fromNormalizedValueOrThrow(cityB.id),
+          CityName.createOrThrow(cityB.name),
         ),
       ],
-      Distance.fromKilometers(Number(entity.distance)),
-      Speed.fromKmPerHour(entity.speedLimit),
+      Distance.fromKilometersOrThrow(Number(entity.distance)),
+      Speed.fromKmPerHourOrThrow(entity.speedLimit),
     );
   }
 

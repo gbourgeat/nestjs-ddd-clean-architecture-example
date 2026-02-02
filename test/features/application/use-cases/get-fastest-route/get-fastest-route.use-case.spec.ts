@@ -7,7 +7,6 @@ import {
 } from '@/domain/errors';
 import {
   CityFixtures,
-  CityInMemoryRepository,
   PathFinderFake,
   PathfindingResultBuilder,
   RoadSegmentBuilder,
@@ -17,7 +16,6 @@ import {
 
 describe('GetFastestRouteUseCase', () => {
   let useCase: GetFastestRouteUseCase;
-  let cityRepository: CityInMemoryRepository;
   let roadSegmentRepository: RoadSegmentInMemoryRepository;
   let pathFinder: PathFinderFake;
 
@@ -30,7 +28,6 @@ describe('GetFastestRouteUseCase', () => {
 
   beforeEach(() => {
     // Create repositories and services
-    cityRepository = new CityInMemoryRepository();
     roadSegmentRepository = new RoadSegmentInMemoryRepository();
     pathFinder = new PathFinderFake();
 
@@ -52,19 +49,14 @@ describe('GetFastestRouteUseCase', () => {
       .withSpeedLimit(130)
       .build();
 
-    // Populate repositories with test data
-    cityRepository.givenCities([parisCity, lyonCity, marseilleCity]);
+    // Populate repository with test data (cities are registered automatically)
     roadSegmentRepository.givenRoadSegments([
       roadSegmentParisLyon,
       roadSegmentLyonMarseille,
     ]);
 
     // Create use case instance
-    useCase = new GetFastestRouteUseCase(
-      pathFinder,
-      roadSegmentRepository,
-      cityRepository,
-    );
+    useCase = new GetFastestRouteUseCase(pathFinder, roadSegmentRepository);
   });
 
   describe('execute', () => {

@@ -1,62 +1,127 @@
+import { type Result, fail, ok } from '@/domain/common';
 import { InvalidRoadSegmentIdError } from '@/domain/errors';
+import { CityId } from './city-id';
 
 export class RoadSegmentId {
   private readonly _value: string;
+  private readonly _cityIdA: CityId;
+  private readonly _cityIdB: CityId;
 
-  private constructor(value: string) {
-    this._value = value;
+  private constructor(cityIdA: CityId, cityIdB: CityId) {
+    // Always store in alphabetical order for consistency
+    if (cityIdA.value <= cityIdB.value) {
+      this._cityIdA = cityIdA;
+      this._cityIdB = cityIdB;
+    } else {
+      this._cityIdA = cityIdB;
+      this._cityIdB = cityIdA;
+    }
+    this._value = `${this._cityIdA.value}__${this._cityIdB.value}`;
   }
 
-  static fromCityNames(cityName1: string, cityName2: string): RoadSegmentId {
+  static create(
+    cityIdA: CityId,
+    cityIdB: CityId,
+  ): Result<RoadSegmentId, InvalidRoadSegmentIdError> {
+    if (cityIdA.equals(cityIdB)) {
+      return fail(InvalidRoadSegmentIdError.sameCities());
+    }
+    return ok(new RoadSegmentId(cityIdA, cityIdB));
+  }
+
+  static createOrThrow(cityIdA: CityId, cityIdB: CityId): RoadSegmentId {
+    const result = RoadSegmentId.create(cityIdA, cityIdB);
+    if (!result.success) {
+      throw result.error;
+    }
+    return result.value;
+  }
+
+  static fromCityNames(
+    cityName1: string,
+    cityName2: string,
+  ): Result<RoadSegmentId, InvalidRoadSegmentIdError> {
     if (!cityName1 || cityName1.trim().length === 0) {
-      throw InvalidRoadSegmentIdError.emptyFirstCityName();
+      return fail(InvalidRoadSegmentIdError.emptyFirstCityName());
     }
 
     if (!cityName2 || cityName2.trim().length === 0) {
-      throw InvalidRoadSegmentIdError.emptySecondCityName();
+      return fail(InvalidRoadSegmentIdError.emptySecondCityName());
     }
 
-    const normalized1 = RoadSegmentId.normalize(cityName1);
-    const normalized2 = RoadSegmentId.normalize(cityName2);
+    const cityIdAResult = CityId.fromCityName(cityName1);
+    if (!cityIdAResult.success) {
+      return fail(InvalidRoadSegmentIdError.invalidCityId('first'));
+    }
 
-    // Sort alphabetically toCity ensure consistency
-    const [first, second] =
-      normalized1 <= normalized2
-        ? [normalized1, normalized2]
-        : [normalized2, normalized1];
+    const cityIdBResult = CityId.fromCityName(cityName2);
+    if (!cityIdBResult.success) {
+      return fail(InvalidRoadSegmentIdError.invalidCityId('second'));
+    }
 
-    const value = `${first}__${second}`;
-
-    return new RoadSegmentId(value);
+    return RoadSegmentId.create(cityIdAResult.value, cityIdBResult.value);
   }
 
-  static fromValue(value: string): RoadSegmentId {
+  static fromCityNamesOrThrow(
+    cityName1: string,
+    cityName2: string,
+  ): RoadSegmentId {
+    const result = RoadSegmentId.fromCityNames(cityName1, cityName2);
+    if (!result.success) {
+      throw result.error;
+    }
+    return result.value;
+  }
+
+  static fromValue(
+    value: string,
+  ): Result<RoadSegmentId, InvalidRoadSegmentIdError> {
     if (!value || value.trim().length === 0) {
-      throw InvalidRoadSegmentIdError.emptyValue();
+      return fail(InvalidRoadSegmentIdError.emptyValue());
     }
 
     if (!value.includes('__')) {
-      throw InvalidRoadSegmentIdError.missingSeparator();
+      return fail(InvalidRoadSegmentIdError.missingSeparator());
     }
 
-    return new RoadSegmentId(value);
+    const [cityAId, cityBId] = value.split('__');
+
+    const cityIdAResult = CityId.fromNormalizedValue(cityAId);
+    if (!cityIdAResult.success) {
+      return fail(InvalidRoadSegmentIdError.invalidCityId('first'));
+    }
+
+    const cityIdBResult = CityId.fromNormalizedValue(cityBId);
+    if (!cityIdBResult.success) {
+      return fail(InvalidRoadSegmentIdError.invalidCityId('second'));
+    }
+
+    // Use the constructor directly since the value is already normalized and sorted
+    return ok(new RoadSegmentId(cityIdAResult.value, cityIdBResult.value));
   }
 
-  private static normalize(cityName: string): string {
-    return cityName
-      .trim()
-      .toLowerCase()
-      .normalize('NFD') // Decompose accented characters
-      .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
-      .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
-      .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+  static fromValueOrThrow(value: string): RoadSegmentId {
+    const result = RoadSegmentId.fromValue(value);
+    if (!result.success) {
+      throw result.error;
+    }
+    return result.value;
   }
 
   get value(): string {
     return this._value;
   }
 
+  get cityIdA(): CityId {
+    return this._cityIdA;
+  }
+
+  get cityIdB(): CityId {
+    return this._cityIdB;
+  }
+
   equals(other: RoadSegmentId): boolean {
+    // Order-independent equality (already handled by sorting in constructor)
     return this._value === other._value;
   }
 

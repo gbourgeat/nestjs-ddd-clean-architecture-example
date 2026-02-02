@@ -14,6 +14,10 @@ export class City {
     return new City(id, name);
   }
 
+  get uniqueKey(): string {
+    return this.name.toNormalized();
+  }
+
   equals(other: City): boolean {
     return this.id.equals(other.id);
   }

@@ -1,9 +1,11 @@
 import { CityName } from '@/domain/value-objects';
+import { DomainError } from './domain.error';
 
-export class CityNotFoundError extends Error {
-  public constructor(message: string) {
+export class CityNotFoundError extends DomainError {
+  readonly code = 'CITY_NOT_FOUND';
+
+  private constructor(message: string) {
     super(message);
-    this.name = this.constructor.name;
   }
 
   static forCityName(cityName: CityName): CityNotFoundError {

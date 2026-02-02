@@ -1,3 +1,4 @@
+import { type Result, fail, ok } from '@/domain/common';
 import { InvalidSpeedError } from '@/domain/errors';
 
 export class Speed {
@@ -7,16 +8,24 @@ export class Speed {
     this._value = value;
   }
 
-  static fromKmPerHour(kmPerHour: number): Speed {
+  static fromKmPerHour(kmPerHour: number): Result<Speed, InvalidSpeedError> {
     if (kmPerHour < 0) {
-      throw InvalidSpeedError.negative();
+      return fail(InvalidSpeedError.negative());
     }
 
     if (!Number.isFinite(kmPerHour)) {
-      throw InvalidSpeedError.notFinite();
+      return fail(InvalidSpeedError.notFinite());
     }
 
-    return new Speed(kmPerHour);
+    return ok(new Speed(kmPerHour));
+  }
+
+  static fromKmPerHourOrThrow(kmPerHour: number): Speed {
+    const result = Speed.fromKmPerHour(kmPerHour);
+    if (!result.success) {
+      throw result.error;
+    }
+    return result.value;
   }
 
   get kmPerHour(): number {

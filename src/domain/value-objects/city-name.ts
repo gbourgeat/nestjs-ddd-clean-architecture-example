@@ -1,3 +1,4 @@
+import { type Result, fail, ok } from '@/domain/common';
 import { InvalidCityNameError } from '@/domain/errors';
 
 export class CityName {
@@ -7,43 +8,53 @@ export class CityName {
     this._value = value;
   }
 
-  static create(name: string): CityName {
-    CityName.validate(name);
-
-    return new CityName(name.trim());
+  static create(name: string): Result<CityName, InvalidCityNameError> {
+    const error = CityName.validate(name);
+    if (error) {
+      return fail(error);
+    }
+    return ok(new CityName(name.trim()));
   }
 
-  private static validate(name: string): void {
+  static createOrThrow(name: string): CityName {
+    const result = CityName.create(name);
+    if (!result.success) {
+      throw result.error;
+    }
+    return result.value;
+  }
+
+  private static validate(name: string): InvalidCityNameError | null {
     if (!name || name.trim().length === 0) {
-      throw InvalidCityNameError.empty();
+      return InvalidCityNameError.empty();
     }
 
     const trimmedName = name.trim();
 
     if (trimmedName.length > 100) {
-      throw InvalidCityNameError.tooLong();
+      return InvalidCityNameError.tooLong();
     }
 
     // Ensure name doesn't start or end with special characters (except balanced parentheses)
     if (/^[\s\-']|[\s\-']$/.test(trimmedName)) {
-      throw InvalidCityNameError.invalidFormat();
+      return InvalidCityNameError.invalidFormat();
     }
 
     // Check for mismatched parentheses
     const openParens = (trimmedName.match(/\(/g) || []).length;
     const closeParens = (trimmedName.match(/\)/g) || []).length;
     if (openParens !== closeParens) {
-      throw InvalidCityNameError.mismatchedParentheses();
+      return InvalidCityNameError.mismatchedParentheses();
     }
 
     // If there are parentheses, they shouldn't be at the very start
     if (/^\(/.test(trimmedName)) {
-      throw InvalidCityNameError.invalidFormat();
+      return InvalidCityNameError.invalidFormat();
     }
 
     // Avoid multiple consecutive spaces or hyphens
     if (/\s{2,}|--/.test(trimmedName)) {
-      throw InvalidCityNameError.invalidFormat();
+      return InvalidCityNameError.invalidFormat();
     }
 
     // French city name pattern:
@@ -57,8 +68,10 @@ export class CityName {
       /^[A-ZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞŸŒ][a-zA-ZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿŒœ\s'\-()]*$/;
 
     if (!frenchCityNamePattern.test(trimmedName)) {
-      throw InvalidCityNameError.invalidCharacters();
+      return InvalidCityNameError.invalidCharacters();
     }
+
+    return null;
   }
 
   get value(): string {

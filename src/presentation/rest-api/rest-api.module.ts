@@ -1,7 +1,7 @@
 import { CreateRoadSegmentUseCase } from '@/application/use-cases/create-road-segment';
 import { GetFastestRouteUseCase } from '@/application/use-cases/get-fastest-route';
 import { UpdateRoadSegmentSpeedUseCase } from '@/application/use-cases/update-road-segment-speed';
-import { CityRepository, RoadSegmentRepository } from '@/domain/repositories';
+import { RoadSegmentRepository } from '@/domain/repositories';
 import { PathFinder } from '@/domain/services';
 import { DatabaseModule } from '@/infrastructure/database/database.module';
 import { PathfindingModule } from '@/infrastructure/pathfinding/pathfinding.module';
@@ -25,31 +25,23 @@ import {
   providers: [
     {
       provide: CreateRoadSegmentUseCase,
-      useFactory: (
-        roadSegmentRepository: RoadSegmentRepository,
-        cityRepository: CityRepository,
-      ) => {
-        return new CreateRoadSegmentUseCase(
-          roadSegmentRepository,
-          cityRepository,
-        );
+      useFactory: (roadSegmentRepository: RoadSegmentRepository) => {
+        return new CreateRoadSegmentUseCase(roadSegmentRepository);
       },
-      inject: [RoadSegmentRepository, CityRepository],
+      inject: [RoadSegmentRepository],
     },
     {
       provide: GetFastestRouteUseCase,
       useFactory: (
         fastestRoadFinder: PathFinder,
         roadSegmentRepository: RoadSegmentRepository,
-        cityRepository: CityRepository,
       ) => {
         return new GetFastestRouteUseCase(
           fastestRoadFinder,
           roadSegmentRepository,
-          cityRepository,
         );
       },
-      inject: [PathFinder, RoadSegmentRepository, CityRepository],
+      inject: [PathFinder, RoadSegmentRepository],
     },
     {
       provide: UpdateRoadSegmentSpeedUseCase,

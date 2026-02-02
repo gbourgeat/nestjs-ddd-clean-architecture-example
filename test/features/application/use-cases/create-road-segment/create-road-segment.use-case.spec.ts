@@ -2,28 +2,17 @@ import { CreateRoadSegmentUseCase } from '@/application/use-cases/create-road-se
 import {
   CityNotFoundError,
   InvalidCityNameError,
-  InvalidDistanceError,
-  InvalidRoadSegmentError,
-  InvalidSpeedError,
+  RoadSegmentCreationError,
 } from '@/domain/errors';
-import {
-  CityFixtures,
-  CityInMemoryRepository,
-  RoadSegmentInMemoryRepository,
-} from '@test/fixtures';
+import { CityFixtures, RoadSegmentInMemoryRepository } from '@test/fixtures';
 
 describe('CreateRoadSegmentUseCase', () => {
   let useCase: CreateRoadSegmentUseCase;
   let roadSegmentRepository: RoadSegmentInMemoryRepository;
-  let cityRepository: CityInMemoryRepository;
 
   beforeEach(() => {
     roadSegmentRepository = new RoadSegmentInMemoryRepository();
-    cityRepository = new CityInMemoryRepository();
-    useCase = new CreateRoadSegmentUseCase(
-      roadSegmentRepository,
-      cityRepository,
-    );
+    useCase = new CreateRoadSegmentUseCase(roadSegmentRepository);
   });
 
   describe('Successful creation', () => {
@@ -31,7 +20,7 @@ describe('CreateRoadSegmentUseCase', () => {
       // Arrange
       const cityA = CityFixtures.paris();
       const cityB = CityFixtures.lyon();
-      cityRepository.givenCities([cityA, cityB]);
+      roadSegmentRepository.givenCities([cityA, cityB]);
 
       // Act
       const result = await useCase.execute({
@@ -61,7 +50,7 @@ describe('CreateRoadSegmentUseCase', () => {
       // Arrange
       const cityA = CityFixtures.paris();
       const cityB = CityFixtures.lyon();
-      cityRepository.givenCities([cityA, cityB]);
+      roadSegmentRepository.givenCities([cityA, cityB]);
 
       // Act - Input in reverse order
       const result = await useCase.execute({
@@ -81,7 +70,7 @@ describe('CreateRoadSegmentUseCase', () => {
       // Arrange
       const cityA = CityFixtures.paris();
       const cityB = CityFixtures.lyon();
-      cityRepository.givenCities([cityA, cityB]);
+      roadSegmentRepository.givenCities([cityA, cityB]);
 
       // Act
       const result = await useCase.execute({
@@ -101,7 +90,7 @@ describe('CreateRoadSegmentUseCase', () => {
     it('should throw CityNotFoundError when cityA does not exist', async () => {
       // Arrange
       const cityB = CityFixtures.lyon();
-      cityRepository.givenCities([cityB]);
+      roadSegmentRepository.givenCities([cityB]);
 
       // Act & Assert
       await expect(
@@ -117,7 +106,7 @@ describe('CreateRoadSegmentUseCase', () => {
     it('should throw CityNotFoundError when cityB does not exist', async () => {
       // Arrange
       const cityA = CityFixtures.paris();
-      cityRepository.givenCities([cityA]);
+      roadSegmentRepository.givenCities([cityA]);
 
       // Act & Assert
       await expect(
@@ -133,7 +122,7 @@ describe('CreateRoadSegmentUseCase', () => {
     it('should throw InvalidCityNameError when cityA is empty', async () => {
       // Arrange
       const cityB = CityFixtures.lyon();
-      cityRepository.givenCities([cityB]);
+      roadSegmentRepository.givenCities([cityB]);
 
       // Act & Assert
       await expect(
@@ -149,7 +138,7 @@ describe('CreateRoadSegmentUseCase', () => {
     it('should throw InvalidCityNameError when cityB is empty', async () => {
       // Arrange
       const cityA = CityFixtures.paris();
-      cityRepository.givenCities([cityA]);
+      roadSegmentRepository.givenCities([cityA]);
 
       // Act & Assert
       await expect(
@@ -166,7 +155,7 @@ describe('CreateRoadSegmentUseCase', () => {
       // Arrange
       const cityA = CityFixtures.paris();
       const cityB = CityFixtures.lyon();
-      cityRepository.givenCities([cityA, cityB]);
+      roadSegmentRepository.givenCities([cityA, cityB]);
 
       // Act
       const result = await useCase.execute({
@@ -180,11 +169,11 @@ describe('CreateRoadSegmentUseCase', () => {
       expect(result.distance).toBe(0);
     });
 
-    it('should throw InvalidDistanceError when distance is negative', async () => {
+    it('should throw RoadSegmentCreationError when distance is negative', async () => {
       // Arrange
       const cityA = CityFixtures.paris();
       const cityB = CityFixtures.lyon();
-      cityRepository.givenCities([cityA, cityB]);
+      roadSegmentRepository.givenCities([cityA, cityB]);
 
       // Act & Assert
       await expect(
@@ -194,14 +183,14 @@ describe('CreateRoadSegmentUseCase', () => {
           distance: -100,
           speedLimit: 130,
         }),
-      ).rejects.toThrow(InvalidDistanceError);
+      ).rejects.toThrow(RoadSegmentCreationError);
     });
 
     it('should allow creating a segment with zero speed limit', async () => {
       // Arrange
       const cityA = CityFixtures.paris();
       const cityB = CityFixtures.lyon();
-      cityRepository.givenCities([cityA, cityB]);
+      roadSegmentRepository.givenCities([cityA, cityB]);
 
       // Act
       const result = await useCase.execute({
@@ -215,11 +204,11 @@ describe('CreateRoadSegmentUseCase', () => {
       expect(result.speedLimit).toBe(0);
     });
 
-    it('should throw InvalidSpeedError when speedLimit is negative', async () => {
+    it('should throw RoadSegmentCreationError when speedLimit is negative', async () => {
       // Arrange
       const cityA = CityFixtures.paris();
       const cityB = CityFixtures.lyon();
-      cityRepository.givenCities([cityA, cityB]);
+      roadSegmentRepository.givenCities([cityA, cityB]);
 
       // Act & Assert
       await expect(
@@ -229,13 +218,13 @@ describe('CreateRoadSegmentUseCase', () => {
           distance: 465,
           speedLimit: -50,
         }),
-      ).rejects.toThrow(InvalidSpeedError);
+      ).rejects.toThrow(RoadSegmentCreationError);
     });
 
-    it('should throw InvalidRoadSegmentError when both cities are the same', async () => {
+    it('should throw RoadSegmentCreationError when both cities are the same', async () => {
       // Arrange
       const city = CityFixtures.paris();
-      cityRepository.givenCities([city]);
+      roadSegmentRepository.givenCities([city]);
 
       // Act & Assert
       await expect(
@@ -245,7 +234,7 @@ describe('CreateRoadSegmentUseCase', () => {
           distance: 100,
           speedLimit: 130,
         }),
-      ).rejects.toThrow(InvalidRoadSegmentError);
+      ).rejects.toThrow(RoadSegmentCreationError);
     });
   });
 });

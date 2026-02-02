@@ -1,12 +1,9 @@
-import { CityRepository, RoadSegmentRepository } from '@/domain/repositories';
+import { RoadSegmentRepository } from '@/domain/repositories';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmConfig } from './database.config';
 import { CityTypeormEntity, RoadSegmentTypeormEntity } from './entities';
-import {
-  CityTypeormRepository,
-  RoadSegmentTypeormRepository,
-} from './repositories';
+import { RoadSegmentTypeormRepository } from './repositories';
 import { DatabaseSeeder } from './seeders/database.seeder';
 
 @Module({
@@ -16,15 +13,11 @@ import { DatabaseSeeder } from './seeders/database.seeder';
   ],
   providers: [
     {
-      provide: CityRepository,
-      useClass: CityTypeormRepository,
-    },
-    {
       provide: RoadSegmentRepository,
       useClass: RoadSegmentTypeormRepository,
     },
     DatabaseSeeder,
   ],
-  exports: [CityRepository, RoadSegmentRepository],
+  exports: [RoadSegmentRepository],
 })
 export class DatabaseModule {}

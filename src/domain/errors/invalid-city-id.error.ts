@@ -1,7 +1,10 @@
-export class InvalidCityIdError extends Error {
-  public constructor(message: string) {
+import { DomainError } from './domain.error';
+
+export class InvalidCityIdError extends DomainError {
+  readonly code = 'INVALID_CITY_ID';
+
+  private constructor(message: string) {
     super(message);
-    this.name = this.constructor.name;
   }
 
   static emptyCityName(): InvalidCityIdError {
