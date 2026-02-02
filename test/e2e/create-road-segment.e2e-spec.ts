@@ -6,6 +6,10 @@ import request from 'supertest';
 describe('POST /road-segments (E2E)', () => {
   let app: INestApplication;
 
+  // UUID regex for validation
+  const UUID_REGEX =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [RestApiModule],
@@ -42,13 +46,11 @@ describe('POST /road-segments (E2E)', () => {
         .expect(HttpStatus.CREATED);
 
       // Assert
-      expect(response.body).toEqual({
-        roadSegmentId: 'lyon__paris',
-        cityA: 'Lyon',
-        cityB: 'Paris',
-        distance: 465,
-        speedLimit: 130,
-      });
+      expect(response.body.roadSegmentId).toMatch(UUID_REGEX);
+      expect(response.body.cityA).toBe('Lyon'); // Sorted alphabetically
+      expect(response.body.cityB).toBe('Paris');
+      expect(response.body.distance).toBe(465);
+      expect(response.body.speedLimit).toBe(130);
     });
 
     it('should create a road segment with minimum valid values', async () => {
@@ -83,7 +85,7 @@ describe('POST /road-segments (E2E)', () => {
       // Assert - Cities should be sorted: Bordeaux before Toulouse
       expect(response.body.cityA).toBe('Bordeaux');
       expect(response.body.cityB).toBe('Toulouse');
-      expect(response.body.roadSegmentId).toBe('bordeaux__toulouse');
+      expect(response.body.roadSegmentId).toMatch(UUID_REGEX);
     });
   });
 

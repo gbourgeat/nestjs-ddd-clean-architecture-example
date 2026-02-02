@@ -2,17 +2,20 @@ import { City } from '@/domain/entities';
 import { CityId, CityName } from '@/domain/value-objects';
 
 describe('City', () => {
+  const UUID_1 = '11111111-1111-1111-1111-111111111111';
+  const UUID_2 = '22222222-2222-2222-2222-222222222222';
+
   it('should compare cities by id', () => {
     const city1 = City.create(
-      CityId.fromNormalizedValueOrThrow('paris'),
+      CityId.fromValueOrThrow(UUID_1),
       CityName.createOrThrow('Paris'),
     );
     const city2 = City.create(
-      CityId.fromNormalizedValueOrThrow('paris'),
+      CityId.fromValueOrThrow(UUID_1),
       CityName.createOrThrow('Paris'),
     );
     const city3 = City.create(
-      CityId.fromNormalizedValueOrThrow('lyon'),
+      CityId.fromValueOrThrow(UUID_2),
       CityName.createOrThrow('Lyon'),
     );
 
@@ -22,7 +25,7 @@ describe('City', () => {
 
   it('should expose uniqueKey getter', () => {
     const city = City.create(
-      CityId.fromNormalizedValueOrThrow('paris'),
+      CityId.fromValueOrThrow(UUID_1),
       CityName.createOrThrow('Paris'),
     );
 

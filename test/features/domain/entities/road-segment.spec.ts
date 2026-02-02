@@ -1,10 +1,6 @@
 import { City, RoadSegment } from '@/domain/entities';
+import { InvalidRoadSegmentError } from '@/domain/errors';
 import {
-  InvalidRoadSegmentError,
-  InvalidRoadSegmentIdError,
-} from '@/domain/errors';
-import {
-  CityId,
   CityName,
   Distance,
   RoadSegmentId,
@@ -13,36 +9,33 @@ import {
 import { CityBuilder } from '@test/fixtures';
 
 describe('RoadSegment', () => {
+  const PARIS_UUID = '11111111-1111-1111-1111-111111111111';
+  const LYON_UUID = '22222222-2222-2222-2222-222222222222';
+  const SEGMENT_UUID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+
   let parisCity: City;
   let lyonCity: City;
 
   beforeEach(() => {
     parisCity = CityBuilder.aCity()
-      .withId(CityId.fromCityNameOrThrow('Paris'))
+      .withId(PARIS_UUID)
       .withName(CityName.createOrThrow('Paris'))
       .build();
 
     lyonCity = CityBuilder.aCity()
-      .withId(CityId.fromCityNameOrThrow('Lyon'))
+      .withId(LYON_UUID)
       .withName(CityName.createOrThrow('Lyon'))
       .build();
-  });
-
-  it('should throw InvalidRoadSegmentIdError when creating ID with same city', () => {
-    expect(() => RoadSegmentId.fromCityNamesOrThrow('Paris', 'Paris')).toThrow(
-      InvalidRoadSegmentIdError as unknown as typeof Error,
-    );
   });
 
   it('should throw InvalidRoadSegmentError for same city connection in entity', () => {
     // Create two different City objects with the same ID to test entity validation
     const parisCity2 = CityBuilder.aCity()
-      .withId(CityId.fromCityNameOrThrow('Paris'))
+      .withId(PARIS_UUID)
       .withName(CityName.createOrThrow('Paris'))
       .build();
 
-    // Use a valid road segment ID but pass the same city twice
-    const validId = RoadSegmentId.fromCityNamesOrThrow('Paris', 'Lyon');
+    const validId = RoadSegmentId.fromValueOrThrow(SEGMENT_UUID);
 
     expect(() =>
       RoadSegment.create(
@@ -55,9 +48,10 @@ describe('RoadSegment', () => {
   });
 
   it('should sort cities by name', () => {
+    const segmentId = RoadSegmentId.fromValueOrThrow(SEGMENT_UUID);
     const segment = RoadSegment.create(
-      RoadSegmentId.fromCityNamesOrThrow('Paris', 'Lyon'),
-      [lyonCity, parisCity], // Reversed order
+      segmentId,
+      [parisCity, lyonCity], // Paris before Lyon (wrong alphabetical order)
       Distance.fromKilometersOrThrow(465),
       Speed.fromKmPerHourOrThrow(130),
     );
@@ -68,8 +62,9 @@ describe('RoadSegment', () => {
   });
 
   it('should update speed limit', () => {
+    const segmentId = RoadSegmentId.fromValueOrThrow(SEGMENT_UUID);
     const segment = RoadSegment.create(
-      RoadSegmentId.fromCityNamesOrThrow('Paris', 'Lyon'),
+      segmentId,
       [parisCity, lyonCity],
       Distance.fromKilometersOrThrow(465),
       Speed.fromKmPerHourOrThrow(130),
@@ -81,8 +76,9 @@ describe('RoadSegment', () => {
   });
 
   it('should get cities via cityA and cityB getters', () => {
+    const segmentId = RoadSegmentId.fromValueOrThrow(SEGMENT_UUID);
     const segment = RoadSegment.create(
-      RoadSegmentId.fromCityNamesOrThrow('Paris', 'Lyon'),
+      segmentId,
       [parisCity, lyonCity],
       Distance.fromKilometersOrThrow(465),
       Speed.fromKmPerHourOrThrow(130),
@@ -93,8 +89,9 @@ describe('RoadSegment', () => {
   });
 
   it('should calculate estimated duration', () => {
+    const segmentId = RoadSegmentId.fromValueOrThrow(SEGMENT_UUID);
     const segment = RoadSegment.create(
-      RoadSegmentId.fromCityNamesOrThrow('Paris', 'Lyon'),
+      segmentId,
       [parisCity, lyonCity],
       Distance.fromKilometersOrThrow(465),
       Speed.fromKmPerHourOrThrow(130),
@@ -103,5 +100,17 @@ describe('RoadSegment', () => {
     const estimatedDuration = segment.estimatedDuration;
     expect(estimatedDuration).toBeDefined();
     expect(estimatedDuration.hours).toBeGreaterThan(0);
+  });
+
+  it('should use UUID for road segment id', () => {
+    const segmentId = RoadSegmentId.fromValueOrThrow(SEGMENT_UUID);
+    const segment = RoadSegment.create(
+      segmentId,
+      [parisCity, lyonCity],
+      Distance.fromKilometersOrThrow(465),
+      Speed.fromKmPerHourOrThrow(130),
+    );
+
+    expect(segment.id.value).toBe(SEGMENT_UUID);
   });
 });

@@ -7,11 +7,13 @@ export class InvalidCityIdError extends DomainError {
     super(message);
   }
 
-  static emptyCityName(): InvalidCityIdError {
-    return new InvalidCityIdError('City name cannot be empty');
+  static emptyValue(): InvalidCityIdError {
+    return new InvalidCityIdError('City ID cannot be empty');
   }
 
-  static emptyNormalizedValue(): InvalidCityIdError {
-    return new InvalidCityIdError('Normalized value cannot be empty');
+  static invalidUuidFormat(value: string): InvalidCityIdError {
+    return new InvalidCityIdError(
+      `City ID must be a valid UUID, got: "${value}"`,
+    );
   }
 }

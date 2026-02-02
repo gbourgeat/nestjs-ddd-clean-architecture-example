@@ -64,43 +64,25 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
   async findById(
     id: RoadSegmentId,
   ): Promise<Result<RoadSegment, RoadSegmentNotFoundError>> {
-    // Parse the id to get normalized city names (format: "cityA__cityB")
-    const [normalizedCityAName, normalizedCityBName] = id.value.split('__');
-
-    // Find cities using case-insensitive search
-    // The ID contains normalized names (lowercase), but database has original case
-    const cities = await this.cityTypeormEntityRepository
-      .createQueryBuilder('city')
-      .where('LOWER(city.name) IN (:...names)', {
-        names: [normalizedCityAName, normalizedCityBName],
-      })
-      .getMany();
-
-    if (cities.length !== 2) {
-      return fail(RoadSegmentNotFoundError.forRoadSegmentId(id));
-    }
-
-    const cityA = cities.find(
-      (c) => c.name.toLowerCase() === normalizedCityAName,
-    );
-    const cityB = cities.find(
-      (c) => c.name.toLowerCase() === normalizedCityBName,
-    );
-
-    if (!cityA || !cityB) {
-      return fail(RoadSegmentNotFoundError.forRoadSegmentId(id));
-    }
-
-    // Find road segment connecting these cities
+    // Direct lookup by UUID
     const roadSegmentEntity =
       await this.roadSegmentTypeormEntityRepository.findOne({
-        where: [
-          { cityAId: cityA.id, cityBId: cityB.id },
-          { cityAId: cityB.id, cityBId: cityA.id },
-        ],
+        where: { id: id.value },
       });
 
     if (!roadSegmentEntity) {
+      return fail(RoadSegmentNotFoundError.forRoadSegmentId(id));
+    }
+
+    // Fetch the cities
+    const cityA = await this.cityTypeormEntityRepository.findOne({
+      where: { id: roadSegmentEntity.cityAId },
+    });
+    const cityB = await this.cityTypeormEntityRepository.findOne({
+      where: { id: roadSegmentEntity.cityBId },
+    });
+
+    if (!cityA || !cityB) {
       return fail(RoadSegmentNotFoundError.forRoadSegmentId(id));
     }
 
@@ -115,6 +97,7 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
       const cityAEntity = await this.upsertCity(roadSegment.cityA);
       const cityBEntity = await this.upsertCity(roadSegment.cityB);
 
+      // Check if a segment already exists between these cities
       const existingSegment =
         await this.roadSegmentTypeormEntityRepository.findOne({
           where: [

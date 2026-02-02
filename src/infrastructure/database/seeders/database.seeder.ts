@@ -52,6 +52,7 @@ export class DatabaseSeeder implements OnModuleInit {
       this.logger.log('Seeding road segments...');
       for (const segmentData of ROAD_SEGMENTS) {
         const segment = new RoadSegmentTypeormEntity();
+        segment.id = crypto.randomUUID();
         segment.cityAId = cityNameToId.get(segmentData.fromCityName)!;
         segment.cityBId = cityNameToId.get(segmentData.toCityName)!;
         segment.distance = segmentData.distance;

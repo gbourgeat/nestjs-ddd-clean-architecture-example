@@ -22,14 +22,14 @@ export class RoadSegmentMapper {
     cityB: CityTypeormEntity,
   ): RoadSegment {
     return RoadSegment.reconstitute(
-      RoadSegmentId.fromCityNamesOrThrow(cityA.name, cityB.name),
+      RoadSegmentId.reconstitute(entity.id),
       [
         City.reconstitute(
-          CityId.fromNormalizedValueOrThrow(cityA.id),
+          CityId.reconstitute(cityA.id),
           CityName.createOrThrow(cityA.name),
         ),
         City.reconstitute(
-          CityId.fromNormalizedValueOrThrow(cityB.id),
+          CityId.reconstitute(cityB.id),
           CityName.createOrThrow(cityB.name),
         ),
       ],
@@ -64,7 +64,7 @@ export class RoadSegmentMapper {
   }
 
   /**
-   * Creates a partial TypeORM entity for creation (without ID)
+   * Creates a partial TypeORM entity for creation with the domain's UUID
    */
   static toTypeormForCreation(
     domain: RoadSegment,
@@ -72,6 +72,7 @@ export class RoadSegmentMapper {
     cityBDatabaseId: string,
   ): Partial<RoadSegmentTypeormEntity> {
     return {
+      id: domain.id.value,
       cityAId: cityADatabaseId,
       cityBId: cityBDatabaseId,
       distance: domain.distance.kilometers,
