@@ -1,12 +1,10 @@
 import { UpdateRoadSegmentSpeedUseCase } from '@/application/use-cases/update-road-segment-speed/update-road-segment-speed.use-case';
-import { RoadSegment, City } from '@/domain/entities';
 import {
-  RoadSegmentNotFoundError,
-  InvalidSpeedError,
   InvalidRoadSegmentIdError,
+  InvalidSpeedError,
+  RoadSegmentNotFoundError,
 } from '@/domain/errors';
 import {
-  CityBuilder,
   CityFixtures,
   RoadSegmentBuilder,
   RoadSegmentInMemoryRepository,

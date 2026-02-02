@@ -1,10 +1,10 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { WeatherConditionProvider } from '@/infrastructure/pathfinding/weather-condition-provider';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+import { FakeWeatherConditionProvider } from '@test/fixtures/services';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { RestApiModule } from '../../src/presentation/rest-api/rest-api.module';
-import { WeatherConditionProvider } from '@/infrastructure/pathfinding/weather-condition-provider';
-import { FakeWeatherConditionProvider } from '@test/fixtures/services';
 
 describe('POST /get-fastest-route (e2e)', () => {
   let app: INestApplication<App>;

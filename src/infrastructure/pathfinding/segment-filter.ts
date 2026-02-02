@@ -1,5 +1,5 @@
-import { SimplifiedSegmentData } from './types';
 import { WeatherCondition } from '@/domain/value-objects';
+import { SimplifiedSegmentData } from './types';
 
 export interface SimplifiedConstraints {
   maxDistance?: number;

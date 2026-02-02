@@ -1,10 +1,10 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { CacheModule } from '@nestjs/cache-manager';
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { WeatherConditionProvider } from '../pathfinding/weather-condition-provider';
 import { OpenWeatherMapAdapter } from './openweathermap.adapter';
 import openweathermapConfig from './openweathermap.config';
-import { WeatherConditionProvider } from '../pathfinding/weather-condition-provider';
 
 @Module({
   imports: [

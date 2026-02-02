@@ -1,5 +1,5 @@
-import { join } from 'path';
-import { existsSync } from 'fs';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 
 // Disable console logs in tests BEFORE loading dotenv
 // to prevent dotenv from displaying its own logs

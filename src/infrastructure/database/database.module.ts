@@ -1,13 +1,13 @@
+import { CityRepository, RoadSegmentRepository } from '@/domain/repositories';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmConfig } from './database.config';
-import { CityRepository, RoadSegmentRepository } from '@/domain/repositories';
-import { DatabaseSeeder } from './seeders/database.seeder';
+import { CityTypeormEntity, RoadSegmentTypeormEntity } from './entities';
 import {
   CityTypeormRepository,
   RoadSegmentTypeormRepository,
 } from './repositories';
-import { CityTypeormEntity, RoadSegmentTypeormEntity } from './entities';
+import { DatabaseSeeder } from './seeders/database.seeder';
 
 @Module({
   imports: [

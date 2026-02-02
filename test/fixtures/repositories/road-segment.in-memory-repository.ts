@@ -1,7 +1,7 @@
-import { RoadSegmentRepository } from '@/domain/repositories';
 import { RoadSegment } from '@/domain/entities';
-import { RoadSegmentId } from '@/domain/value-objects';
 import { RoadSegmentNotFoundError } from '@/domain/errors';
+import { RoadSegmentRepository } from '@/domain/repositories';
+import { RoadSegmentId } from '@/domain/value-objects';
 
 export class RoadSegmentInMemoryRepository extends RoadSegmentRepository {
   private roadSegments: Map<string, RoadSegment> = new Map();

@@ -1,7 +1,7 @@
-import { CityRepository } from '@/domain/repositories';
 import { City } from '@/domain/entities';
-import { CityName } from '@/domain/value-objects';
 import { CityNotFoundError } from '@/domain/errors';
+import { CityRepository } from '@/domain/repositories';
+import { CityName } from '@/domain/value-objects';
 
 export class CityInMemoryRepository extends CityRepository {
   private cities: Map<string, City> = new Map();

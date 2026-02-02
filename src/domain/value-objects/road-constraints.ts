@@ -1,6 +1,6 @@
 import { Distance } from './distance';
-import { WeatherCondition } from './weather-condition';
 import { Speed } from './speed';
+import { WeatherCondition } from './weather-condition';
 
 export class RoadConstraints {
   constructor(

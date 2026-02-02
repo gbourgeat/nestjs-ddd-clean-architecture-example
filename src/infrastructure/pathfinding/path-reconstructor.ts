@@ -1,5 +1,5 @@
-import { PreviousCity } from './types';
 import { WeatherCondition } from '@/domain/value-objects';
+import { PreviousCity } from './types';
 
 export interface InternalPathfindingResult {
   totalDistance: number;

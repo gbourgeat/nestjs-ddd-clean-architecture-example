@@ -12,7 +12,7 @@ export class Distance {
       throw InvalidDistanceError.negative();
     }
 
-    if (!isFinite(kilometers)) {
+    if (!Number.isFinite(kilometers)) {
       throw InvalidDistanceError.notFinite();
     }
 

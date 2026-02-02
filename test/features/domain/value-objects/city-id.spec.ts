@@ -1,5 +1,5 @@
-import { CityId } from '@/domain/value-objects';
 import { InvalidCityIdError } from '@/domain/errors';
+import { CityId } from '@/domain/value-objects';
 
 describe('CityId', () => {
   it('should throw InvalidCityIdError for empty city name when creating from city name', () => {

@@ -1,12 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { RoadSegmentRepository } from '@/domain/repositories';
-import {
-  CityTypeormEntity,
-  RoadSegmentTypeormEntity,
-} from '@/infrastructure/database';
 import { City, RoadSegment } from '@/domain/entities';
+import { RoadSegmentNotFoundError } from '@/domain/errors';
+import { RoadSegmentRepository } from '@/domain/repositories';
 import {
   CityId,
   CityName,
@@ -14,7 +8,13 @@ import {
   RoadSegmentId,
   Speed,
 } from '@/domain/value-objects';
-import { RoadSegmentNotFoundError } from '@/domain/errors';
+import {
+  CityTypeormEntity,
+  RoadSegmentTypeormEntity,
+} from '@/infrastructure/database';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class RoadSegmentTypeormRepository implements RoadSegmentRepository {

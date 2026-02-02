@@ -29,8 +29,7 @@ npx lint-staged
   },
   "lint-staged": {
     "*.ts": [
-      "prettier --write",
-      "eslint --fix"
+      "biome check --write --no-errors-on-unmatched"
     ]
   }
 }
@@ -59,11 +58,9 @@ npx lint-staged
 │                                                              │
 │     ┌─── Hook pre-commit (automatique) ───┐                │
 │     │                                       │                │
-│     │  ▸ prettier --write fichier.ts       │                │
-│     │    ✓ Formatage appliqué               │                │
-│     │                                       │                │
-│     │  ▸ eslint --fix fichier.ts           │                │
-│     │    ✓ Corrections automatiques         │                │
+│     │  ▸ biome check --write fichier.ts    │                │
+│     │    ✓ Formatage + Lint appliqués      │                │
+│     │    ✓ Imports organisés                │                │
 │     │                                       │                │
 │     └───────────────────────────────────────┘                │
 │                                                              │
@@ -82,8 +79,7 @@ $ git commit -m "feat: add city entity"
 
 ✔ Preparing lint-staged...
 ⚠ Running tasks for staged files...
-  ⚠ prettier --write — 1 file modified
-  ⚠ eslint --fix — 1 file modified
+  ⚠ biome check --write — 1 file modified
 ✔ Applying modifications from tasks...
 ✔ Cleaning up temporary files...
 
@@ -95,10 +91,10 @@ $ git commit -m "feat: add city entity"
 ```bash
 $ git commit -m "feat: add feature"
 
-✖ eslint --fix [FAILED]
+✖ biome check --write [FAILED]
 
 src/domain/entities/city.ts
-  15:7  error  'unusedVar' is defined but never used  @typescript-eslint/no-unused-vars
+  15:7  error  'unusedVar' is defined but never used  lint/correctness/noUnusedVariables
 
 husky - pre-commit hook exited with code 1 (error)
 ```

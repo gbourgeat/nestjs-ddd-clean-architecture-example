@@ -1,22 +1,22 @@
-import {
-  Body,
-  Controller,
-  Post,
-  HttpException,
-  HttpStatus,
-  HttpCode,
-} from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
-import { GetFastestRouteRequest } from '@/presentation/rest-api/requests';
-import { GetFastestRouteResponse } from '@/presentation/rest-api/responses';
 import { GetFastestRouteUseCase } from '@/application/use-cases/get-fastest-route';
 import {
   CityNotFoundError,
+  InvalidCityNameError,
   InvalidWeatherConditionError,
   SameStartAndEndCityError,
-  InvalidCityNameError,
 } from '@/domain/errors';
 import { RouteResponseMapper } from '@/presentation/rest-api/mappers';
+import { GetFastestRouteRequest } from '@/presentation/rest-api/requests';
+import { GetFastestRouteResponse } from '@/presentation/rest-api/responses';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  Post,
+} from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Routes')
 @Controller()

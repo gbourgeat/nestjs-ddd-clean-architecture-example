@@ -1,11 +1,11 @@
+import { City, RoadSegment } from '@/domain/entities';
 import {
-  Duration,
-  WeatherCondition,
-  RoadConstraints,
   Distance,
+  Duration,
+  RoadConstraints,
   Speed,
+  WeatherCondition,
 } from '@/domain/value-objects';
-import { RoadSegment, City } from '@/domain/entities';
 
 export interface PathfindingResult {
   totalDistance: Distance;

@@ -1,3 +1,5 @@
+import { City } from '@/domain/entities';
+import { PathfindingResult, RouteStep } from '@/domain/services';
 import {
   CityId,
   CityName,
@@ -6,8 +8,6 @@ import {
   Speed,
   WeatherCondition,
 } from '@/domain/value-objects';
-import { City } from '@/domain/entities';
-import { PathfindingResult, RouteStep } from '@/domain/services';
 
 export interface InternalPathfindingResult {
   totalDistance: number;

@@ -1,5 +1,5 @@
-import { Duration } from '@/domain/value-objects';
 import { InvalidDurationError, InvalidSpeedError } from '@/domain/errors';
+import { Duration } from '@/domain/value-objects';
 
 describe('Duration', () => {
   it('should throw InvalidDurationError for negative duration', () => {
@@ -7,7 +7,9 @@ describe('Duration', () => {
   });
 
   it('should throw InvalidDurationError for non-finite duration', () => {
-    expect(() => Duration.fromHours(Infinity)).toThrow(InvalidDurationError);
+    expect(() => Duration.fromHours(Number.POSITIVE_INFINITY)).toThrow(
+      InvalidDurationError,
+    );
   });
 
   it('should throw InvalidSpeedError when speed is zero in fromDistanceAndSpeed', () => {

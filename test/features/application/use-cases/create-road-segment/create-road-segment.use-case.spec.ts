@@ -3,11 +3,10 @@ import {
   CityNotFoundError,
   InvalidCityNameError,
   InvalidDistanceError,
-  InvalidSpeedError,
   InvalidRoadSegmentError,
+  InvalidSpeedError,
 } from '@/domain/errors';
 import {
-  CityBuilder,
   CityFixtures,
   CityInMemoryRepository,
   RoadSegmentInMemoryRepository,

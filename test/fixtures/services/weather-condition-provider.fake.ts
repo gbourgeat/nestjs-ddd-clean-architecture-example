@@ -1,6 +1,6 @@
-import { WeatherConditionProvider } from '@/infrastructure/pathfinding/weather-condition-provider';
-import { WeatherCondition } from '@/domain/value-objects';
 import { City } from '@/domain/entities';
+import { WeatherCondition } from '@/domain/value-objects';
+import { WeatherConditionProvider } from '@/infrastructure/pathfinding/weather-condition-provider';
 
 export class FakeWeatherConditionProvider implements WeatherConditionProvider {
   private weatherByCity: Map<string, WeatherCondition> = new Map();

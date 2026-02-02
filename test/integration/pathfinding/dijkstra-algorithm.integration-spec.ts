@@ -1,11 +1,8 @@
+import { WeatherCondition } from '@/domain/value-objects';
 import { DijkstraAlgorithm } from '@/infrastructure/pathfinding/dijkstra-algorithm';
 import { GraphBuilder } from '@/infrastructure/pathfinding/graph-builder';
 import { SegmentFilter } from '@/infrastructure/pathfinding/segment-filter';
-import {
-  SimplifiedSegmentData,
-  Graph,
-} from '@/infrastructure/pathfinding/types';
-import { WeatherCondition } from '@/domain/value-objects';
+import { SimplifiedSegmentData } from '@/infrastructure/pathfinding/types';
 
 describe('DijkstraAlgorithm (Integration)', () => {
   let dijkstraAlgorithm: DijkstraAlgorithm;

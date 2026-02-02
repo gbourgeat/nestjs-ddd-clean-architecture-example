@@ -18,8 +18,7 @@ Ce projet utilise **husky** et **lint-staged** pour garantir que tous les commit
 {
   "lint-staged": {
     "*.ts": [
-      "prettier --write",
-      "eslint --fix"
+      "biome check --write --no-errors-on-unmatched"
     ]
   }
 }
@@ -33,15 +32,15 @@ Ce projet utilise **husky** et **lint-staged** pour garantir que tous les commit
 2. Vous ajoutez vos modifications : `git add .`
 3. Vous créez un commit : `git commit -m "votre message"`
 4. **Automatiquement**, avant que le commit soit créé :
-   - `prettier --write` formate les fichiers `.ts` modifiés
-   - `eslint --fix` corrige automatiquement les erreurs de lint
+   - `biome check --write` formate et lint les fichiers `.ts` modifiés
 5. Si tout se passe bien, le commit est créé
-6. Si des erreurs subsistent (que ESLint ne peut pas corriger), le commit est annulé
+6. Si des erreurs subsistent (que Biome ne peut pas corriger), le commit est annulé
 
 ### Ce qui est vérifié
 
-- **Formatage** : Prettier applique les règles de formatage (indentation, guillemets, etc.)
-- **Lint** : ESLint vérifie la qualité du code et corrige ce qu'il peut
+- **Formatage** : Biome applique les règles de formatage (indentation, guillemets, etc.)
+- **Lint** : Biome vérifie la qualité du code et corrige ce qu'il peut
+- **Imports** : Biome organise automatiquement les imports
 
 ### Fichiers concernés
 
@@ -72,8 +71,7 @@ $ git commit -m "feat: add city entity"
 
 ✔ Preparing lint-staged...
 ⚠ Running tasks for staged files...
-  ⚠ prettier --write — modified
-  ⚠ eslint --fix — modified
+  ⚠ biome check --write — modified
 ✔ Applying modifications from tasks...
 ✔ Cleaning up temporary files...
 
@@ -91,12 +89,12 @@ $ git commit -m "feat: add city entity"
 
 ✔ Preparing lint-staged...
 ✖ Running tasks for staged files...
-  ✖ eslint --fix [FAILED]
+  ✖ biome check --write [FAILED]
 
-✖ eslint --fix found some errors. Please fix them and try again.
+✖ biome check found some errors. Please fix them and try again.
 
 src/domain/entities/city.ts
-  10:5  error  'unusedVariable' is defined but never used  @typescript-eslint/no-unused-vars
+  10:5  error  'unusedVariable' is defined but never used  lint/correctness/noUnusedVariables
 
 ✖ 1 problem (1 error, 0 warnings)
 
@@ -154,8 +152,7 @@ route-solver/
 ├── .husky/
 │   └── pre-commit          # Hook exécuté avant chaque commit
 ├── package.json            # Configuration lint-staged
-├── .prettierrc             # Configuration Prettier
-└── eslint.config.mjs       # Configuration ESLint
+└── biome.json              # Configuration Biome
 ```
 
 ## ❓ FAQ
@@ -186,5 +183,4 @@ Actuellement, seuls les fichiers `.ts` sont configurés. Si besoin, on peut ajou
 
 - [Husky Documentation](https://typicode.github.io/husky/)
 - [lint-staged Documentation](https://github.com/okonet/lint-staged)
-- [Prettier Documentation](https://prettier.io/)
-- [ESLint Documentation](https://eslint.org/)
+- [Biome Documentation](https://biomejs.dev/)

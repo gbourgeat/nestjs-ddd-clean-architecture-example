@@ -1,3 +1,10 @@
+import { CreateRoadSegmentUseCase } from '@/application/use-cases/create-road-segment';
+import { GetFastestRouteUseCase } from '@/application/use-cases/get-fastest-route';
+import { UpdateRoadSegmentSpeedUseCase } from '@/application/use-cases/update-road-segment-speed';
+import { CityRepository, RoadSegmentRepository } from '@/domain/repositories';
+import { PathFinder } from '@/domain/services';
+import { DatabaseModule } from '@/infrastructure/database/database.module';
+import { PathfindingModule } from '@/infrastructure/pathfinding/pathfinding.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import {
@@ -5,13 +12,6 @@ import {
   GetFastestRouteController,
   UpdateRoadSegmentSpeedController,
 } from './controllers';
-import { DatabaseModule } from '@/infrastructure/database/database.module';
-import { PathfindingModule } from '@/infrastructure/pathfinding/pathfinding.module';
-import { PathFinder } from '@/domain/services';
-import { RoadSegmentRepository, CityRepository } from '@/domain/repositories';
-import { CreateRoadSegmentUseCase } from '@/application/use-cases/create-road-segment';
-import { GetFastestRouteUseCase } from '@/application/use-cases/get-fastest-route';
-import { UpdateRoadSegmentSpeedUseCase } from '@/application/use-cases/update-road-segment-speed';
 
 @Module({
   imports: [

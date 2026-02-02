@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
 import { RoadSegmentRepository } from '@/domain/repositories';
 import { RoadSegmentId, Speed } from '@/domain/value-objects';
+import { Injectable } from '@nestjs/common';
 import { UpdateRoadSegmentSpeedInput } from './update-road-segment-speed.input';
 import { UpdateRoadSegmentSpeedOutput } from './update-road-segment-speed.output';
 

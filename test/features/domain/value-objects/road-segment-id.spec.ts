@@ -1,5 +1,5 @@
-import { RoadSegmentId } from '@/domain/value-objects';
 import { InvalidRoadSegmentIdError } from '@/domain/errors';
+import { RoadSegmentId } from '@/domain/value-objects';
 
 describe('RoadSegmentId', () => {
   it('should throw InvalidRoadSegmentIdError for empty first city name', () => {

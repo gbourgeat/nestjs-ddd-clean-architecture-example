@@ -1,11 +1,11 @@
+import { City } from '@/domain/entities';
+import { CityNotFoundError } from '@/domain/errors';
+import { CityId, CityName } from '@/domain/value-objects';
+import { CityTypeormEntity } from '@/infrastructure/database/entities/city.typeorm-entity';
+import { CityTypeormRepository } from '@/infrastructure/database/repositories/city.typeorm-repository';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { CityTypeormRepository } from '@/infrastructure/database/repositories/city.typeorm-repository';
-import { CityTypeormEntity } from '@/infrastructure/database/entities/city.typeorm-entity';
-import { CityName, CityId } from '@/domain/value-objects';
-import { City } from '@/domain/entities';
-import { CityNotFoundError } from '@/domain/errors';
 
 describe('CityTypeormRepository (Integration)', () => {
   let repository: CityTypeormRepository;
@@ -19,7 +19,7 @@ describe('CityTypeormRepository (Integration)', () => {
         TypeOrmModule.forRoot({
           type: 'postgres',
           host: process.env.DATABASE_HOST || 'localhost',
-          port: parseInt(process.env.DATABASE_PORT || '54322'),
+          port: Number.parseInt(process.env.DATABASE_PORT || '54322'),
           username: process.env.DATABASE_USER || 'postgres',
           password: process.env.DATABASE_PASSWORD || 'postgres',
           database:

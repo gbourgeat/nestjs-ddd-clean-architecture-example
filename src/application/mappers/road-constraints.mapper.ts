@@ -1,12 +1,12 @@
+import { InvalidWeatherConditionError } from '@/domain/errors';
 import {
-  RoadConstraints,
   Distance,
+  RoadConstraints,
   Speed,
+  VALID_WEATHER_CONDITIONS,
   WeatherCondition,
   isWeatherCondition,
-  VALID_WEATHER_CONDITIONS,
 } from '@/domain/value-objects';
-import { InvalidWeatherConditionError } from '@/domain/errors';
 
 export class RoadConstraintsMapper {
   static toDomain(constraints?: {
