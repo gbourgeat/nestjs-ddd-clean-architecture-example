@@ -104,8 +104,11 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
       const result = await repository.findAll();
 
       // Assert
-      expect(result).toHaveLength(2);
-      expect(result.every((s) => s instanceof RoadSegment)).toBe(true);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.value).toHaveLength(2);
+        expect(result.value.every((s) => s instanceof RoadSegment)).toBe(true);
+      }
     });
 
     it('should return empty array when no road segments exist', async () => {
@@ -113,7 +116,10 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
       const result = await repository.findAll();
 
       // Assert
-      expect(result).toHaveLength(0);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.value).toHaveLength(0);
+      }
     });
 
     it('should correctly map road segment properties', async () => {
@@ -130,13 +136,16 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
       const result = await repository.findAll();
 
       // Assert
-      expect(result).toHaveLength(1);
-      const roadSegment = result[0];
-      // Cities are sorted alphabetically, so Lyon comes before Paris
-      expect(roadSegment.cityA.name.value).toBe('Lyon');
-      expect(roadSegment.cityB.name.value).toBe('Paris');
-      expect(roadSegment.distance.kilometers).toBe(465);
-      expect(roadSegment.speedLimit.kmPerHour).toBe(130);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.value).toHaveLength(1);
+        const roadSegment = result.value[0];
+        // Cities are sorted alphabetically, so Lyon comes before Paris
+        expect(roadSegment.cityA.name.value).toBe('Lyon');
+        expect(roadSegment.cityB.name.value).toBe('Paris');
+        expect(roadSegment.distance.kilometers).toBe(465);
+        expect(roadSegment.speedLimit.kmPerHour).toBe(130);
+      }
     });
   });
 

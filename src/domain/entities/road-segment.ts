@@ -32,10 +32,15 @@ export class RoadSegment {
     distanceKm: number,
     speedLimitKmh: number,
   ): Result<RoadSegment, RoadSegmentCreationError> {
+    // Validate all inputs
+    const cityANameResult = CityName.create(cityAName);
+    const cityBNameResult = CityName.create(cityBName);
+    const distanceResult = Distance.fromKilometers(distanceKm);
+    const speedResult = Speed.fromKmPerHour(speedLimitKmh);
+
+    // Collect validation errors
     const validationErrors: ValidationErrorDetail[] = [];
 
-    // Validate city names
-    const cityANameResult = CityName.create(cityAName);
     if (!cityANameResult.success) {
       validationErrors.push({
         field: 'cityAName',
@@ -44,7 +49,6 @@ export class RoadSegment {
       });
     }
 
-    const cityBNameResult = CityName.create(cityBName);
     if (!cityBNameResult.success) {
       validationErrors.push({
         field: 'cityBName',
@@ -53,8 +57,6 @@ export class RoadSegment {
       });
     }
 
-    // Validate distance
-    const distanceResult = Distance.fromKilometers(distanceKm);
     if (!distanceResult.success) {
       validationErrors.push({
         field: 'distance',
@@ -63,8 +65,6 @@ export class RoadSegment {
       });
     }
 
-    // Validate speed limit
-    const speedResult = Speed.fromKmPerHour(speedLimitKmh);
     if (!speedResult.success) {
       validationErrors.push({
         field: 'speedLimit',
@@ -73,14 +73,19 @@ export class RoadSegment {
       });
     }
 
-    // If we have validation errors at this point, return early
-    if (validationErrors.length > 0) {
+    // Return early if any validation failed
+    if (
+      !cityANameResult.success ||
+      !cityBNameResult.success ||
+      !distanceResult.success ||
+      !speedResult.success
+    ) {
       return fail(
         RoadSegmentCreationError.fromValidationErrors(validationErrors),
       );
     }
 
-    // All value objects are valid, extract values
+    // All value objects are valid - TypeScript now knows these are Success types
     const cityANameVO = cityANameResult.value;
     const cityBNameVO = cityBNameResult.value;
     const distance = distanceResult.value;
