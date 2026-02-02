@@ -6,7 +6,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { RestApiModule } from '../../src/presentation/rest-api/rest-api.module';
 
-describe('POST /get-fastest-route (e2e)', () => {
+describe('GET /itineraries (e2e)', () => {
   let app: INestApplication<App>;
   let fakeWeatherProvider: FakeWeatherConditionProvider;
 
@@ -21,7 +21,7 @@ describe('POST /get-fastest-route (e2e)', () => {
       .compile();
 
     app = moduleFixture.createNestApplication({
-      logger: false, // Disable NestJS logs in tests
+      logger: false,
     });
     app.useGlobalPipes(
       new ValidationPipe({ transform: true, whitelist: true }),
@@ -57,7 +57,6 @@ describe('POST /get-fastest-route (e2e)', () => {
       speedLimit: 120,
     });
 
-    // Wait a bit to ensure all data is properly written
     await new Promise((resolve) => setTimeout(resolve, 500));
   });
 
@@ -65,15 +64,12 @@ describe('POST /get-fastest-route (e2e)', () => {
     await app.close();
   });
 
-  it('should return a valid route between two cities', async () => {
+  it('should return a valid itinerary between two cities', async () => {
     const res = await request(app.getHttpServer())
-      .post('/get-fastest-route')
-      .send({
-        startCity: 'Paris',
-        endCity: 'Lyon',
-      });
+      .get('/itineraries')
+      .query({ from: 'Paris', to: 'Lyon' });
 
-    expect(res.status).toBe(201);
+    expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('path');
     expect(res.body).toHaveProperty('totalDistance');
     expect(res.body).toHaveProperty('estimatedTime');
@@ -84,14 +80,11 @@ describe('POST /get-fastest-route (e2e)', () => {
     expect(Array.isArray(res.body.steps)).toBe(true);
   });
 
-  it('should return a direct route when available', () => {
+  it('should return a direct itinerary when available', () => {
     return request(app.getHttpServer())
-      .post('/get-fastest-route')
-      .send({
-        startCity: 'Paris',
-        endCity: 'Lyon',
-      })
-      .expect(201)
+      .get('/itineraries')
+      .query({ from: 'Paris', to: 'Lyon' })
+      .expect(200)
       .expect((res) => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(res.body.path).toContain('Paris');
@@ -106,20 +99,17 @@ describe('POST /get-fastest-route (e2e)', () => {
 
   it('should handle constraints properly', () => {
     return request(app.getHttpServer())
-      .post('/get-fastest-route')
-      .send({
-        startCity: 'Paris',
-        endCity: 'Nice',
-        constraints: {
-          maxDistance: 500,
-          minSpeed: 100,
-        },
+      .get('/itineraries')
+      .query({
+        from: 'Paris',
+        to: 'Nice',
+        maxDistance: 500,
+        minSpeed: 100,
       })
-      .expect(201)
+      .expect(200)
       .expect((res) => {
         expect(res.body).toHaveProperty('path');
         expect(res.body).toHaveProperty('steps');
-        // Verify all steps respect constraints
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         res.body.steps.forEach((step: any) => {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -130,31 +120,24 @@ describe('POST /get-fastest-route (e2e)', () => {
       });
   });
 
-  it('should return 400 when startCity is missing', () => {
+  it('should return 400 when from is missing', () => {
     return request(app.getHttpServer())
-      .post('/get-fastest-route')
-      .send({
-        endCity: 'Lyon',
-      })
+      .get('/itineraries')
+      .query({ to: 'Lyon' })
       .expect(400);
   });
 
-  it('should return 400 when endCity is missing', () => {
+  it('should return 400 when to is missing', () => {
     return request(app.getHttpServer())
-      .post('/get-fastest-route')
-      .send({
-        startCity: 'Paris',
-      })
+      .get('/itineraries')
+      .query({ from: 'Paris' })
       .expect(400);
   });
 
   it('should return 404 when city does not exist', () => {
     return request(app.getHttpServer())
-      .post('/get-fastest-route')
-      .send({
-        startCity: 'Paris',
-        endCity: 'UnknownCity',
-      })
+      .get('/itineraries')
+      .query({ from: 'Paris', to: 'UnknownCity' })
       .expect(404)
       .expect((res) => {
         expect(res.body).toHaveProperty('message');
@@ -163,13 +146,10 @@ describe('POST /get-fastest-route (e2e)', () => {
       });
   });
 
-  it('should return 400 when start and end cities are the same', () => {
+  it('should return 400 when from and to cities are the same', () => {
     return request(app.getHttpServer())
-      .post('/get-fastest-route')
-      .send({
-        startCity: 'Paris',
-        endCity: 'Paris',
-      })
+      .get('/itineraries')
+      .query({ from: 'Paris', to: 'Paris' })
       .expect(400)
       .expect((res) => {
         expect(res.body).toHaveProperty('message');

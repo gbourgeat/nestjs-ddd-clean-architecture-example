@@ -8,8 +8,8 @@ import { PathfindingModule } from '@/infrastructure/pathfinding/pathfinding.modu
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import {
+  CalculateItineraryController,
   CreateRoadSegmentController,
-  GetFastestRouteController,
   UpdateRoadSegmentSpeedController,
 } from './controllers';
 
@@ -52,8 +52,8 @@ import {
     },
   ],
   controllers: [
+    CalculateItineraryController,
     CreateRoadSegmentController,
-    GetFastestRouteController,
     UpdateRoadSegmentSpeedController,
   ],
 })

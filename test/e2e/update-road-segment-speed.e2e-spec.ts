@@ -4,7 +4,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { RestApiModule } from '../../src/presentation/rest-api/rest-api.module';
 
-describe('PATCH /road-segments/speed (e2e)', () => {
+describe('PATCH /road-segments/:id (e2e)', () => {
   let app: INestApplication<App>;
 
   beforeEach(async () => {
@@ -19,6 +19,14 @@ describe('PATCH /road-segments/speed (e2e)', () => {
       new ValidationPipe({ transform: true, whitelist: true }),
     );
     await app.init();
+
+    // Create a road segment for testing updates
+    await request(app.getHttpServer()).post('/road-segments').send({
+      cityA: 'Paris',
+      cityB: 'Lyon',
+      distance: 465,
+      speedLimit: 110,
+    });
   });
 
   afterEach(async () => {
@@ -27,10 +35,8 @@ describe('PATCH /road-segments/speed (e2e)', () => {
 
   it('should update speed limit successfully', () => {
     return request(app.getHttpServer())
-      .patch('/road-segments/speed')
+      .patch('/road-segments/lyon__paris')
       .send({
-        cityA: 'Paris',
-        cityB: 'Lyon',
         newSpeedLimit: 130,
       })
       .expect(200)
@@ -45,12 +51,10 @@ describe('PATCH /road-segments/speed (e2e)', () => {
       });
   });
 
-  it('should work with cities in reverse order', () => {
+  it('should return correct road segment ID', () => {
     return request(app.getHttpServer())
-      .patch('/road-segments/speed')
+      .patch('/road-segments/lyon__paris')
       .send({
-        cityA: 'Lyon',
-        cityB: 'Paris',
         newSpeedLimit: 90,
       })
       .expect(200)
@@ -64,10 +68,8 @@ describe('PATCH /road-segments/speed (e2e)', () => {
 
   it('should return 404 for non-existent road segment', () => {
     return request(app.getHttpServer())
-      .patch('/road-segments/speed')
+      .patch('/road-segments/paris__unknowncity')
       .send({
-        cityA: 'Paris',
-        cityB: 'UnknownCity',
         newSpeedLimit: 130,
       })
       .expect(404)
@@ -80,10 +82,8 @@ describe('PATCH /road-segments/speed (e2e)', () => {
 
   it('should return 400 for negative speed', () => {
     return request(app.getHttpServer())
-      .patch('/road-segments/speed')
+      .patch('/road-segments/lyon__paris')
       .send({
-        cityA: 'Paris',
-        cityB: 'Lyon',
         newSpeedLimit: -10,
       })
       .expect(400)
@@ -96,22 +96,17 @@ describe('PATCH /road-segments/speed (e2e)', () => {
       });
   });
 
-  it('should return 400 for invalid request (missing fields)', () => {
+  it('should return 400 for invalid request (missing newSpeedLimit)', () => {
     return request(app.getHttpServer())
-      .patch('/road-segments/speed')
-      .send({
-        cityA: 'Paris',
-        // Missing cityB and newSpeedLimit
-      })
+      .patch('/road-segments/lyon__paris')
+      .send({})
       .expect(400);
   });
 
-  it('should return 400 for empty city name', () => {
+  it('should return 400 for invalid ID format', () => {
     return request(app.getHttpServer())
-      .patch('/road-segments/speed')
+      .patch('/road-segments/invalid-format')
       .send({
-        cityA: '',
-        cityB: 'Lyon',
         newSpeedLimit: 130,
       })
       .expect(400);
@@ -119,10 +114,8 @@ describe('PATCH /road-segments/speed (e2e)', () => {
 
   it('should validate that newSpeedLimit is a number', () => {
     return request(app.getHttpServer())
-      .patch('/road-segments/speed')
+      .patch('/road-segments/lyon__paris')
       .send({
-        cityA: 'Paris',
-        cityB: 'Lyon',
         newSpeedLimit: 'not-a-number',
       })
       .expect(400);
