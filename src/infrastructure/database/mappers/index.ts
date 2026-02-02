@@ -1,2 +1,2 @@
-export { CityMapper } from './city.mapper';
-export { RoadSegmentMapper } from './road-segment.mapper';
+export { CityTypeormMapper } from './city.typeorm-mapper';
+export { RoadSegmentTypeormMapper } from './road-segment.typeorm-mapper';

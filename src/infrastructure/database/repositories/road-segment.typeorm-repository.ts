@@ -14,7 +14,7 @@ import {
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CityMapper, RoadSegmentMapper } from '../mappers';
+import { CityTypeormMapper, RoadSegmentTypeormMapper } from '../mappers';
 
 @Injectable()
 export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
@@ -50,7 +50,7 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
         }
 
         result.push(
-          RoadSegmentMapper.toDomain(roadSegmentEntity, cityA, cityB),
+          RoadSegmentTypeormMapper.toDomain(roadSegmentEntity, cityA, cityB),
         );
       }
 
@@ -86,7 +86,9 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
       return fail(RoadSegmentNotFoundError.forRoadSegmentId(id));
     }
 
-    return ok(RoadSegmentMapper.toDomain(roadSegmentEntity, cityA, cityB));
+    return ok(
+      RoadSegmentTypeormMapper.toDomain(roadSegmentEntity, cityA, cityB),
+    );
   }
 
   async save(
@@ -106,26 +108,14 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
           ],
         });
 
-      if (existingSegment) {
-        // Update existing using mapper
-        const updatedEntity = RoadSegmentMapper.toTypeorm(
-          roadSegment,
-          cityAEntity.id,
-          cityBEntity.id,
-          existingSegment,
-        );
-        await this.roadSegmentTypeormEntityRepository.save(updatedEntity);
-      } else {
-        // Create new using mapper
-        const newEntityData = RoadSegmentMapper.toTypeormForCreation(
-          roadSegment,
-          cityAEntity.id,
-          cityBEntity.id,
-        );
-        const newEntity =
-          this.roadSegmentTypeormEntityRepository.create(newEntityData);
-        await this.roadSegmentTypeormEntityRepository.save(newEntity);
-      }
+      const entityData = RoadSegmentTypeormMapper.fromDomain(
+        roadSegment,
+        cityAEntity.id,
+        cityBEntity.id,
+        existingSegment ?? undefined,
+      );
+      const entity = this.roadSegmentTypeormEntityRepository.create(entityData);
+      await this.roadSegmentTypeormEntityRepository.save(entity);
 
       return ok(undefined);
     } catch (error) {
@@ -145,12 +135,12 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
       return fail(CityNotFoundError.forCityName(name));
     }
 
-    return ok(CityMapper.toDomain(cityEntity));
+    return ok(CityTypeormMapper.toDomain(cityEntity));
   }
 
   async findAllCities(): Promise<City[]> {
     const cityEntities = await this.cityTypeormEntityRepository.find();
-    return cityEntities.map(CityMapper.toDomain);
+    return cityEntities.map(CityTypeormMapper.toDomain);
   }
 
   private async upsertCity(city: City): Promise<CityTypeormEntity> {
@@ -161,7 +151,7 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
 
     if (!cityEntity) {
       // City doesn't exist, create it
-      const newCityData = CityMapper.toTypeormForCreation(city);
+      const newCityData = CityTypeormMapper.fromDomain(city);
       cityEntity = this.cityTypeormEntityRepository.create(newCityData);
       await this.cityTypeormEntityRepository.save(cityEntity);
     }

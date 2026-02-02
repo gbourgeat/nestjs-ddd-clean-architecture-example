@@ -11,7 +11,7 @@ import { CityTypeormEntity, RoadSegmentTypeormEntity } from '../entities';
 /**
  * Mapper between RoadSegment domain entity and RoadSegmentTypeormEntity
  */
-export class RoadSegmentMapper {
+export class RoadSegmentTypeormMapper {
   /**
    * Maps from TypeORM entity to domain entity
    * Requires city entities to build the complete domain model
@@ -39,40 +39,17 @@ export class RoadSegmentMapper {
   }
 
   /**
-   * Maps from domain entity to TypeORM entity (for updates)
-   * Requires database city IDs (UUIDs) since domain uses name-based IDs
+   * Maps from domain entity to TypeORM partial entity
+   * Uses existing database ID on update, domain ID on creation
    */
-  static toTypeorm(
+  static fromDomain(
     domain: RoadSegment,
     cityADatabaseId: string,
     cityBDatabaseId: string,
     existingEntity?: RoadSegmentTypeormEntity,
-  ): RoadSegmentTypeormEntity {
-    const entity = existingEntity || new RoadSegmentTypeormEntity();
-
-    entity.cityAId = cityADatabaseId;
-    entity.cityBId = cityBDatabaseId;
-    entity.distance = domain.distance.kilometers;
-    entity.speedLimit = domain.speedLimit.kmPerHour;
-
-    // If updating an existing entity, preserve its database ID
-    if (existingEntity) {
-      entity.id = existingEntity.id;
-    }
-
-    return entity;
-  }
-
-  /**
-   * Creates a partial TypeORM entity for creation with the domain's UUID
-   */
-  static toTypeormForCreation(
-    domain: RoadSegment,
-    cityADatabaseId: string,
-    cityBDatabaseId: string,
   ): Partial<RoadSegmentTypeormEntity> {
     return {
-      id: domain.id.value,
+      id: existingEntity?.id ?? domain.id.value,
       cityAId: cityADatabaseId,
       cityBId: cityBDatabaseId,
       distance: domain.distance.kilometers,
