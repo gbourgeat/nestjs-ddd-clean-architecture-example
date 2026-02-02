@@ -4,6 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { FakeWeatherConditionProvider } from '@test/fixtures/services';
 import request from 'supertest';
 import { App } from 'supertest/types';
+import { DataSource } from 'typeorm';
 import { RestApiModule } from '../../src/presentation/rest-api/rest-api.module';
 
 describe('GET /itineraries (e2e)', () => {
@@ -26,38 +27,16 @@ describe('GET /itineraries (e2e)', () => {
     app.useGlobalPipes(
       new ValidationPipe({ transform: true, whitelist: true }),
     );
+
+    // Reset database before tests to ensure clean state
+    const dataSource = moduleFixture.get(DataSource);
+    await dataSource.synchronize(true);
+
+    // Initialize app (triggers DatabaseSeeder.onModuleInit())
     await app.init();
 
-    // Create necessary road segments for tests
-    await request(app.getHttpServer()).post('/road-segments').send({
-      cityA: 'Paris',
-      cityB: 'Lyon',
-      distance: 465,
-      speedLimit: 130,
-    });
-
-    await request(app.getHttpServer()).post('/road-segments').send({
-      cityA: 'Lyon',
-      cityB: 'Marseille',
-      distance: 310,
-      speedLimit: 130,
-    });
-
-    await request(app.getHttpServer()).post('/road-segments').send({
-      cityA: 'Paris',
-      cityB: 'Nice',
-      distance: 930,
-      speedLimit: 130,
-    });
-
-    await request(app.getHttpServer()).post('/road-segments').send({
-      cityA: 'Lyon',
-      cityB: 'Nice',
-      distance: 470,
-      speedLimit: 120,
-    });
-
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // The seeder creates Paris-Lyon, Lyon-Marseille, Paris-Nice, Lyon-Nice segments
+    // No need to create additional segments - seeded data is sufficient
   });
 
   afterAll(async () => {

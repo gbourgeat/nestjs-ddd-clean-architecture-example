@@ -2,6 +2,7 @@ import { RestApiModule } from '@/presentation/rest-api/rest-api.module';
 import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
+import { DataSource } from 'typeorm';
 
 describe('POST /road-segments (E2E)', () => {
   let app: INestApplication;
@@ -25,6 +26,12 @@ describe('POST /road-segments (E2E)', () => {
         transform: true,
       }),
     );
+
+    // Reset database before tests to ensure clean state
+    const dataSource = moduleFixture.get(DataSource);
+    await dataSource.synchronize(true);
+
+    // Initialize app (triggers DatabaseSeeder.onModuleInit())
     await app.init();
   });
 
