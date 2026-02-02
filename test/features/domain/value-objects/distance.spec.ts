@@ -4,14 +4,14 @@ import { Distance } from '@/domain/value-objects';
 describe('Distance', () => {
   it('should throw InvalidDistanceError for negative distance', () => {
     expect(() => Distance.fromKilometersOrThrow(-10)).toThrow(
-      InvalidDistanceError,
+      InvalidDistanceError as unknown as typeof Error,
     );
   });
 
   it('should throw InvalidDistanceError for non-finite distance', () => {
     expect(() =>
       Distance.fromKilometersOrThrow(Number.POSITIVE_INFINITY),
-    ).toThrow(InvalidDistanceError);
+    ).toThrow(InvalidDistanceError as unknown as typeof Error);
   });
 
   it('should return failure Result for negative distance', () => {

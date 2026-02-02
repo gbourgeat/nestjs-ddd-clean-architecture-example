@@ -3,12 +3,14 @@ import { Speed } from '@/domain/value-objects';
 
 describe('Speed', () => {
   it('should throw InvalidSpeedError for negative speed', () => {
-    expect(() => Speed.fromKmPerHourOrThrow(-50)).toThrow(InvalidSpeedError);
+    expect(() => Speed.fromKmPerHourOrThrow(-50)).toThrow(
+      InvalidSpeedError as unknown as typeof Error,
+    );
   });
 
   it('should throw InvalidSpeedError for non-finite speed', () => {
     expect(() => Speed.fromKmPerHourOrThrow(Number.POSITIVE_INFINITY)).toThrow(
-      InvalidSpeedError,
+      InvalidSpeedError as unknown as typeof Error,
     );
   });
 

@@ -3,18 +3,20 @@ import { Duration } from '@/domain/value-objects';
 
 describe('Duration', () => {
   it('should throw InvalidDurationError for negative duration', () => {
-    expect(() => Duration.fromHoursOrThrow(-5)).toThrow(InvalidDurationError);
+    expect(() => Duration.fromHoursOrThrow(-5)).toThrow(
+      InvalidDurationError as unknown as typeof Error,
+    );
   });
 
   it('should throw InvalidDurationError for non-finite duration', () => {
     expect(() => Duration.fromHoursOrThrow(Number.POSITIVE_INFINITY)).toThrow(
-      InvalidDurationError,
+      InvalidDurationError as unknown as typeof Error,
     );
   });
 
   it('should throw InvalidSpeedError when speed is zero in fromDistanceAndSpeed', () => {
     expect(() => Duration.fromDistanceAndSpeedOrThrow(100, 0)).toThrow(
-      InvalidSpeedError,
+      InvalidSpeedError as unknown as typeof Error,
     );
   });
 

@@ -2,9 +2,6 @@ import { CreateRoadSegmentUseCase } from '@/application/use-cases/create-road-se
 import {
   CityNotFoundError,
   InvalidCityNameError,
-  InvalidDistanceError,
-  InvalidRoadSegmentError,
-  InvalidSpeedError,
   RoadSegmentCreationError,
 } from '@/domain/errors';
 import { CreateRoadSegmentRequest } from '@/presentation/rest-api/requests';
@@ -112,22 +109,16 @@ export class CreateRoadSegmentController {
   async createRoadSegment(
     @Body() dto: CreateRoadSegmentRequest,
   ): Promise<CreateRoadSegmentResponse> {
-    try {
-      const result = await this.createRoadSegmentUseCase.execute({
-        cityA: dto.cityA,
-        cityB: dto.cityB,
-        distance: dto.distance,
-        speedLimit: dto.speedLimit,
-      });
+    const result = await this.createRoadSegmentUseCase.execute({
+      cityA: dto.cityA,
+      cityB: dto.cityB,
+      distance: dto.distance,
+      speedLimit: dto.speedLimit,
+    });
 
-      return {
-        roadSegmentId: result.roadSegmentId,
-        cityA: result.cityA,
-        cityB: result.cityB,
-        distance: result.distance,
-        speedLimit: result.speedLimit,
-      };
-    } catch (error) {
+    if (!result.success) {
+      const error = result.error;
+
       if (error instanceof CityNotFoundError) {
         throw new HttpException(
           {
@@ -150,39 +141,6 @@ export class CreateRoadSegmentController {
         );
       }
 
-      if (error instanceof InvalidDistanceError) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.BAD_REQUEST,
-            message: error.message,
-            error: 'Invalid Distance',
-          },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
-      if (error instanceof InvalidSpeedError) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.BAD_REQUEST,
-            message: error.message,
-            error: 'Invalid Speed',
-          },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
-      if (error instanceof InvalidRoadSegmentError) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.BAD_REQUEST,
-            message: error.message,
-            error: 'Invalid Road Segment',
-          },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
       if (error instanceof RoadSegmentCreationError) {
         throw new HttpException(
           {
@@ -194,14 +152,23 @@ export class CreateRoadSegmentController {
         );
       }
 
+      // PersistenceError or unknown error
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: 'An error occurred while creating the road segment',
-          error: error instanceof Error ? error.message : 'Unknown error',
+          message: error.message,
+          error: 'Internal Server Error',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+
+    return {
+      roadSegmentId: result.value.roadSegmentId,
+      cityA: result.value.cityA,
+      cityB: result.value.cityB,
+      distance: result.value.distance,
+      speedLimit: result.value.speedLimit,
+    };
   }
 }

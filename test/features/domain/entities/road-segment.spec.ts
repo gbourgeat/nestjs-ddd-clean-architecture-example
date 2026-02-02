@@ -30,7 +30,7 @@ describe('RoadSegment', () => {
 
   it('should throw InvalidRoadSegmentIdError when creating ID with same city', () => {
     expect(() => RoadSegmentId.fromCityNamesOrThrow('Paris', 'Paris')).toThrow(
-      InvalidRoadSegmentIdError,
+      InvalidRoadSegmentIdError as unknown as typeof Error,
     );
   });
 
@@ -51,7 +51,7 @@ describe('RoadSegment', () => {
         Distance.fromKilometersOrThrow(100),
         Speed.fromKmPerHourOrThrow(130),
       ),
-    ).toThrow(InvalidRoadSegmentError);
+    ).toThrow(InvalidRoadSegmentError as unknown as typeof Error);
   });
 
   it('should sort cities by name', () => {

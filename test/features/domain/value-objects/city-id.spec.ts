@@ -3,12 +3,14 @@ import { CityId, CityName } from '@/domain/value-objects';
 
 describe('CityId', () => {
   it('should throw InvalidCityIdError for empty city name when creating from city name', () => {
-    expect(() => CityId.fromCityNameOrThrow('')).toThrow(InvalidCityIdError);
+    expect(() => CityId.fromCityNameOrThrow('')).toThrow(
+      InvalidCityIdError as unknown as typeof Error,
+    );
   });
 
   it('should throw InvalidCityIdError for empty normalized value', () => {
     expect(() => CityId.fromNormalizedValueOrThrow('')).toThrow(
-      InvalidCityIdError,
+      InvalidCityIdError as unknown as typeof Error,
     );
   });
 

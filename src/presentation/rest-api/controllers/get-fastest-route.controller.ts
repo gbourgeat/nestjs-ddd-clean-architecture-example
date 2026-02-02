@@ -2,7 +2,6 @@ import { GetFastestRouteUseCase } from '@/application/use-cases/get-fastest-rout
 import {
   CityNotFoundError,
   InvalidCityNameError,
-  InvalidWeatherConditionError,
   SameStartAndEndCityError,
 } from '@/domain/errors';
 import { RouteResponseMapper } from '@/presentation/rest-api/mappers';
@@ -119,38 +118,27 @@ export class GetFastestRouteController {
   async getFastestRoute(
     @Body() dto: GetFastestRouteRequest,
   ): Promise<GetFastestRouteResponse> {
-    try {
-      const result = await this.getFastestRouteUseCase.execute({
-        startCity: dto.startCity,
-        endCity: dto.endCity,
-        constraints: dto.constraints
-          ? {
-              excludeWeatherConditions: dto.constraints.excludeWeather,
-              maxDistance: dto.constraints.maxDistance,
-              minSpeedLimit: dto.constraints.minSpeed,
-            }
-          : undefined,
-      });
+    const result = await this.getFastestRouteUseCase.execute({
+      startCity: dto.startCity,
+      endCity: dto.endCity,
+      constraints: dto.constraints
+        ? {
+            excludeWeatherConditions: dto.constraints.excludeWeather,
+            maxDistance: dto.constraints.maxDistance,
+            minSpeedLimit: dto.constraints.minSpeed,
+          }
+        : undefined,
+    });
 
-      return RouteResponseMapper.toDto(result);
-    } catch (error) {
+    if (!result.success) {
+      const error = result.error;
+
       if (error instanceof InvalidCityNameError) {
         throw new HttpException(
           {
             statusCode: HttpStatus.BAD_REQUEST,
             message: error.message,
             error: 'Invalid City Name',
-          },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
-      if (error instanceof InvalidWeatherConditionError) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.BAD_REQUEST,
-            message: error.message,
-            error: 'Invalid Weather Condition',
           },
           HttpStatus.BAD_REQUEST,
         );
@@ -178,14 +166,17 @@ export class GetFastestRouteController {
         );
       }
 
+      // PersistenceError or unknown error
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: 'An error occurred while calculating the route',
-          error: error instanceof Error ? error.message : 'Unknown error',
+          message: error.message,
+          error: 'Internal Server Error',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+
+    return RouteResponseMapper.toDto(result.value);
   }
 }

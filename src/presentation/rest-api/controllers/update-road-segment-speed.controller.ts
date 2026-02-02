@@ -79,21 +79,15 @@ export class UpdateRoadSegmentSpeedController {
   async updateRoadSegmentSpeed(
     @Body() dto: UpdateRoadSegmentSpeedRequest,
   ): Promise<UpdateRoadSegmentSpeedResponse> {
-    try {
-      const result = await this.updateRoadSegmentSpeedUseCase.execute({
-        cityA: dto.cityA,
-        cityB: dto.cityB,
-        newSpeedLimit: dto.newSpeedLimit,
-      });
+    const result = await this.updateRoadSegmentSpeedUseCase.execute({
+      cityA: dto.cityA,
+      cityB: dto.cityB,
+      newSpeedLimit: dto.newSpeedLimit,
+    });
 
-      return {
-        roadSegmentId: result.roadSegmentId,
-        cityA: result.cityA,
-        cityB: result.cityB,
-        distance: result.distance,
-        speedLimit: result.speedLimit,
-      };
-    } catch (error) {
+    if (!result.success) {
+      const error = result.error;
+
       if (error instanceof InvalidRoadSegmentIdError) {
         throw new HttpException(
           {
@@ -127,14 +121,23 @@ export class UpdateRoadSegmentSpeedController {
         );
       }
 
+      // PersistenceError or unknown error
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: 'An error occurred while updating the road segment speed',
-          error: error instanceof Error ? error.message : 'Unknown error',
+          message: error.message,
+          error: 'Internal Server Error',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+
+    return {
+      roadSegmentId: result.value.roadSegmentId,
+      cityA: result.value.cityA,
+      cityB: result.value.cityB,
+      distance: result.value.distance,
+      speedLimit: result.value.speedLimit,
+    };
   }
 }

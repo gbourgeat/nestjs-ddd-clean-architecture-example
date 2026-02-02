@@ -3,41 +3,45 @@ import { CityName } from '@/domain/value-objects';
 
 describe('CityName', () => {
   it('should throw InvalidCityNameError for too short name', () => {
-    expect(() => CityName.createOrThrow('')).toThrow(InvalidCityNameError);
+    expect(() => CityName.createOrThrow('')).toThrow(
+      InvalidCityNameError as unknown as typeof Error,
+    );
   });
 
   it('should throw InvalidCityNameError for whitespace-only name', () => {
-    expect(() => CityName.createOrThrow('   ')).toThrow(InvalidCityNameError);
+    expect(() => CityName.createOrThrow('   ')).toThrow(
+      InvalidCityNameError as unknown as typeof Error,
+    );
   });
 
   it('should throw InvalidCityNameError for name starting with parenthesis', () => {
     expect(() => CityName.createOrThrow('(Paris)')).toThrow(
-      InvalidCityNameError,
+      InvalidCityNameError as unknown as typeof Error,
     );
   });
 
   it('should throw InvalidCityNameError for too long name', () => {
     const longName = 'A'.repeat(101);
     expect(() => CityName.createOrThrow(longName)).toThrow(
-      InvalidCityNameError,
+      InvalidCityNameError as unknown as typeof Error,
     );
   });
 
   it('should throw InvalidCityNameError for invalid format (starting with hyphen)', () => {
     expect(() => CityName.createOrThrow('-Paris')).toThrow(
-      InvalidCityNameError,
+      InvalidCityNameError as unknown as typeof Error,
     );
   });
 
   it('should throw InvalidCityNameError for mismatched parentheses', () => {
     expect(() => CityName.createOrThrow('Paris (France')).toThrow(
-      InvalidCityNameError,
+      InvalidCityNameError as unknown as typeof Error,
     );
   });
 
   it('should throw InvalidCityNameError for multiple consecutive spaces', () => {
     expect(() => CityName.createOrThrow('Saint  Denis')).toThrow(
-      InvalidCityNameError,
+      InvalidCityNameError as unknown as typeof Error,
     );
   });
 

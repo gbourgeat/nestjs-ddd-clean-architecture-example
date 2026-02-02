@@ -4,25 +4,25 @@ import { CityId, RoadSegmentId } from '@/domain/value-objects';
 describe('RoadSegmentId', () => {
   it('should throw InvalidRoadSegmentIdError for empty first city name', () => {
     expect(() => RoadSegmentId.fromCityNamesOrThrow('', 'Lyon')).toThrow(
-      InvalidRoadSegmentIdError,
+      InvalidRoadSegmentIdError as unknown as typeof Error,
     );
   });
 
   it('should throw InvalidRoadSegmentIdError for empty second city name', () => {
     expect(() => RoadSegmentId.fromCityNamesOrThrow('Paris', '')).toThrow(
-      InvalidRoadSegmentIdError,
+      InvalidRoadSegmentIdError as unknown as typeof Error,
     );
   });
 
   it('should throw InvalidRoadSegmentIdError for empty value', () => {
     expect(() => RoadSegmentId.fromValueOrThrow('')).toThrow(
-      InvalidRoadSegmentIdError,
+      InvalidRoadSegmentIdError as unknown as typeof Error,
     );
   });
 
   it('should throw InvalidRoadSegmentIdError for missing separator', () => {
     expect(() => RoadSegmentId.fromValueOrThrow('paris-lyon')).toThrow(
-      InvalidRoadSegmentIdError,
+      InvalidRoadSegmentIdError as unknown as typeof Error,
     );
   });
 
@@ -78,7 +78,7 @@ describe('RoadSegmentId', () => {
     const cityIdA = CityId.fromCityNameOrThrow('Paris');
     const cityIdB = CityId.fromCityNameOrThrow('Paris');
     expect(() => RoadSegmentId.createOrThrow(cityIdA, cityIdB)).toThrow(
-      InvalidRoadSegmentIdError,
+      InvalidRoadSegmentIdError as unknown as typeof Error,
     );
   });
 

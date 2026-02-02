@@ -77,8 +77,10 @@ describe('RoadConstraints', () => {
 
     const result = await useCase.execute(input);
 
-    expect(result).toBeDefined();
-    expect(result.totalDistance).toBe(465);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.value.totalDistance).toBe(465);
+    }
   });
 
   it('should handle constraints with max distance', async () => {
@@ -109,8 +111,10 @@ describe('RoadConstraints', () => {
 
     const result = await useCase.execute(input);
 
-    expect(result).toBeDefined();
-    expect(result.totalDistance).toBe(465);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.value.totalDistance).toBe(465);
+    }
   });
 
   it('should handle constraints with min speed limit', async () => {
@@ -141,8 +145,10 @@ describe('RoadConstraints', () => {
 
     const result = await useCase.execute(input);
 
-    expect(result).toBeDefined();
-    expect(result.totalDistance).toBe(465);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.value.totalDistance).toBe(465);
+    }
   });
 
   it('should throw InvalidWeatherConditionError for invalid weather in constraints', async () => {
@@ -154,6 +160,8 @@ describe('RoadConstraints', () => {
       },
     };
 
+    // Note: Invalid weather validation happens in the mapper before the use case returns
+    // This test verifies the error is thrown during constraint mapping
     await expect(useCase.execute(input)).rejects.toThrow(
       /Invalid weather condition/,
     );

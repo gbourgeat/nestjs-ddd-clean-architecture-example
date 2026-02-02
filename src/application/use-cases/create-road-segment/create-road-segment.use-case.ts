@@ -1,9 +1,22 @@
+import { type Result, fail, ok } from '@/domain/common';
 import { RoadSegment } from '@/domain/entities';
+import {
+  CityNotFoundError,
+  InvalidCityNameError,
+  PersistenceError,
+  RoadSegmentCreationError,
+} from '@/domain/errors';
 import { RoadSegmentRepository } from '@/domain/repositories';
 import { CityName } from '@/domain/value-objects';
 import { Injectable } from '@nestjs/common';
 import { CreateRoadSegmentInput } from './create-road-segment.input';
 import { CreateRoadSegmentOutput } from './create-road-segment.output';
+
+export type CreateRoadSegmentError =
+  | CityNotFoundError
+  | InvalidCityNameError
+  | RoadSegmentCreationError
+  | PersistenceError;
 
 @Injectable()
 export class CreateRoadSegmentUseCase {
@@ -11,22 +24,31 @@ export class CreateRoadSegmentUseCase {
 
   async execute(
     input: CreateRoadSegmentInput,
-  ): Promise<CreateRoadSegmentOutput> {
-    // Validate city names exist in the system first
-    const cityAName = CityName.createOrThrow(input.cityA);
-    const cityBName = CityName.createOrThrow(input.cityB);
-
-    // Check if cities exist (via road segments that contain them)
-    const cityAResult =
-      await this.roadSegmentRepository.findCityByName(cityAName);
-    if (!cityAResult.success) {
-      throw cityAResult.error;
+  ): Promise<Result<CreateRoadSegmentOutput, CreateRoadSegmentError>> {
+    // Validate city names
+    const cityANameResult = CityName.create(input.cityA);
+    if (!cityANameResult.success) {
+      return fail(cityANameResult.error);
     }
 
-    const cityBResult =
-      await this.roadSegmentRepository.findCityByName(cityBName);
+    const cityBNameResult = CityName.create(input.cityB);
+    if (!cityBNameResult.success) {
+      return fail(cityBNameResult.error);
+    }
+
+    // Check if cities exist (via road segments that contain them)
+    const cityAResult = await this.roadSegmentRepository.findCityByName(
+      cityANameResult.value,
+    );
+    if (!cityAResult.success) {
+      return fail(cityAResult.error);
+    }
+
+    const cityBResult = await this.roadSegmentRepository.findCityByName(
+      cityBNameResult.value,
+    );
     if (!cityBResult.success) {
-      throw cityBResult.error;
+      return fail(cityBResult.error);
     }
 
     // Create road segment using the new factory method
@@ -38,7 +60,7 @@ export class CreateRoadSegmentUseCase {
     );
 
     if (!roadSegmentResult.success) {
-      throw roadSegmentResult.error;
+      return fail(roadSegmentResult.error);
     }
 
     const roadSegment = roadSegmentResult.value;
@@ -46,15 +68,15 @@ export class CreateRoadSegmentUseCase {
     const saveResult = await this.roadSegmentRepository.save(roadSegment);
 
     if (!saveResult.success) {
-      throw saveResult.error;
+      return fail(saveResult.error);
     }
 
-    return {
+    return ok({
       roadSegmentId: roadSegment.id.value,
       cityA: roadSegment.cityA.name.value,
       cityB: roadSegment.cityB.name.value,
       distance: roadSegment.distance.kilometers,
       speedLimit: roadSegment.speedLimit.kmPerHour,
-    };
+    });
   }
 }
