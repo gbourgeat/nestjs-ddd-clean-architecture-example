@@ -17,15 +17,15 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-@ApiTags('Routes')
-@Controller()
+@ApiTags('Itineraries')
+@Controller('itineraries')
 export class GetFastestRouteController {
   constructor(
     private readonly getFastestRouteUseCase: GetFastestRouteUseCase,
   ) {}
 
-  @Post('/get-fastest-route')
-  @HttpCode(HttpStatus.CREATED)
+  @Post()
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Calculate the fastest route',
     description:

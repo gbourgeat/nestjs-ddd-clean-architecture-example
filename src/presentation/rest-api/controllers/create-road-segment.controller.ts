@@ -16,13 +16,13 @@ import {
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Road Segments')
-@Controller()
+@Controller('road-segments')
 export class CreateRoadSegmentController {
   constructor(
     private readonly createRoadSegmentUseCase: CreateRoadSegmentUseCase,
   ) {}
 
-  @Post('/road-segments')
+  @Post()
   @ApiOperation({
     summary: 'Create a new road segment',
     description:

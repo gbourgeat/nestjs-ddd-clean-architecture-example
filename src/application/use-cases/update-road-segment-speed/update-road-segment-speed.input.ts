@@ -1,5 +1,4 @@
 export interface UpdateRoadSegmentSpeedInput {
-  cityA: string;
-  cityB: string;
+  roadSegmentId: string;
   newSpeedLimit: number;
 }

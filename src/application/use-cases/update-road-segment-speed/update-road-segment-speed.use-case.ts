@@ -26,10 +26,7 @@ export class UpdateRoadSegmentSpeedUseCase {
   ): Promise<
     Result<UpdateRoadSegmentSpeedOutput, UpdateRoadSegmentSpeedError>
   > {
-    const roadSegmentIdResult = RoadSegmentId.fromCityNames(
-      input.cityA,
-      input.cityB,
-    );
+    const roadSegmentIdResult = RoadSegmentId.fromValue(input.roadSegmentId);
 
     if (!roadSegmentIdResult.success) {
       return fail(roadSegmentIdResult.error);

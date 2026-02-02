@@ -11,32 +11,42 @@ import {
   Controller,
   HttpException,
   HttpStatus,
+  Param,
   Patch,
 } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Road Segments')
-@Controller()
+@Controller('road-segments')
 export class UpdateRoadSegmentSpeedController {
   constructor(
     private readonly updateRoadSegmentSpeedUseCase: UpdateRoadSegmentSpeedUseCase,
   ) {}
 
-  @Patch('/road-segments/speed')
+  @Patch(':id')
   @ApiOperation({
     summary: 'Update the speed limit of a road segment',
     description:
-      'Update the speed limit between two cities. The order of cities does not matter.',
+      'Update the speed limit of a road segment identified by its ID (format: cityA__cityB in alphabetical order).',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Road segment ID (format: cityA__cityB, e.g., "lyon__paris")',
+    example: 'lyon__paris',
   })
   @ApiBody({
     type: UpdateRoadSegmentSpeedRequest,
-    description: 'Request data for updating road segment speed',
+    description: 'New speed limit data',
     examples: {
       simple: {
         summary: 'Update speed limit',
         value: {
-          cityA: 'Paris',
-          cityB: 'Lyon',
           newSpeedLimit: 130,
         },
       },
@@ -77,11 +87,11 @@ export class UpdateRoadSegmentSpeedController {
     },
   })
   async updateRoadSegmentSpeed(
+    @Param('id') id: string,
     @Body() dto: UpdateRoadSegmentSpeedRequest,
   ): Promise<UpdateRoadSegmentSpeedResponse> {
     const result = await this.updateRoadSegmentSpeedUseCase.execute({
-      cityA: dto.cityA,
-      cityB: dto.cityB,
+      roadSegmentId: id,
       newSpeedLimit: dto.newSpeedLimit,
     });
 

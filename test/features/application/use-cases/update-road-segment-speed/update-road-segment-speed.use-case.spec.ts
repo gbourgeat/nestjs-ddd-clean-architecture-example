@@ -34,8 +34,7 @@ describe('UpdateRoadSegmentSpeedUseCase', () => {
 
     // Act
     const result = await useCase.execute({
-      cityA: 'Paris',
-      cityB: 'Lyon',
+      roadSegmentId: 'lyon__paris',
       newSpeedLimit: 130,
     });
 
@@ -53,7 +52,7 @@ describe('UpdateRoadSegmentSpeedUseCase', () => {
     }
   });
 
-  it('should work with cities in reverse order', async () => {
+  it('should work with reversed city order in ID (normalized)', async () => {
     // Arrange
     const cityA = CityFixtures.lyon();
     const cityB = CityFixtures.paris();
@@ -66,10 +65,9 @@ describe('UpdateRoadSegmentSpeedUseCase', () => {
 
     roadSegmentRepository.givenRoadSegments([roadSegment]);
 
-    // Act
+    // Act - ID is always alphabetically sorted, so lyon__paris is the canonical form
     const result = await useCase.execute({
-      cityA: 'Lyon',
-      cityB: 'Paris',
+      roadSegmentId: 'lyon__paris',
       newSpeedLimit: 90,
     });
 
@@ -85,8 +83,7 @@ describe('UpdateRoadSegmentSpeedUseCase', () => {
 
     // Act
     const result = await useCase.execute({
-      cityA: 'Paris',
-      cityB: 'UnknownCity',
+      roadSegmentId: 'paris__unknowncity',
       newSpeedLimit: 130,
     });
 
@@ -112,8 +109,7 @@ describe('UpdateRoadSegmentSpeedUseCase', () => {
 
     // Act
     const result = await useCase.execute({
-      cityA: 'Paris',
-      cityB: 'Lyon',
+      roadSegmentId: 'lyon__paris',
       newSpeedLimit: -10,
     });
 
@@ -139,8 +135,7 @@ describe('UpdateRoadSegmentSpeedUseCase', () => {
 
     // Act
     const result = await useCase.execute({
-      cityA: 'Paris',
-      cityB: 'Lyon',
+      roadSegmentId: 'lyon__paris',
       newSpeedLimit: 0,
     });
 
@@ -151,11 +146,24 @@ describe('UpdateRoadSegmentSpeedUseCase', () => {
     }
   });
 
-  it('should return InvalidRoadSegmentIdError for empty city name', async () => {
+  it('should return InvalidRoadSegmentIdError for empty ID', async () => {
     // Act
     const result = await useCase.execute({
-      cityA: '',
-      cityB: 'Lyon',
+      roadSegmentId: '',
+      newSpeedLimit: 130,
+    });
+
+    // Assert
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toBeInstanceOf(InvalidRoadSegmentIdError);
+    }
+  });
+
+  it('should return InvalidRoadSegmentIdError for invalid ID format', async () => {
+    // Act
+    const result = await useCase.execute({
+      roadSegmentId: 'invalid-format',
       newSpeedLimit: 130,
     });
 

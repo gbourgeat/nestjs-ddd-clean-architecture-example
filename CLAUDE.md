@@ -310,6 +310,7 @@ All documentation is in the `docs/` folder:
 
 | Category | Document | Description |
 |----------|----------|-------------|
+| **Domain** | `docs/domain/ubiquitous-language.md` | **Glossaire DDD - Source de vérité** |
 | Architecture | `docs/architecture/clean-architecture.md` | Layer rules, dependency validation |
 | Architecture | `docs/architecture/domain-patterns.md` | Result pattern, aggregates |
 | Infrastructure | `docs/infrastructure/docker.md` | Docker environments, ports |
