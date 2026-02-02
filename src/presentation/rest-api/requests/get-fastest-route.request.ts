@@ -1,12 +1,12 @@
+import { RouteConstraints } from '@/presentation/rest-api/schemas';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
   IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { RouteConstraints } from '@/presentation/rest-api/schemas';
 
 export class GetFastestRouteRequest {
   @ApiProperty({

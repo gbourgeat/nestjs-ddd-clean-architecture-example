@@ -1,8 +1,8 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CITIES, ROAD_SEGMENTS } from './road-segments.fixtures';
 import { Repository } from 'typeorm';
-import { RoadSegmentTypeormEntity, CityTypeormEntity } from '../entities';
+import { CityTypeormEntity, RoadSegmentTypeormEntity } from '../entities';
+import { CITIES, ROAD_SEGMENTS } from './road-segments.fixtures';
 
 @Injectable()
 export class DatabaseSeeder implements OnModuleInit {

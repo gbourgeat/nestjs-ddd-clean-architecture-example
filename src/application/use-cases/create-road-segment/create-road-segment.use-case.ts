@@ -1,12 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { RoadSegmentRepository, CityRepository } from '@/domain/repositories';
 import { RoadSegment } from '@/domain/entities';
+import { CityRepository, RoadSegmentRepository } from '@/domain/repositories';
 import {
   CityName,
   Distance,
   RoadSegmentId,
   Speed,
 } from '@/domain/value-objects';
+import { Injectable } from '@nestjs/common';
 import { CreateRoadSegmentInput } from './create-road-segment.input';
 import { CreateRoadSegmentOutput } from './create-road-segment.output';
 

@@ -1,19 +1,19 @@
+import { UpdateRoadSegmentSpeedUseCase } from '@/application/use-cases/update-road-segment-speed';
+import {
+  InvalidRoadSegmentIdError,
+  InvalidSpeedError,
+  RoadSegmentNotFoundError,
+} from '@/domain/errors';
+import { UpdateRoadSegmentSpeedRequest } from '@/presentation/rest-api/requests';
+import { UpdateRoadSegmentSpeedResponse } from '@/presentation/rest-api/responses';
 import {
   Body,
   Controller,
-  Patch,
   HttpException,
   HttpStatus,
+  Patch,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
-import { UpdateRoadSegmentSpeedRequest } from '@/presentation/rest-api/requests';
-import { UpdateRoadSegmentSpeedResponse } from '@/presentation/rest-api/responses';
-import { UpdateRoadSegmentSpeedUseCase } from '@/application/use-cases/update-road-segment-speed';
-import {
-  RoadSegmentNotFoundError,
-  InvalidSpeedError,
-  InvalidRoadSegmentIdError,
-} from '@/domain/errors';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Road Segments')
 @Controller()

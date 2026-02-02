@@ -1,17 +1,11 @@
-import { DijkstraPathFinder } from '@/infrastructure/pathfinding/dijkstra-path-finder';
-import { WeatherConditionProvider } from '@/infrastructure/pathfinding/weather-condition-provider';
-import {
-  WeatherCondition,
-  RoadConstraints,
-  Distance,
-  Speed,
-} from '@/domain/value-objects';
-import { City, RoadSegment } from '@/domain/entities';
+import { City } from '@/domain/entities';
 import { PathfindingResult } from '@/domain/services';
+import { Distance, RoadConstraints, Speed } from '@/domain/value-objects';
+import { DijkstraPathFinder } from '@/infrastructure/pathfinding/dijkstra-path-finder';
 import {
   CityBuilder,
-  RoadSegmentBuilder,
   FakeWeatherConditionProvider,
+  RoadSegmentBuilder,
 } from '@test/fixtures';
 
 // Helper function to extract path from steps

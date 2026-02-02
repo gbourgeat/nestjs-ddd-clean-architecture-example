@@ -1,20 +1,18 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { HttpModule, HttpService } from '@nestjs/axios';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
-import { of, throwError } from 'rxjs';
-import { AxiosResponse, AxiosHeaders } from 'axios';
 import { OpenWeatherMapAdapter } from '@/infrastructure/openweathermap/openweathermap.adapter';
 import { WeatherServiceError } from '@/infrastructure/openweathermap/weather-service.error';
-import { WeatherCondition } from '@/domain/value-objects';
-import { City } from '@/domain/entities';
+import { HttpModule, HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { ConfigService } from '@nestjs/config';
+import { Test, TestingModule } from '@nestjs/testing';
 import { CityBuilder } from '@test/fixtures';
+import { AxiosHeaders, AxiosResponse } from 'axios';
+import { Cache } from 'cache-manager';
+import { of, throwError } from 'rxjs';
 
 describe('OpenWeatherMapAdapter (Integration)', () => {
   let adapter: OpenWeatherMapAdapter;
   let httpService: HttpService;
-  let cacheManager: Cache;
+  let _cacheManager: Cache;
   let module: TestingModule;
 
   const mockConfigService = {
@@ -44,7 +42,7 @@ describe('OpenWeatherMapAdapter (Integration)', () => {
 
     adapter = module.get<OpenWeatherMapAdapter>(OpenWeatherMapAdapter);
     httpService = module.get<HttpService>(HttpService);
-    cacheManager = module.get<Cache>(CACHE_MANAGER);
+    _cacheManager = module.get<Cache>(CACHE_MANAGER);
   });
 
   afterEach(async () => {

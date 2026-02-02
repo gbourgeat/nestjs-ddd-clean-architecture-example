@@ -1,21 +1,21 @@
-import {
-  Body,
-  Controller,
-  Post,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
-import { CreateRoadSegmentRequest } from '@/presentation/rest-api/requests';
-import { CreateRoadSegmentResponse } from '@/presentation/rest-api/responses';
 import { CreateRoadSegmentUseCase } from '@/application/use-cases/create-road-segment';
 import {
   CityNotFoundError,
   InvalidCityNameError,
   InvalidDistanceError,
-  InvalidSpeedError,
   InvalidRoadSegmentError,
+  InvalidSpeedError,
 } from '@/domain/errors';
+import { CreateRoadSegmentRequest } from '@/presentation/rest-api/requests';
+import { CreateRoadSegmentResponse } from '@/presentation/rest-api/responses';
+import {
+  Body,
+  Controller,
+  HttpException,
+  HttpStatus,
+  Post,
+} from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Road Segments')
 @Controller()

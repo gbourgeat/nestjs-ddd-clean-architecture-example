@@ -1,5 +1,5 @@
-import { CityName } from '@/domain/value-objects';
 import { InvalidCityNameError } from '@/domain/errors';
+import { CityName } from '@/domain/value-objects';
 
 describe('CityName', () => {
   it('should throw InvalidCityNameError for too short name', () => {

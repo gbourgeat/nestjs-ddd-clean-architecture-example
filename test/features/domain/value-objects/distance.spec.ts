@@ -1,5 +1,5 @@
-import { Distance } from '@/domain/value-objects';
 import { InvalidDistanceError } from '@/domain/errors';
+import { Distance } from '@/domain/value-objects';
 
 describe('Distance', () => {
   it('should throw InvalidDistanceError for negative distance', () => {
@@ -7,7 +7,7 @@ describe('Distance', () => {
   });
 
   it('should throw InvalidDistanceError for non-finite distance', () => {
-    expect(() => Distance.fromKilometers(Infinity)).toThrow(
+    expect(() => Distance.fromKilometers(Number.POSITIVE_INFINITY)).toThrow(
       InvalidDistanceError,
     );
   });

@@ -1,11 +1,11 @@
+import { City } from '@/domain/entities';
+import { CityNotFoundError } from '@/domain/errors';
+import { CityRepository } from '@/domain/repositories';
+import { CityId, CityName } from '@/domain/value-objects';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CityRepository } from '@/domain/repositories';
 import { CityTypeormEntity } from '../entities';
-import { CityId, CityName } from '@/domain/value-objects';
-import { City } from '@/domain/entities';
-import { CityNotFoundError } from '@/domain/errors';
 
 @Injectable()
 export class CityTypeormRepository implements CityRepository {

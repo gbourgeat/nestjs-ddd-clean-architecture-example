@@ -1,7 +1,7 @@
-import { Module } from '@nestjs/common';
-import { DijkstraPathFinder } from './dijkstra-path-finder';
 import { PathFinder } from '@/domain/services';
+import { Module } from '@nestjs/common';
 import { OpenWeatherMapModule } from '../openweathermap/openweathermap.module';
+import { DijkstraPathFinder } from './dijkstra-path-finder';
 import { WeatherConditionProvider } from './weather-condition-provider';
 
 @Module({

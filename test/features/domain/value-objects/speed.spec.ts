@@ -1,5 +1,5 @@
-import { Speed } from '@/domain/value-objects';
 import { InvalidSpeedError } from '@/domain/errors';
+import { Speed } from '@/domain/value-objects';
 
 describe('Speed', () => {
   it('should throw InvalidSpeedError for negative speed', () => {
@@ -7,7 +7,9 @@ describe('Speed', () => {
   });
 
   it('should throw InvalidSpeedError for non-finite speed', () => {
-    expect(() => Speed.fromKmPerHour(Infinity)).toThrow(InvalidSpeedError);
+    expect(() => Speed.fromKmPerHour(Number.POSITIVE_INFINITY)).toThrow(
+      InvalidSpeedError,
+    );
   });
 
   it('should convert to string', () => {

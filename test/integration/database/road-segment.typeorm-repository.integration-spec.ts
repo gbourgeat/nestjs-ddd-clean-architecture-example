@@ -1,20 +1,20 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
-import { RoadSegmentTypeormRepository } from '@/infrastructure/database/repositories/road-segment.typeorm-repository';
+import { City, RoadSegment } from '@/domain/entities';
+import { RoadSegmentNotFoundError } from '@/domain/errors';
+import {
+  CityId,
+  CityName,
+  Distance,
+  RoadSegmentId,
+  Speed,
+} from '@/domain/value-objects';
 import {
   CityTypeormEntity,
   RoadSegmentTypeormEntity,
 } from '@/infrastructure/database/entities';
-import {
-  RoadSegmentId,
-  CityId,
-  CityName,
-  Distance,
-  Speed,
-} from '@/domain/value-objects';
-import { City, RoadSegment } from '@/domain/entities';
-import { RoadSegmentNotFoundError } from '@/domain/errors';
+import { RoadSegmentTypeormRepository } from '@/infrastructure/database/repositories/road-segment.typeorm-repository';
+import { Test, TestingModule } from '@nestjs/testing';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 
 describe('RoadSegmentTypeormRepository (Integration)', () => {
   let repository: RoadSegmentTypeormRepository;
@@ -34,7 +34,7 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
         TypeOrmModule.forRoot({
           type: 'postgres',
           host: process.env.DATABASE_HOST || 'localhost',
-          port: parseInt(process.env.DATABASE_PORT || '54322'),
+          port: Number.parseInt(process.env.DATABASE_PORT || '54322'),
           username: process.env.DATABASE_USER || 'postgres',
           password: process.env.DATABASE_PASSWORD || 'postgres',
           database:

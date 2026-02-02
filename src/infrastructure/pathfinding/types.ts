@@ -13,5 +13,5 @@ export interface PreviousCity {
 
 export type Graph = Map<string, SimplifiedSegmentData[]>;
 
-export const INFINITE_DISTANCE = Infinity;
+export const INFINITE_DISTANCE = Number.POSITIVE_INFINITY;
 export const INITIAL_DISTANCE = 0;

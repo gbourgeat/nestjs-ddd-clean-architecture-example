@@ -1,5 +1,5 @@
-import { RoadConstraints, WeatherCondition } from '@/domain/value-objects';
 import { City, RoadSegment } from '@/domain/entities';
+import { RoadConstraints, WeatherCondition } from '@/domain/value-objects';
 
 export interface SimplifiedSegment {
   fromCity: string;
@@ -29,7 +29,9 @@ export class PathfindingInputMapper {
       // For segments with speedLimit = 0, use Infinity as duration
       // These segments will be filtered later, but we need to be able to map them
       const estimatedDuration =
-        speedLimit > 0 ? segment.estimatedDuration.hours : Infinity;
+        speedLimit > 0
+          ? segment.estimatedDuration.hours
+          : Number.POSITIVE_INFINITY;
 
       // Direction A -> B
       simplifiedSegments.push({

@@ -12,7 +12,7 @@ export class Speed {
       throw InvalidSpeedError.negative();
     }
 
-    if (!isFinite(kmPerHour)) {
+    if (!Number.isFinite(kmPerHour)) {
       throw InvalidSpeedError.notFinite();
     }
 

@@ -1,15 +1,15 @@
-import { PathFinder, PathfindingResult } from '@/domain/services';
 import { City, RoadSegment } from '@/domain/entities';
+import { PathFinder, PathfindingResult } from '@/domain/services';
 import { RoadConstraints } from '@/domain/value-objects';
 
 export class PathFinderFake extends PathFinder {
   private result: PathfindingResult | null = null;
 
   async findFastestRoute(
-    segments: RoadSegment[],
-    startCity: City,
-    endCity: City,
-    constraints?: RoadConstraints,
+    _segments: RoadSegment[],
+    _startCity: City,
+    _endCity: City,
+    _constraints?: RoadConstraints,
   ): Promise<PathfindingResult | null> {
     return this.result;
   }

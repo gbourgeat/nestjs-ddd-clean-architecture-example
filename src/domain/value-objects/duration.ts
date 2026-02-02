@@ -12,7 +12,7 @@ export class Duration {
       throw InvalidDurationError.negative();
     }
 
-    if (!isFinite(hours)) {
+    if (!Number.isFinite(hours)) {
       throw InvalidDurationError.notFinite();
     }
 

@@ -20,7 +20,7 @@ Triggered on:
 
 | Job | Description | Dependencies |
 |-----|-------------|--------------|
-| 🔍 **lint-build** | ESLint + TypeScript Build | - |
+| 🔍 **lint-build** | Biome check + TypeScript Build | - |
 | 🧪 **test-features** | Domain + Application Tests | - |
 | 🔌 **test-integration** | Infrastructure Tests (PostgreSQL) | - |
 | 🚀 **test-e2e** | End-to-End Tests (PostgreSQL) | - |
@@ -41,7 +41,7 @@ Reports are uploaded as GitHub artifacts and retained for 7 days.
 
 Fast pipeline for Pull Requests:
 
-1. **Quick Checks**: Prettier, ESLint, TypeScript, Build
+1. **Quick Checks**: Biome check, TypeScript, Build
 2. **PR Tests**: Features tests only (faster)
 3. **PR Info**: PR summary
 
@@ -132,8 +132,8 @@ cp .env.integration.example .env.integration
 To simulate CI locally:
 
 ```bash
-# Lint & Build
-npm run lint
+# Check code quality & Build
+npm run check:ci
 npm run build
 
 # Features tests

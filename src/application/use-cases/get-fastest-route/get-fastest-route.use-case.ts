@@ -1,13 +1,13 @@
-import { SameStartAndEndCityError } from '@/domain/errors';
-import { RoadSegmentRepository, CityRepository } from '@/domain/repositories';
 import {
-  GetFastestRouteInput,
-  GetFastestRoadOutput,
-} from '@/application/use-cases/get-fastest-route';
-import {
-  RoadConstraintsMapper,
   PathfindingResultMapper,
+  RoadConstraintsMapper,
 } from '@/application/mappers';
+import {
+  GetFastestRoadOutput,
+  GetFastestRouteInput,
+} from '@/application/use-cases/get-fastest-route';
+import { SameStartAndEndCityError } from '@/domain/errors';
+import { CityRepository, RoadSegmentRepository } from '@/domain/repositories';
 import { PathFinder } from '@/domain/services';
 import { CityName } from '@/domain/value-objects';
 

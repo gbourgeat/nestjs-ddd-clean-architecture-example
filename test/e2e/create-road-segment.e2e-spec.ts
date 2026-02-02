@@ -1,7 +1,7 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, HttpStatus, ValidationPipe } from '@nestjs/common';
-import request from 'supertest';
 import { RestApiModule } from '@/presentation/rest-api/rest-api.module';
+import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+import request from 'supertest';
 
 describe('POST /road-segments (E2E)', () => {
   let app: INestApplication;

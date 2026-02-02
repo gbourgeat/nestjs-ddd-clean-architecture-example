@@ -1,6 +1,6 @@
-import { PathfindingResult } from '@/domain/services';
 import { RouteStepMapper } from '@/application/mappers';
 import { GetFastestRoadOutput } from '@/application/use-cases/get-fastest-route';
+import { PathfindingResult } from '@/domain/services';
 
 export class PathfindingResultMapper {
   static toOutput(result: PathfindingResult | null): GetFastestRoadOutput {

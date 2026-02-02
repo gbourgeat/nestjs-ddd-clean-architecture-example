@@ -1,5 +1,5 @@
-import { PathfindingResult, RouteStep } from '@/domain/services';
 import { City } from '@/domain/entities';
+import { PathfindingResult, RouteStep } from '@/domain/services';
 import {
   Distance,
   Duration,

@@ -1,14 +1,14 @@
-import { GetFastestRouteUseCase } from '@/application/use-cases/get-fastest-route/get-fastest-route.use-case';
 import { GetFastestRouteInput } from '@/application/use-cases/get-fastest-route/get-fastest-route.input';
+import { GetFastestRouteUseCase } from '@/application/use-cases/get-fastest-route/get-fastest-route.use-case';
 import { City, RoadSegment } from '@/domain/entities';
 import {
   CityFixtures,
-  RoadSegmentBuilder,
-  PathfindingResultBuilder,
-  RouteStepBuilder,
   CityInMemoryRepository,
-  RoadSegmentInMemoryRepository,
   PathFinderFake,
+  PathfindingResultBuilder,
+  RoadSegmentBuilder,
+  RoadSegmentInMemoryRepository,
+  RouteStepBuilder,
 } from '@test/fixtures';
 
 describe('RoadConstraints', () => {

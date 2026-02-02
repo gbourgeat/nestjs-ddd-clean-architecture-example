@@ -1,5 +1,5 @@
-import { RoadSegment, City } from '@/domain/entities';
-import { RoadSegmentId, Distance, Speed } from '@/domain/value-objects';
+import { City, RoadSegment } from '@/domain/entities';
+import { Distance, RoadSegmentId, Speed } from '@/domain/value-objects';
 
 export class RoadSegmentBuilder {
   private id?: RoadSegmentId;
