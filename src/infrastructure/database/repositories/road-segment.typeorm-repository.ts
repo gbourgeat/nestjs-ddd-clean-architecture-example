@@ -38,14 +38,14 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
       const cityA = citiesIndexById.get(route.cityAId) || { id: '', name: '' };
       const cityB = citiesIndexById.get(route.cityBId) || { id: '', name: '' };
 
-      return RoadSegment.create(
+      return RoadSegment.reconstitute(
         RoadSegmentId.fromCityNames(cityA.name, cityB.name),
         [
-          City.create(
+          City.reconstitute(
             CityId.fromNormalizedValue(cityA.id),
             CityName.create(cityA.name),
           ),
-          City.create(
+          City.reconstitute(
             CityId.fromNormalizedValue(cityB.id),
             CityName.create(cityB.name),
           ),
@@ -92,14 +92,14 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
       throw RoadSegmentNotFoundError.forRoadSegmentId(id);
     }
 
-    return RoadSegment.create(
+    return RoadSegment.reconstitute(
       RoadSegmentId.fromCityNames(cityA.name, cityB.name),
       [
-        City.create(
+        City.reconstitute(
           CityId.fromNormalizedValue(cityA.id),
           CityName.create(cityA.name),
         ),
-        City.create(
+        City.reconstitute(
           CityId.fromNormalizedValue(cityB.id),
           CityName.create(cityB.name),
         ),

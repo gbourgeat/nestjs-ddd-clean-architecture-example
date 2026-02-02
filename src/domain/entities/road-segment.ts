@@ -28,6 +28,19 @@ export class RoadSegment {
     return new RoadSegment(id, sortedCities, distance, speed);
   }
 
+  static reconstitute(
+    id: RoadSegmentId,
+    cities: [City, City],
+    distance: Distance,
+    speed: Speed,
+  ): RoadSegment {
+    this.ensureCitiesAreDistinct(cities);
+
+    const sortedCities = this.sortCitiesByNames(cities);
+
+    return new RoadSegment(id, sortedCities, distance, speed);
+  }
+
   private static sortCitiesByNames(cities: [City, City]) {
     const sortedCities: [City, City] =
       cities[0].name.compareTo(cities[1].name) <= 0
