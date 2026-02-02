@@ -47,6 +47,9 @@
     "lint:check": "biome lint src test",
     "check": "biome check --write src test",
     "check:ci": "biome check src test",
+    "deps:check": "depcruise --config .dependency-cruiser.js src",
+    "deps:graph": "depcruise --config .dependency-cruiser.js --output-type dot src | dot -T svg > docs/dependency-graph.svg",
+    "deps:archi": "depcruise --config .dependency-cruiser.js --output-type archi src",
     "test": "npm run test:features",
     "test:watch": "npm run test:features:watch",
     "test:cov": "npm run test:features:cov",
@@ -81,6 +84,9 @@
   "lint-staged": {
     "*.ts": [
       "biome check --write --no-errors-on-unmatched"
+    ],
+    "src/**/*.ts": [
+      "bash -c 'npm run deps:check'"
     ]
   },
   "dependencies": {
@@ -111,6 +117,7 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^22.10.7",
     "@types/supertest": "^6.0.2",
+    "dependency-cruiser": "^17.3.7",
     "husky": "^9.1.7",
     "jest": "^30.0.0",
     "lint-staged": "^16.2.7",

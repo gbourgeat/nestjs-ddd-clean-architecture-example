@@ -1,88 +1,98 @@
-# 📚 Documentation Route Solver
+# Documentation Route Solver
 
-Ce dossier contient toute la documentation technique du projet Route Solver.
+This folder contains all technical documentation for the Route Solver project.
 
-## 📋 Index des documents
+## Document Index
 
-### 🐳 Docker & Infrastructure
-
-| Document | Description |
-|----------|-------------|
-| **[DOCKER.md](./DOCKER.md)** | 📖 Documentation complète Docker Compose (ports, configuration, variables d'environnement) |
-| **[DOCKER-QUICK-REFERENCE.md](./DOCKER-QUICK-REFERENCE.md)** | ⚡ Référence rapide des commandes Docker essentielles |
-| **[DOCKER-SETUP-SUMMARY.md](./DOCKER-SETUP-SUMMARY.md)** | 📦 Récapitulatif de la configuration Docker (fichiers créés, avantages) |
-| **[MIGRATION.md](./MIGRATION.md)** | 🔄 Guide de migration depuis l'ancien docker-compose.yml |
-| **[PORTS-STRATEGY.md](./PORTS-STRATEGY.md)** | 🔒 Stratégie de choix des ports (54320-54322) et anti-conflit |
-
-### ⚙️ Task Runner & Automation
+### Docker & Infrastructure
 
 | Document | Description |
 |----------|-------------|
-| **[TASKFILE.md](./TASKFILE.md)** | 🚀 Guide complet du Task Runner (alternative moderne à Makefile) |
-| **[TASK-INSTALLATION.md](./TASK-INSTALLATION.md)** | 📥 Guide d'installation de Task |
-| **[TASK-QUICKREF.md](./TASK-QUICKREF.md)** | ⚡ Référence rapide des commandes Task |
-| **[TASK-SUMMARY.md](./TASK-SUMMARY.md)** | 📋 Récapitulatif des fichiers Task et avantages |
-| **[TASK-README.txt](./TASK-README.txt)** | 📄 README Task (format texte) |
+| **[DOCKER.md](./DOCKER.md)** | Complete Docker Compose documentation (ports, configuration, environment variables) |
+| **[DOCKER-QUICK-REFERENCE.md](./DOCKER-QUICK-REFERENCE.md)** | Quick reference for essential Docker commands |
+| **[DOCKER-SETUP-SUMMARY.md](./DOCKER-SETUP-SUMMARY.md)** | Docker configuration summary (files created, benefits) |
+| **[MIGRATION.md](./MIGRATION.md)** | Migration guide from old docker-compose.yml |
+| **[PORTS-STRATEGY.md](./PORTS-STRATEGY.md)** | Port selection strategy (54320-54322) and conflict avoidance |
 
-### 📁 Organisation & Maintenance
-
-| Document | Description |
-|----------|-------------|
-| **[REORGANISATION.md](./REORGANISATION.md)** | 📦 Historique de la réorganisation des fichiers du projet |
-
-### 🔧 Git & Code Quality
+### Task Runner & Automation
 
 | Document | Description |
 |----------|-------------|
-| **[PRE-COMMIT-HOOKS.md](./PRE-COMMIT-HOOKS.md)** | ✅ Configuration automatique du formatage et lint avant commit (husky + lint-staged) |
-| **[GIT-WORKFLOW.md](./GIT-WORKFLOW.md)** | 🌿 Conventions de branches, commits et Pull Requests |
-| **[GIT-CHEAT-SHEET.md](./GIT-CHEAT-SHEET.md)** | ⚡ Référence rapide des commandes Git |
-| **[GIT-COMMANDS-EXAMPLES.md](./GIT-COMMANDS-EXAMPLES.md)** | 📋 Exemples détaillés de workflows Git |
-| **[GIT-VISUAL-GUIDE.md](./GIT-VISUAL-GUIDE.md)** | 🎨 Guide visuel des workflows Git |
+| **[TASKFILE.md](./TASKFILE.md)** | Complete Task Runner guide (modern alternative to Makefile) |
+| **[TASK-INSTALLATION.md](./TASK-INSTALLATION.md)** | Task installation guide |
+| **[TASK-QUICKREF.md](./TASK-QUICKREF.md)** | Quick reference for Task commands |
+| **[TASK-SUMMARY.md](./TASK-SUMMARY.md)** | Summary of Task files and benefits |
+| **[TASK-README.txt](./TASK-README.txt)** | Task README (text format) |
 
-### 🤖 AI & Development
+### Organization & Maintenance
 
 | Document | Description |
 |----------|-------------|
-| **[CLAUDE.md](./CLAUDE.md)** | 🧠 Instructions et contexte pour l'IA Claude (développement assisté) |
+| **[REORGANISATION.md](./REORGANISATION.md)** | History of project file reorganization |
 
-## 🚀 Par où commencer ?
+### Architecture & Quality
 
-### Nouveau sur le projet ?
-1. Lisez le **[README principal](../README.md)** pour comprendre l'architecture
-2. Consultez **[DOCKER-QUICK-REFERENCE.md](./DOCKER-QUICK-REFERENCE.md)** pour démarrer rapidement
-3. Installez **[Task Runner](./TASKFILE.md)** pour faciliter le développement
+| Document | Description |
+|----------|-------------|
+| **[DEPENDENCY-CHECKING.md](./DEPENDENCY-CHECKING.md)** | Complete guide for architectural dependency control (EN) |
+| **[DEPENDENCY-CHECKING-FR.md](./DEPENDENCY-CHECKING-FR.md)** | Quick start guide for dependency control (FR) |
+| **[DEPENDENCY-CHECKING-BARRELS.md](./DEPENDENCY-CHECKING-BARRELS.md)** | Configuration compatible with barrel exports (FR) |
+| **[DEPENDENCY-CHECKING-SETUP.md](./DEPENDENCY-CHECKING-SETUP.md)** | Technical summary of control implementation |
+| **[DEPENDENCY-CHECKING-SUMMARY.md](./DEPENDENCY-CHECKING-SUMMARY.md)** | Complete setup summary |
 
-### Task Runner (Recommandé)
-1. **[TASKFILE.md](./TASKFILE.md)** - Guide d'installation et d'utilisation
-2. Commandes essentielles: `task setup`, `task dev`, `task test:cov`
+### Git & Code Quality
 
-### Configuration Docker
-1. **[DOCKER-QUICK-REFERENCE.md](./DOCKER-QUICK-REFERENCE.md)** - Commandes essentielles
-2. **[DOCKER.md](./DOCKER.md)** - Configuration détaillée
-3. **[PORTS-STRATEGY.md](./PORTS-STRATEGY.md)** - Pourquoi ces ports ?
+| Document | Description |
+|----------|-------------|
+| **[PRE-COMMIT-HOOKS.md](./PRE-COMMIT-HOOKS.md)** | Automatic formatting and lint configuration before commit (husky + lint-staged) |
+| **[GIT-WORKFLOW.md](./GIT-WORKFLOW.md)** | Branch, commit and Pull Request conventions |
+| **[GIT-CHEAT-SHEET.md](./GIT-CHEAT-SHEET.md)** | Quick reference for Git commands |
+| **[GIT-COMMANDS-EXAMPLES.md](./GIT-COMMANDS-EXAMPLES.md)** | Detailed examples of Git workflows |
+| **[GIT-VISUAL-GUIDE.md](./GIT-VISUAL-GUIDE.md)** | Visual guide for Git workflows |
 
-### Migration depuis ancien setup
-1. **[MIGRATION.md](./MIGRATION.md)** - Guide complet de migration
-2. Utilisez le script `../migrate-docker-compose.sh`
+### AI & Development
 
-## 📖 Documentation principale
+| Document | Description |
+|----------|-------------|
+| **[CLAUDE.md](./CLAUDE.md)** | Instructions and context for Claude AI (assisted development) |
 
-Pour la documentation du projet (architecture, patterns DDD, tests), consultez le **[README.md](../README.md)** à la racine du projet.
+## Getting Started
 
-## 🔗 Liens utiles
+### New to the project?
+1. Read the **[main README](../README.md)** to understand the architecture
+2. Check **[DOCKER-QUICK-REFERENCE.md](./DOCKER-QUICK-REFERENCE.md)** to get started quickly
+3. Install **[Task Runner](./TASKFILE.md)** to facilitate development
 
-- [README principal](../README.md) - Architecture et Getting Started
-- [Copilot Instructions](../.github/copilot-instructions.md) - Instructions pour les agents IA
-- [Package.json](../package.json) - Scripts disponibles
+### Task Runner (Recommended)
+1. **[TASKFILE.md](./TASKFILE.md)** - Installation and usage guide
+2. Essential commands: `task setup`, `task dev`, `task test:cov`
+
+### Docker Configuration
+1. **[DOCKER-QUICK-REFERENCE.md](./DOCKER-QUICK-REFERENCE.md)** - Essential commands
+2. **[DOCKER.md](./DOCKER.md)** - Detailed configuration
+3. **[PORTS-STRATEGY.md](./PORTS-STRATEGY.md)** - Why these ports?
+
+### Migration from old setup
+1. **[MIGRATION.md](./MIGRATION.md)** - Complete migration guide
+2. Use the script `../migrate-docker-compose.sh`
+
+## Main Documentation
+
+For project documentation (architecture, DDD patterns, tests), see the **[README.md](../README.md)** at the root of the project.
+
+## Useful Links
+
+- [Main README](../README.md) - Architecture and Getting Started
+- [Copilot Instructions](../.github/copilot-instructions.md) - Instructions for AI agents
+- [Package.json](../package.json) - Available scripts
 
 ---
 
-**Structure du projet:**
+**Project structure:**
 ```
 route-solver/
-├── README.md                       # 📖 Documentation principale
-├── docs/                           # 📚 Documentation technique (vous êtes ici)
+├── README.md                       # Main documentation
+├── docs/                           # Technical documentation (you are here)
 │   ├── README.md               
 │   ├── DOCKER.md
 │   ├── DOCKER-QUICK-REFERENCE.md
@@ -96,9 +106,9 @@ route-solver/
 │   ├── TASK-README.txt
 │   ├── REORGANISATION.md
 │   └── CLAUDE.md
-├── scripts/                        # 🛠️ Scripts d'administration
+├── scripts/                        # Administration scripts
 │   ├── install-task.sh
 │   └── check-task-env.sh
-├── src/                            # 💻 Code source
-└── test/                           # 🧪 Tests
+├── src/                            # Source code
+└── test/                           # Tests
 ```
