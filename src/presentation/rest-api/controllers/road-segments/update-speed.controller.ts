@@ -31,24 +31,24 @@ export class UpdateRoadSegmentSpeedController {
 
   @Patch(':id')
   @ApiOperation({
-    summary: "Modifier la limite de vitesse d'un segment routier",
+    summary: 'Update the speed limit of a road segment',
     description: `
-Met à jour la limite de vitesse d'un segment routier existant.
+Updates the speed limit of an existing road segment.
 
-## Format de l'identifiant
-L'identifiant du segment est au format \`cityA__cityB\` où les villes sont triées par ordre alphabétique.
+## Identifier format
+The segment identifier uses the format \`cityA__cityB\` where cities are sorted alphabetically.
 
-**Exemples d'identifiants valides :**
+**Valid identifier examples:**
 - \`lyon__paris\` (Lyon-Paris)
 - \`marseille__nice\` (Marseille-Nice)
 - \`bordeaux__toulouse\` (Bordeaux-Toulouse)
 
-## Cas d'utilisation
-- Mise à jour suite à des travaux routiers
-- Changement de réglementation
-- Ajustement saisonnier (conditions hivernales)
+## Use cases
+- Update following road construction
+- Regulatory changes
+- Seasonal adjustments (winter conditions)
 
-## Exemple
+## Example
 \`\`\`
 PATCH /road-segments/lyon__paris
 {
@@ -61,37 +61,37 @@ PATCH /road-segments/lyon__paris
     name: 'id',
     required: true,
     description: `
-Identifiant unique du segment routier au format \`cityA__cityB\`.
+Unique identifier of the road segment in the format \`cityA__cityB\`.
 
-**Important** : Les noms de villes sont en minuscules et triés alphabétiquement.
+**Important**: City names are lowercase and sorted alphabetically.
 
-Exemples :
-- \`lyon__paris\` pour le segment Lyon-Paris
-- \`marseille__nice\` pour le segment Marseille-Nice
+Examples:
+- \`lyon__paris\` for the Lyon-Paris segment
+- \`marseille__nice\` for the Marseille-Nice segment
     `,
     example: 'lyon__paris',
   })
   @ApiBody({
     type: UpdateRoadSegmentSpeedRequest,
-    description: 'Nouvelle limite de vitesse à appliquer',
+    description: 'New speed limit to apply',
     examples: {
-      autoroute: {
-        summary: 'Vitesse autoroute standard',
-        description: 'Limite de vitesse typique sur autoroute française',
+      highway: {
+        summary: 'Standard highway speed',
+        description: 'Typical speed limit on French highways',
         value: {
           newSpeedLimit: 130,
         },
       },
-      travaux: {
-        summary: 'Réduction pour travaux',
-        description: 'Vitesse réduite temporairement pour travaux',
+      construction: {
+        summary: 'Construction zone reduction',
+        description: 'Temporarily reduced speed for road construction',
         value: {
           newSpeedLimit: 90,
         },
       },
-      intemperies: {
-        summary: 'Conditions météo dégradées',
-        description: 'Vitesse adaptée aux conditions hivernales',
+      weather: {
+        summary: 'Degraded weather conditions',
+        description: 'Speed adapted to winter conditions',
         value: {
           newSpeedLimit: 110,
         },
@@ -101,7 +101,7 @@ Exemples :
   @ApiResponse({
     status: 200,
     description:
-      'Limite de vitesse mise à jour avec succès. Retourne le segment avec sa nouvelle configuration.',
+      'Speed limit updated successfully. Returns the segment with its new configuration.',
     type: UpdateRoadSegmentSpeedResponse,
     example: {
       roadSegmentId: 'lyon__paris',
@@ -114,10 +114,10 @@ Exemples :
   @ApiResponse({
     status: 400,
     description: `
-Requête invalide. Causes possibles :
-- Format d'identifiant incorrect (doit être \`cityA__cityB\`)
-- Vitesse négative ou nulle
-- Vitesse non numérique
+Invalid request. Possible causes:
+- Incorrect identifier format (must be \`cityA__cityB\`)
+- Negative or zero speed
+- Non-numeric speed value
     `,
     schema: {
       oneOf: [
@@ -142,7 +142,7 @@ Requête invalide. Causes possibles :
   @ApiResponse({
     status: 404,
     description:
-      "Le segment routier spécifié n'existe pas. Vérifiez l'identifiant et l'ordre alphabétique des villes.",
+      'The specified road segment does not exist. Check the identifier and the alphabetical order of cities.',
     schema: {
       example: {
         statusCode: 404,
@@ -154,7 +154,7 @@ Requête invalide. Causes possibles :
   @ApiResponse({
     status: 500,
     description:
-      'Erreur serveur interne. Contactez le support si le problème persiste.',
+      'Internal server error. Contact support if the problem persists.',
     schema: {
       example: {
         statusCode: 500,

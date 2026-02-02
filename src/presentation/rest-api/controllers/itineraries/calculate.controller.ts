@@ -25,22 +25,22 @@ export class CalculateItineraryController {
 
   @Get()
   @ApiOperation({
-    summary: 'Rechercher le meilleur itinéraire entre deux villes',
+    summary: 'Search for the fastest itinerary between two cities',
     description: `
-Calcule l'itinéraire le plus rapide entre deux villes françaises en utilisant l'algorithme de Dijkstra.
+Calculates the fastest itinerary between two French cities using Dijkstra's algorithm.
 
-## Fonctionnement
-- L'algorithme parcourt le réseau routier pour trouver le chemin optimal
-- Le temps de trajet est calculé en fonction de la distance et des limites de vitesse
-- Les conditions météorologiques actuelles sont prises en compte pour chaque segment
+## How it works
+- The algorithm traverses the road network to find the optimal path
+- Travel time is calculated based on distance and speed limits
+- Current weather conditions are taken into account for each segment
 
-## Contraintes optionnelles
-Vous pouvez filtrer les résultats avec des contraintes :
-- **maxDistance** : Exclure les segments dépassant une certaine distance
-- **minSpeed** : Exclure les segments avec une limite de vitesse trop basse
-- **excludeWeather** : Éviter certaines conditions météo (rain, snow, fog, thunderstorm)
+## Optional constraints
+You can filter results with constraints:
+- **maxDistance**: Exclude segments exceeding a certain distance
+- **minSpeed**: Exclude segments with a speed limit below a threshold
+- **excludeWeather**: Avoid certain weather conditions (rain, snow, fog, thunderstorm)
 
-## Exemple d'utilisation
+## Usage examples
 \`\`\`
 GET /itineraries?from=Paris&to=Marseille
 GET /itineraries?from=Paris&to=Lyon&maxDistance=500&excludeWeather=rain,snow
@@ -50,40 +50,40 @@ GET /itineraries?from=Paris&to=Lyon&maxDistance=500&excludeWeather=rain,snow
   @ApiQuery({
     name: 'from',
     required: true,
-    description: 'Nom de la ville de départ (ex: Paris, Lyon, Marseille)',
+    description: 'Name of the departure city (e.g., Paris, Lyon, Marseille)',
     example: 'Paris',
   })
   @ApiQuery({
     name: 'to',
     required: true,
-    description: "Nom de la ville d'arrivée (ex: Paris, Lyon, Marseille)",
+    description: 'Name of the destination city (e.g., Paris, Lyon, Marseille)',
     example: 'Lyon',
   })
   @ApiQuery({
     name: 'maxDistance',
     required: false,
     description:
-      'Distance maximale autorisée par segment en kilomètres. Les segments plus longs seront exclus du calcul.',
+      'Maximum allowed distance per segment in kilometers. Longer segments will be excluded from the calculation.',
     example: 500,
   })
   @ApiQuery({
     name: 'minSpeed',
     required: false,
     description:
-      'Vitesse minimale requise en km/h. Les segments avec une limite inférieure seront exclus.',
+      'Minimum required speed in km/h. Segments with a lower speed limit will be excluded.',
     example: 100,
   })
   @ApiQuery({
     name: 'excludeWeather',
     required: false,
     description:
-      'Conditions météo à éviter, séparées par des virgules. Valeurs possibles : sunny, cloudy, rain, snow, thunderstorm, fog',
+      'Weather conditions to avoid, separated by commas. Possible values: sunny, cloudy, rain, snow, thunderstorm, fog',
     example: 'rain,snow',
   })
   @ApiResponse({
     status: 200,
     description:
-      'Itinéraire calculé avec succès. Retourne le chemin optimal, la distance totale, le temps estimé et le détail de chaque étape.',
+      'Itinerary calculated successfully. Returns the optimal path, total distance, estimated time, and details for each step.',
     type: GetFastestRouteResponse,
     example: {
       path: ['Paris', 'Lyon', 'Marseille'],
@@ -110,7 +110,7 @@ GET /itineraries?from=Paris&to=Lyon&maxDistance=500&excludeWeather=rain,snow
   @ApiResponse({
     status: 400,
     description:
-      "Requête invalide. Peut survenir si les paramètres sont manquants, mal formatés, ou si les villes de départ et d'arrivée sont identiques.",
+      'Invalid request. May occur if parameters are missing, malformed, or if departure and destination cities are the same.',
     schema: {
       example: {
         statusCode: 400,
@@ -122,7 +122,7 @@ GET /itineraries?from=Paris&to=Lyon&maxDistance=500&excludeWeather=rain,snow
   @ApiResponse({
     status: 404,
     description:
-      "Ville non trouvée. La ville de départ ou d'arrivée n'existe pas dans le réseau routier.",
+      'City not found. The departure or destination city does not exist in the road network.',
     schema: {
       example: {
         statusCode: 404,
@@ -134,7 +134,7 @@ GET /itineraries?from=Paris&to=Lyon&maxDistance=500&excludeWeather=rain,snow
   @ApiResponse({
     status: 500,
     description:
-      'Erreur serveur interne. Contactez le support si le problème persiste.',
+      'Internal server error. Contact support if the problem persists.',
     schema: {
       example: {
         statusCode: 500,

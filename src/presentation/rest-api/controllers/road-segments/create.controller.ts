@@ -24,23 +24,23 @@ export class CreateRoadSegmentController {
 
   @Post()
   @ApiOperation({
-    summary: 'Créer un nouveau segment routier entre deux villes',
+    summary: 'Create a new road segment between two cities',
     description: `
-Crée une connexion routière bidirectionnelle entre deux villes du réseau.
+Creates a bidirectional road connection between two cities in the network.
 
-## Prérequis
-- Les deux villes doivent déjà exister dans la base de données
-- Les deux villes doivent être différentes (pas de boucle)
+## Prerequisites
+- Both cities must already exist in the database
+- Both cities must be different (no self-loops allowed)
 
-## Règles métier
-- **Distance** : Doit être un nombre positif représentant les kilomètres
-- **Vitesse** : Limite de vitesse en km/h (doit être positive)
-- **Identifiant** : Généré automatiquement au format \`cityA__cityB\` (ordre alphabétique)
+## Business rules
+- **Distance**: Must be a positive number representing kilometers
+- **Speed limit**: Speed limit in km/h (must be positive)
+- **Identifier**: Automatically generated in the format \`cityA__cityB\` (alphabetical order)
 
-## Bidirectionnalité
-Le segment créé est bidirectionnel : un segment Paris-Lyon permet de voyager de Paris vers Lyon ET de Lyon vers Paris.
+## Bidirectionality
+The created segment is bidirectional: a Paris-Lyon segment allows travel from Paris to Lyon AND from Lyon to Paris.
 
-## Exemple
+## Example
 \`\`\`json
 POST /road-segments
 {
@@ -54,11 +54,11 @@ POST /road-segments
   })
   @ApiBody({
     type: CreateRoadSegmentRequest,
-    description: 'Données du segment routier à créer',
+    description: 'Road segment data to create',
     examples: {
-      autoroute: {
-        summary: 'Autoroute Paris-Lyon',
-        description: 'Segment autoroutier typique avec limite à 130 km/h',
+      highway: {
+        summary: 'Paris-Lyon Highway',
+        description: 'Typical highway segment with 130 km/h speed limit',
         value: {
           cityA: 'Paris',
           cityB: 'Lyon',
@@ -66,9 +66,9 @@ POST /road-segments
           speedLimit: 130,
         },
       },
-      nationale: {
-        summary: 'Route nationale',
-        description: 'Route nationale avec limite à 80 km/h',
+      nationalRoad: {
+        summary: 'National road',
+        description: 'National road with 80 km/h speed limit',
         value: {
           cityA: 'Dijon',
           cityB: 'Beaune',
@@ -81,7 +81,7 @@ POST /road-segments
   @ApiResponse({
     status: 201,
     description:
-      'Segment routier créé avec succès. Retourne les informations du segment incluant son identifiant unique.',
+      'Road segment created successfully. Returns segment information including its unique identifier.',
     type: CreateRoadSegmentResponse,
     example: {
       roadSegmentId: 'lyon__paris',
@@ -94,11 +94,11 @@ POST /road-segments
   @ApiResponse({
     status: 400,
     description: `
-Requête invalide. Causes possibles :
-- Distance négative ou nulle
-- Vitesse négative ou nulle
-- Nom de ville vide
-- Tentative de créer un segment reliant une ville à elle-même
+Invalid request. Possible causes:
+- Negative or zero distance
+- Negative or zero speed
+- Empty city name
+- Attempt to create a segment connecting a city to itself
     `,
     schema: {
       oneOf: [
@@ -122,7 +122,7 @@ Requête invalide. Causes possibles :
   @ApiResponse({
     status: 404,
     description:
-      "L'une des villes spécifiées n'existe pas dans la base de données. Vérifiez l'orthographe ou créez d'abord la ville.",
+      'One of the specified cities does not exist in the database. Check the spelling or create the city first.',
     schema: {
       example: {
         statusCode: 404,
@@ -134,7 +134,7 @@ Requête invalide. Causes possibles :
   @ApiResponse({
     status: 500,
     description:
-      'Erreur serveur interne. Contactez le support si le problème persiste.',
+      'Internal server error. Contact support if the problem persists.',
     schema: {
       example: {
         statusCode: 500,
