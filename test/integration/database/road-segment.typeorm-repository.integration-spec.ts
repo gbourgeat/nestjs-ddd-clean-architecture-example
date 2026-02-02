@@ -87,12 +87,14 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
     it('should return all road segments', async () => {
       // Arrange
       const segment1 = roadSegmentTypeormRepository.create({
+        id: crypto.randomUUID(),
         cityAId: parisEntity.id,
         cityBId: lyonEntity.id,
         distance: 465,
         speedLimit: 130,
       });
       const segment2 = roadSegmentTypeormRepository.create({
+        id: crypto.randomUUID(),
         cityAId: lyonEntity.id,
         cityBId: marseilleEntity.id,
         distance: 315,
@@ -125,6 +127,7 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
     it('should correctly map road segment properties', async () => {
       // Arrange
       const segment = roadSegmentTypeormRepository.create({
+        id: crypto.randomUUID(),
         cityAId: parisEntity.id,
         cityBId: lyonEntity.id,
         distance: 465,
@@ -152,7 +155,9 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
   describe('findById', () => {
     it('should find a road segment by id', async () => {
       // Arrange
+      const segmentId = crypto.randomUUID();
       const segment = roadSegmentTypeormRepository.create({
+        id: segmentId,
         cityAId: parisEntity.id,
         cityBId: lyonEntity.id,
         distance: 465,
@@ -160,32 +165,7 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
       });
       await roadSegmentTypeormRepository.save(segment);
 
-      const roadSegmentId = RoadSegmentId.fromCityNamesOrThrow('Paris', 'Lyon');
-
-      // Act
-      const result = await repository.findById(roadSegmentId);
-
-      // Assert
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.value).toBeInstanceOf(RoadSegment);
-        // Cities are sorted alphabetically, so Lyon comes before Paris
-        expect(result.value.cityA.name.value).toBe('Lyon');
-        expect(result.value.cityB.name.value).toBe('Paris');
-      }
-    });
-
-    it('should find a road segment regardless of city order in id', async () => {
-      // Arrange
-      const segment = roadSegmentTypeormRepository.create({
-        cityAId: lyonEntity.id,
-        cityBId: parisEntity.id,
-        distance: 465,
-        speedLimit: 130,
-      });
-      await roadSegmentTypeormRepository.save(segment);
-
-      const roadSegmentId = RoadSegmentId.fromCityNamesOrThrow('Paris', 'Lyon');
+      const roadSegmentId = RoadSegmentId.fromValueOrThrow(segmentId);
 
       // Act
       const result = await repository.findById(roadSegmentId);
@@ -202,30 +182,10 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
 
     it('should return RoadSegmentNotFoundError when road segment does not exist', async () => {
       // Arrange
-      const roadSegmentId = RoadSegmentId.fromCityNamesOrThrow(
-        'Paris',
-        'Marseille',
-      );
+      const nonExistentId = RoadSegmentId.fromValueOrThrow(crypto.randomUUID());
 
       // Act
-      const result = await repository.findById(roadSegmentId);
-
-      // Assert
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error).toBeInstanceOf(RoadSegmentNotFoundError);
-      }
-    });
-
-    it('should return RoadSegmentNotFoundError when city does not exist', async () => {
-      // Arrange
-      const roadSegmentId = RoadSegmentId.fromCityNamesOrThrow(
-        'NonExistent',
-        'Lyon',
-      );
-
-      // Act
-      const result = await repository.findById(roadSegmentId);
+      const result = await repository.findById(nonExistentId);
 
       // Assert
       expect(result.success).toBe(false);
@@ -238,7 +198,9 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
   describe('save', () => {
     it('should update an existing road segment speed limit', async () => {
       // Arrange
+      const segmentId = crypto.randomUUID();
       const segment = roadSegmentTypeormRepository.create({
+        id: segmentId,
         cityAId: parisEntity.id,
         cityBId: lyonEntity.id,
         distance: 465,
@@ -247,15 +209,15 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
       await roadSegmentTypeormRepository.save(segment);
 
       const paris = City.reconstitute(
-        CityId.fromNormalizedValueOrThrow(parisEntity.id),
+        CityId.reconstitute(parisEntity.id),
         CityName.createOrThrow('Paris'),
       );
       const lyon = City.reconstitute(
-        CityId.fromNormalizedValueOrThrow(lyonEntity.id),
+        CityId.reconstitute(lyonEntity.id),
         CityName.createOrThrow('Lyon'),
       );
       const updatedRoadSegment = RoadSegment.reconstitute(
-        RoadSegmentId.fromCityNamesOrThrow('Paris', 'Lyon'),
+        RoadSegmentId.reconstitute(segmentId),
         [paris, lyon],
         Distance.fromKilometersOrThrow(465),
         Speed.fromKmPerHourOrThrow(110), // Changed speed
@@ -266,14 +228,16 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
 
       // Assert
       const savedSegment = await roadSegmentTypeormRepository.findOne({
-        where: { id: segment.id },
+        where: { id: segmentId },
       });
       expect(savedSegment!.speedLimit).toBe(110);
     });
 
     it('should update road segment distance', async () => {
       // Arrange
+      const segmentId = crypto.randomUUID();
       const segment = roadSegmentTypeormRepository.create({
+        id: segmentId,
         cityAId: parisEntity.id,
         cityBId: lyonEntity.id,
         distance: 465,
@@ -282,15 +246,15 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
       await roadSegmentTypeormRepository.save(segment);
 
       const paris = City.reconstitute(
-        CityId.fromNormalizedValueOrThrow(parisEntity.id),
+        CityId.reconstitute(parisEntity.id),
         CityName.createOrThrow('Paris'),
       );
       const lyon = City.reconstitute(
-        CityId.fromNormalizedValueOrThrow(lyonEntity.id),
+        CityId.reconstitute(lyonEntity.id),
         CityName.createOrThrow('Lyon'),
       );
       const updatedRoadSegment = RoadSegment.reconstitute(
-        RoadSegmentId.fromCityNamesOrThrow('Paris', 'Lyon'),
+        RoadSegmentId.reconstitute(segmentId),
         [paris, lyon],
         Distance.fromKilometersOrThrow(500), // Changed distance
         Speed.fromKmPerHourOrThrow(130),
@@ -301,23 +265,24 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
 
       // Assert
       const savedSegment = await roadSegmentTypeormRepository.findOne({
-        where: { id: segment.id },
+        where: { id: segmentId },
       });
       expect(Number(savedSegment!.distance)).toBe(500);
     });
 
     it('should create new cities when saving road segment with non-existent city names', async () => {
       // Arrange - Create a road segment with a new city that doesn't exist in DB
+      const newCityId = CityId.generate();
       const newCity = City.reconstitute(
-        CityId.fromCityNameOrThrow('Bordeaux'),
+        newCityId,
         CityName.createOrThrow('Bordeaux'),
       );
       const paris = City.reconstitute(
-        CityId.fromNormalizedValueOrThrow(parisEntity.id),
+        CityId.reconstitute(parisEntity.id),
         CityName.createOrThrow('Paris'),
       );
       const roadSegment = RoadSegment.reconstitute(
-        RoadSegmentId.fromCityNamesOrThrow('Bordeaux', 'Paris'),
+        RoadSegmentId.generate(),
         [newCity, paris],
         Distance.fromKilometersOrThrow(580),
         Speed.fromKmPerHourOrThrow(130),
