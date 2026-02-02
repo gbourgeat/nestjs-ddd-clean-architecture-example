@@ -12,8 +12,8 @@ export class RoadSegmentInMemoryRepository extends RoadSegmentRepository {
   private roadSegments: Map<string, RoadSegment> = new Map();
   private cities: Map<string, City> = new Map();
 
-  async findAll(): Promise<RoadSegment[]> {
-    return Array.from(this.roadSegments.values());
+  async findAll(): Promise<Result<RoadSegment[], PersistenceError>> {
+    return ok(Array.from(this.roadSegments.values()));
   }
 
   async findById(

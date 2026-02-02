@@ -47,7 +47,13 @@ export class GetFastestRouteUseCase {
     const startCityEntity = startCityResult.value;
     const endCityEntity = endCityResult.value;
 
-    const roadSegments = await this.roadSegmentRepository.findAll();
+    const roadSegmentsResult = await this.roadSegmentRepository.findAll();
+
+    if (!roadSegmentsResult.success) {
+      throw roadSegmentsResult.error;
+    }
+
+    const roadSegments = roadSegmentsResult.value;
 
     const routeConstraints = RoadConstraintsMapper.toDomain(constraints);
 

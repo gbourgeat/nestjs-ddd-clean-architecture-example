@@ -8,7 +8,7 @@ import {
 import { CityName, RoadSegmentId } from '@/domain/value-objects';
 
 export abstract class RoadSegmentRepository {
-  abstract findAll(): Promise<RoadSegment[]>;
+  abstract findAll(): Promise<Result<RoadSegment[], PersistenceError>>;
   abstract findById(
     id: RoadSegmentId,
   ): Promise<Result<RoadSegment, RoadSegmentNotFoundError>>;

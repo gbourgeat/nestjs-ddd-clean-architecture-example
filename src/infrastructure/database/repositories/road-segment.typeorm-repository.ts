@@ -9,7 +9,6 @@ import { RoadSegmentRepository } from '@/domain/repositories';
 import { CityName, RoadSegmentId } from '@/domain/value-objects';
 import {
   CityTypeormEntity,
-  DatabaseIntegrityError,
   RoadSegmentTypeormEntity,
 } from '@/infrastructure/database';
 import { Injectable } from '@nestjs/common';
@@ -26,27 +25,40 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
     private readonly cityTypeormEntityRepository: Repository<CityTypeormEntity>,
   ) {}
 
-  async findAll(): Promise<RoadSegment[]> {
-    const roadSegments = await this.roadSegmentTypeormEntityRepository.find();
-    const cities = await this.cityTypeormEntityRepository.find();
+  async findAll(): Promise<Result<RoadSegment[], PersistenceError>> {
+    try {
+      const roadSegments = await this.roadSegmentTypeormEntityRepository.find();
+      const cities = await this.cityTypeormEntityRepository.find();
 
-    const citiesIndexById = new Map<string, CityTypeormEntity>();
-    cities.forEach((city) => {
-      citiesIndexById.set(city.id, city);
-    });
+      const citiesIndexById = new Map<string, CityTypeormEntity>();
+      cities.forEach((city) => {
+        citiesIndexById.set(city.id, city);
+      });
 
-    return roadSegments.map((roadSegmentEntity) => {
-      const cityA = citiesIndexById.get(roadSegmentEntity.cityAId);
-      const cityB = citiesIndexById.get(roadSegmentEntity.cityBId);
+      const result: RoadSegment[] = [];
+      for (const roadSegmentEntity of roadSegments) {
+        const cityA = citiesIndexById.get(roadSegmentEntity.cityAId);
+        const cityB = citiesIndexById.get(roadSegmentEntity.cityBId);
 
-      if (!cityA || !cityB) {
-        throw DatabaseIntegrityError.citiesNotFoundForRoadSegment(
-          roadSegmentEntity.id,
+        if (!cityA || !cityB) {
+          return fail(
+            PersistenceError.loadFailed(
+              'RoadSegment',
+              `Database integrity error: cities not found for road segment ${roadSegmentEntity.id}`,
+            ),
+          );
+        }
+
+        result.push(
+          RoadSegmentMapper.toDomain(roadSegmentEntity, cityA, cityB),
         );
       }
 
-      return RoadSegmentMapper.toDomain(roadSegmentEntity, cityA, cityB);
-    });
+      return ok(result);
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      return fail(PersistenceError.loadFailed('RoadSegment', reason));
+    }
   }
 
   async findById(

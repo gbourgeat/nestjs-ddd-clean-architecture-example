@@ -40,7 +40,7 @@ describe('CreateRoadSegmentUseCase', () => {
       });
 
       // Verify segment was saved
-      const savedSegments = await roadSegmentRepository.findAll();
+      const savedSegments = roadSegmentRepository.getAll();
       expect(savedSegments).toHaveLength(1);
       expect(savedSegments[0].distance.kilometers).toBe(465);
       expect(savedSegments[0].speedLimit.kmPerHour).toBe(130);
