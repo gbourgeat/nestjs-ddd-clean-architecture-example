@@ -10,6 +10,10 @@ export class City {
     return new City(id, name);
   }
 
+  static reconstitute(id: CityId, name: CityName): City {
+    return new City(id, name);
+  }
+
   equals(other: City): boolean {
     return this.id.equals(other.id);
   }

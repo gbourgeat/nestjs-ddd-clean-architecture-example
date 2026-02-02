@@ -23,7 +23,7 @@ export class CityTypeormRepository implements CityRepository {
       throw CityNotFoundError.forCityName(name);
     }
 
-    return City.create(
+    return City.reconstitute(
       CityId.fromNormalizedValue(city.id),
       CityName.create(city.name),
     );

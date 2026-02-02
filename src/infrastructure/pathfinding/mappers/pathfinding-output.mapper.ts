@@ -60,7 +60,7 @@ export class PathfindingOutputMapper {
   }
 
   private static createDefaultCity(cityName: string): City {
-    return City.create(
+    return City.reconstitute(
       CityId.fromCityName(cityName),
       CityName.create(cityName),
     );
