@@ -306,28 +306,41 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
       expect(Number(savedSegment!.distance)).toBe(500);
     });
 
-    it('should return error when saving road segment with non-existent cities', async () => {
-      // Arrange
-      const nonExistentCity = City.reconstitute(
-        CityId.fromNormalizedValueOrThrow('non-existent-id'),
-        CityName.createOrThrow('NonExistent'),
+    it('should create new cities when saving road segment with non-existent city names', async () => {
+      // Arrange - Create a road segment with a new city that doesn't exist in DB
+      const newCity = City.reconstitute(
+        CityId.fromCityNameOrThrow('Bordeaux'),
+        CityName.createOrThrow('Bordeaux'),
       );
       const paris = City.reconstitute(
         CityId.fromNormalizedValueOrThrow(parisEntity.id),
         CityName.createOrThrow('Paris'),
       );
       const roadSegment = RoadSegment.reconstitute(
-        RoadSegmentId.fromCityNamesOrThrow('NonExistent', 'Paris'),
-        [nonExistentCity, paris],
-        Distance.fromKilometersOrThrow(100),
-        Speed.fromKmPerHourOrThrow(110),
+        RoadSegmentId.fromCityNamesOrThrow('Bordeaux', 'Paris'),
+        [newCity, paris],
+        Distance.fromKilometersOrThrow(580),
+        Speed.fromKmPerHourOrThrow(130),
       );
 
       // Act
       const result = await repository.save(roadSegment);
 
-      // Assert
-      expect(result.success).toBe(false);
+      // Assert - Save should succeed and create the new city
+      expect(result.success).toBe(true);
+
+      // Verify the road segment was saved
+      const savedSegment = await roadSegmentTypeormRepository.findOne({
+        where: [{ cityAId: parisEntity.id }, { cityBId: parisEntity.id }],
+      });
+      expect(savedSegment).not.toBeNull();
+      expect(Number(savedSegment!.distance)).toBe(580);
+
+      // Verify the new city was created
+      const bordeauxEntity = await cityTypeormRepository.findOne({
+        where: { name: 'Bordeaux' },
+      });
+      expect(bordeauxEntity).not.toBeNull();
     });
   });
 });
