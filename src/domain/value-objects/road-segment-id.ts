@@ -26,16 +26,12 @@ export class RoadSegmentId {
     return ok(new RoadSegmentId(value));
   }
 
-  static fromValueOrThrow(value: string): RoadSegmentId {
+  static fromString(value: string): RoadSegmentId {
     const result = RoadSegmentId.fromValue(value);
     if (!result.success) {
       throw result.error;
     }
     return result.value;
-  }
-
-  static reconstitute(value: string): RoadSegmentId {
-    return new RoadSegmentId(value);
   }
 
   get value(): string {

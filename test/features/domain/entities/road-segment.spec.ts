@@ -19,12 +19,12 @@ describe('RoadSegment', () => {
   beforeEach(() => {
     parisCity = CityBuilder.aCity()
       .withId(PARIS_UUID)
-      .withName(CityName.createOrThrow('Paris'))
+      .withName(CityName.fromString('Paris'))
       .build();
 
     lyonCity = CityBuilder.aCity()
       .withId(LYON_UUID)
-      .withName(CityName.createOrThrow('Lyon'))
+      .withName(CityName.fromString('Lyon'))
       .build();
   });
 
@@ -32,10 +32,10 @@ describe('RoadSegment', () => {
     // Create two different City objects with the same ID to test entity validation
     const parisCity2 = CityBuilder.aCity()
       .withId(PARIS_UUID)
-      .withName(CityName.createOrThrow('Paris'))
+      .withName(CityName.fromString('Paris'))
       .build();
 
-    const validId = RoadSegmentId.fromValueOrThrow(SEGMENT_UUID);
+    const validId = RoadSegmentId.fromString(SEGMENT_UUID);
 
     expect(() =>
       RoadSegment.create(
@@ -48,7 +48,7 @@ describe('RoadSegment', () => {
   });
 
   it('should sort cities by name', () => {
-    const segmentId = RoadSegmentId.fromValueOrThrow(SEGMENT_UUID);
+    const segmentId = RoadSegmentId.fromString(SEGMENT_UUID);
     const segment = RoadSegment.create(
       segmentId,
       [parisCity, lyonCity], // Paris before Lyon (wrong alphabetical order)
@@ -62,7 +62,7 @@ describe('RoadSegment', () => {
   });
 
   it('should update speed limit', () => {
-    const segmentId = RoadSegmentId.fromValueOrThrow(SEGMENT_UUID);
+    const segmentId = RoadSegmentId.fromString(SEGMENT_UUID);
     const segment = RoadSegment.create(
       segmentId,
       [parisCity, lyonCity],
@@ -76,7 +76,7 @@ describe('RoadSegment', () => {
   });
 
   it('should get cities via cityA and cityB getters', () => {
-    const segmentId = RoadSegmentId.fromValueOrThrow(SEGMENT_UUID);
+    const segmentId = RoadSegmentId.fromString(SEGMENT_UUID);
     const segment = RoadSegment.create(
       segmentId,
       [parisCity, lyonCity],
@@ -89,7 +89,7 @@ describe('RoadSegment', () => {
   });
 
   it('should calculate estimated duration', () => {
-    const segmentId = RoadSegmentId.fromValueOrThrow(SEGMENT_UUID);
+    const segmentId = RoadSegmentId.fromString(SEGMENT_UUID);
     const segment = RoadSegment.create(
       segmentId,
       [parisCity, lyonCity],
@@ -103,7 +103,7 @@ describe('RoadSegment', () => {
   });
 
   it('should use UUID for road segment id', () => {
-    const segmentId = RoadSegmentId.fromValueOrThrow(SEGMENT_UUID);
+    const segmentId = RoadSegmentId.fromString(SEGMENT_UUID);
     const segment = RoadSegment.create(
       segmentId,
       [parisCity, lyonCity],

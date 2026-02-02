@@ -14,19 +14,19 @@ const CITY_UUIDS = {
 
 export class CityBuilder {
   private id: CityId = CityId.generate();
-  private name: CityName = CityName.createOrThrow('DefaultCity');
+  private name: CityName = CityName.fromString('DefaultCity');
 
   static aCity(): CityBuilder {
     return new CityBuilder();
   }
 
   withId(id: string | CityId): this {
-    this.id = typeof id === 'string' ? CityId.fromValueOrThrow(id) : id;
+    this.id = typeof id === 'string' ? CityId.fromString(id) : id;
     return this;
   }
 
   withName(name: string | CityName): this {
-    this.name = typeof name === 'string' ? CityName.createOrThrow(name) : name;
+    this.name = typeof name === 'string' ? CityName.fromString(name) : name;
     return this;
   }
 

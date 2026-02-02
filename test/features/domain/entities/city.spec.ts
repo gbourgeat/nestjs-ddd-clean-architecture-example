@@ -7,16 +7,16 @@ describe('City', () => {
 
   it('should compare cities by id', () => {
     const city1 = City.create(
-      CityId.fromValueOrThrow(UUID_1),
-      CityName.createOrThrow('Paris'),
+      CityId.fromString(UUID_1),
+      CityName.fromString('Paris'),
     );
     const city2 = City.create(
-      CityId.fromValueOrThrow(UUID_1),
-      CityName.createOrThrow('Paris'),
+      CityId.fromString(UUID_1),
+      CityName.fromString('Paris'),
     );
     const city3 = City.create(
-      CityId.fromValueOrThrow(UUID_2),
-      CityName.createOrThrow('Lyon'),
+      CityId.fromString(UUID_2),
+      CityName.fromString('Lyon'),
     );
 
     expect(city1.equals(city2)).toBe(true);
@@ -25,8 +25,8 @@ describe('City', () => {
 
   it('should expose uniqueKey getter', () => {
     const city = City.create(
-      CityId.fromValueOrThrow(UUID_1),
-      CityName.createOrThrow('Paris'),
+      CityId.fromString(UUID_1),
+      CityName.fromString('Paris'),
     );
 
     expect(city.uniqueKey).toBe('paris');

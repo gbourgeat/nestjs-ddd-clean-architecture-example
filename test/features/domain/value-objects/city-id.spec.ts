@@ -57,55 +57,42 @@ describe('CityId', () => {
     });
   });
 
-  describe('fromValueOrThrow', () => {
+  describe('fromString', () => {
     it('should return CityId for valid UUID', () => {
-      const id = CityId.fromValueOrThrow(VALID_UUID);
+      const id = CityId.fromString(VALID_UUID);
       expect(id.value).toBe(VALID_UUID);
     });
 
     it('should throw InvalidCityIdError for empty value', () => {
-      expect(() => CityId.fromValueOrThrow('')).toThrow(
+      expect(() => CityId.fromString('')).toThrow(
         InvalidCityIdError as unknown as typeof Error,
       );
     });
 
     it('should throw InvalidCityIdError for invalid UUID format', () => {
-      expect(() => CityId.fromValueOrThrow(INVALID_UUID)).toThrow(
+      expect(() => CityId.fromString(INVALID_UUID)).toThrow(
         InvalidCityIdError as unknown as typeof Error,
       );
     });
   });
 
-  describe('reconstitute', () => {
-    it('should create CityId without validation', () => {
-      const id = CityId.reconstitute(VALID_UUID);
-      expect(id.value).toBe(VALID_UUID);
-    });
-
-    it('should work even with invalid UUID (for DB reconstitution)', () => {
-      // reconstitute bypasses validation - used for trusted data from DB
-      const id = CityId.reconstitute('any-value');
-      expect(id.value).toBe('any-value');
-    });
-  });
-
   describe('equals', () => {
     it('should return true for equal UUIDs', () => {
-      const id1 = CityId.fromValueOrThrow(VALID_UUID);
-      const id2 = CityId.fromValueOrThrow(VALID_UUID);
+      const id1 = CityId.fromString(VALID_UUID);
+      const id2 = CityId.fromString(VALID_UUID);
       expect(id1.equals(id2)).toBe(true);
     });
 
     it('should return false for different UUIDs', () => {
-      const id1 = CityId.fromValueOrThrow(VALID_UUID);
-      const id2 = CityId.fromValueOrThrow(ANOTHER_VALID_UUID);
+      const id1 = CityId.fromString(VALID_UUID);
+      const id2 = CityId.fromString(ANOTHER_VALID_UUID);
       expect(id1.equals(id2)).toBe(false);
     });
   });
 
   describe('toString', () => {
     it('should return the UUID value', () => {
-      const id = CityId.fromValueOrThrow(VALID_UUID);
+      const id = CityId.fromString(VALID_UUID);
       expect(id.toString()).toBe(VALID_UUID);
     });
   });

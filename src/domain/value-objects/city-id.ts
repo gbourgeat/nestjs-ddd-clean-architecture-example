@@ -24,16 +24,12 @@ export class CityId {
     return ok(new CityId(value));
   }
 
-  static fromValueOrThrow(value: string): CityId {
+  static fromString(value: string): CityId {
     const result = CityId.fromValue(value);
     if (!result.success) {
       throw result.error;
     }
     return result.value;
-  }
-
-  static reconstitute(value: string): CityId {
-    return new CityId(value);
   }
 
   get value(): string {

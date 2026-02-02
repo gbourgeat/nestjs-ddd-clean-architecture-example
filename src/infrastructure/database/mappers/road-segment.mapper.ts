@@ -22,15 +22,15 @@ export class RoadSegmentMapper {
     cityB: CityTypeormEntity,
   ): RoadSegment {
     return RoadSegment.reconstitute(
-      RoadSegmentId.reconstitute(entity.id),
+      RoadSegmentId.fromString(entity.id),
       [
         City.reconstitute(
-          CityId.reconstitute(cityA.id),
-          CityName.createOrThrow(cityA.name),
+          CityId.fromString(cityA.id),
+          CityName.fromString(cityA.name),
         ),
         City.reconstitute(
-          CityId.reconstitute(cityB.id),
-          CityName.createOrThrow(cityB.name),
+          CityId.fromString(cityB.id),
+          CityName.fromString(cityB.name),
         ),
       ],
       Distance.fromKilometersOrThrow(Number(entity.distance)),

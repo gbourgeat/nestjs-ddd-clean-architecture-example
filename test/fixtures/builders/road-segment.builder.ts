@@ -13,7 +13,7 @@ export class RoadSegmentBuilder {
   }
 
   withId(id: string | RoadSegmentId): this {
-    this.id = typeof id === 'string' ? RoadSegmentId.fromValueOrThrow(id) : id;
+    this.id = typeof id === 'string' ? RoadSegmentId.fromString(id) : id;
     return this;
   }
 

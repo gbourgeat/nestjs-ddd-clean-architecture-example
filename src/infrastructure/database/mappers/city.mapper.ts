@@ -5,8 +5,8 @@ import { CityTypeormEntity } from '../entities';
 export class CityMapper {
   static toDomain(entity: CityTypeormEntity): City {
     return City.reconstitute(
-      CityId.reconstitute(entity.id),
-      CityName.createOrThrow(entity.name),
+      CityId.fromString(entity.id),
+      CityName.fromString(entity.name),
     );
   }
 

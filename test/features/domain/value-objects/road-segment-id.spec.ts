@@ -57,55 +57,42 @@ describe('RoadSegmentId', () => {
     });
   });
 
-  describe('fromValueOrThrow', () => {
+  describe('fromString', () => {
     it('should return RoadSegmentId for valid UUID', () => {
-      const id = RoadSegmentId.fromValueOrThrow(VALID_UUID);
+      const id = RoadSegmentId.fromString(VALID_UUID);
       expect(id.value).toBe(VALID_UUID);
     });
 
     it('should throw InvalidRoadSegmentIdError for empty value', () => {
-      expect(() => RoadSegmentId.fromValueOrThrow('')).toThrow(
+      expect(() => RoadSegmentId.fromString('')).toThrow(
         InvalidRoadSegmentIdError as unknown as typeof Error,
       );
     });
 
     it('should throw InvalidRoadSegmentIdError for invalid UUID format', () => {
-      expect(() => RoadSegmentId.fromValueOrThrow(INVALID_UUID)).toThrow(
+      expect(() => RoadSegmentId.fromString(INVALID_UUID)).toThrow(
         InvalidRoadSegmentIdError as unknown as typeof Error,
       );
     });
   });
 
-  describe('reconstitute', () => {
-    it('should create RoadSegmentId without validation', () => {
-      const id = RoadSegmentId.reconstitute(VALID_UUID);
-      expect(id.value).toBe(VALID_UUID);
-    });
-
-    it('should work even with invalid UUID (for DB reconstitution)', () => {
-      // reconstitute bypasses validation - used for trusted data from DB
-      const id = RoadSegmentId.reconstitute('any-value');
-      expect(id.value).toBe('any-value');
-    });
-  });
-
   describe('equals', () => {
     it('should return true for equal UUIDs', () => {
-      const id1 = RoadSegmentId.fromValueOrThrow(VALID_UUID);
-      const id2 = RoadSegmentId.fromValueOrThrow(VALID_UUID);
+      const id1 = RoadSegmentId.fromString(VALID_UUID);
+      const id2 = RoadSegmentId.fromString(VALID_UUID);
       expect(id1.equals(id2)).toBe(true);
     });
 
     it('should return false for different UUIDs', () => {
-      const id1 = RoadSegmentId.fromValueOrThrow(VALID_UUID);
-      const id2 = RoadSegmentId.fromValueOrThrow(ANOTHER_VALID_UUID);
+      const id1 = RoadSegmentId.fromString(VALID_UUID);
+      const id2 = RoadSegmentId.fromString(ANOTHER_VALID_UUID);
       expect(id1.equals(id2)).toBe(false);
     });
   });
 
   describe('toString', () => {
     it('should return the UUID value', () => {
-      const id = RoadSegmentId.fromValueOrThrow(VALID_UUID);
+      const id = RoadSegmentId.fromString(VALID_UUID);
       expect(id.toString()).toBe(VALID_UUID);
     });
   });

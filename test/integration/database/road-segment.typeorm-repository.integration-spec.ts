@@ -165,7 +165,7 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
       });
       await roadSegmentTypeormRepository.save(segment);
 
-      const roadSegmentId = RoadSegmentId.fromValueOrThrow(segmentId);
+      const roadSegmentId = RoadSegmentId.fromString(segmentId);
 
       // Act
       const result = await repository.findById(roadSegmentId);
@@ -182,7 +182,7 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
 
     it('should return RoadSegmentNotFoundError when road segment does not exist', async () => {
       // Arrange
-      const nonExistentId = RoadSegmentId.fromValueOrThrow(crypto.randomUUID());
+      const nonExistentId = RoadSegmentId.fromString(crypto.randomUUID());
 
       // Act
       const result = await repository.findById(nonExistentId);
@@ -209,15 +209,15 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
       await roadSegmentTypeormRepository.save(segment);
 
       const paris = City.reconstitute(
-        CityId.reconstitute(parisEntity.id),
-        CityName.createOrThrow('Paris'),
+        CityId.fromString(parisEntity.id),
+        CityName.fromString('Paris'),
       );
       const lyon = City.reconstitute(
-        CityId.reconstitute(lyonEntity.id),
-        CityName.createOrThrow('Lyon'),
+        CityId.fromString(lyonEntity.id),
+        CityName.fromString('Lyon'),
       );
       const updatedRoadSegment = RoadSegment.reconstitute(
-        RoadSegmentId.reconstitute(segmentId),
+        RoadSegmentId.fromString(segmentId),
         [paris, lyon],
         Distance.fromKilometersOrThrow(465),
         Speed.fromKmPerHourOrThrow(110), // Changed speed
@@ -246,15 +246,15 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
       await roadSegmentTypeormRepository.save(segment);
 
       const paris = City.reconstitute(
-        CityId.reconstitute(parisEntity.id),
-        CityName.createOrThrow('Paris'),
+        CityId.fromString(parisEntity.id),
+        CityName.fromString('Paris'),
       );
       const lyon = City.reconstitute(
-        CityId.reconstitute(lyonEntity.id),
-        CityName.createOrThrow('Lyon'),
+        CityId.fromString(lyonEntity.id),
+        CityName.fromString('Lyon'),
       );
       const updatedRoadSegment = RoadSegment.reconstitute(
-        RoadSegmentId.reconstitute(segmentId),
+        RoadSegmentId.fromString(segmentId),
         [paris, lyon],
         Distance.fromKilometersOrThrow(500), // Changed distance
         Speed.fromKmPerHourOrThrow(130),
@@ -275,11 +275,11 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
       const newCityId = CityId.generate();
       const newCity = City.reconstitute(
         newCityId,
-        CityName.createOrThrow('Bordeaux'),
+        CityName.fromString('Bordeaux'),
       );
       const paris = City.reconstitute(
-        CityId.reconstitute(parisEntity.id),
-        CityName.createOrThrow('Paris'),
+        CityId.fromString(parisEntity.id),
+        CityName.fromString('Paris'),
       );
       const roadSegment = RoadSegment.reconstitute(
         RoadSegmentId.generate(),
