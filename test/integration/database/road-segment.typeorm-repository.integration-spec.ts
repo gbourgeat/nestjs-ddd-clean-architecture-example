@@ -104,8 +104,11 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
       const result = await repository.findAll();
 
       // Assert
-      expect(result).toHaveLength(2);
-      expect(result.every((s) => s instanceof RoadSegment)).toBe(true);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.value).toHaveLength(2);
+        expect(result.value.every((s) => s instanceof RoadSegment)).toBe(true);
+      }
     });
 
     it('should return empty array when no road segments exist', async () => {
@@ -113,7 +116,10 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
       const result = await repository.findAll();
 
       // Assert
-      expect(result).toHaveLength(0);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.value).toHaveLength(0);
+      }
     });
 
     it('should correctly map road segment properties', async () => {
@@ -130,13 +136,16 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
       const result = await repository.findAll();
 
       // Assert
-      expect(result).toHaveLength(1);
-      const roadSegment = result[0];
-      // Cities are sorted alphabetically, so Lyon comes before Paris
-      expect(roadSegment.cityA.name.value).toBe('Lyon');
-      expect(roadSegment.cityB.name.value).toBe('Paris');
-      expect(roadSegment.distance.kilometers).toBe(465);
-      expect(roadSegment.speedLimit.kmPerHour).toBe(130);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.value).toHaveLength(1);
+        const roadSegment = result.value[0];
+        // Cities are sorted alphabetically, so Lyon comes before Paris
+        expect(roadSegment.cityA.name.value).toBe('Lyon');
+        expect(roadSegment.cityB.name.value).toBe('Paris');
+        expect(roadSegment.distance.kilometers).toBe(465);
+        expect(roadSegment.speedLimit.kmPerHour).toBe(130);
+      }
     });
   });
 
@@ -151,16 +160,19 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
       });
       await roadSegmentTypeormRepository.save(segment);
 
-      const roadSegmentId = RoadSegmentId.fromCityNames('Paris', 'Lyon');
+      const roadSegmentId = RoadSegmentId.fromCityNamesOrThrow('Paris', 'Lyon');
 
       // Act
       const result = await repository.findById(roadSegmentId);
 
       // Assert
-      expect(result).toBeInstanceOf(RoadSegment);
-      // Cities are sorted alphabetically, so Lyon comes before Paris
-      expect(result.cityA.name.value).toBe('Lyon');
-      expect(result.cityB.name.value).toBe('Paris');
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.value).toBeInstanceOf(RoadSegment);
+        // Cities are sorted alphabetically, so Lyon comes before Paris
+        expect(result.value.cityA.name.value).toBe('Lyon');
+        expect(result.value.cityB.name.value).toBe('Paris');
+      }
     });
 
     it('should find a road segment regardless of city order in id', async () => {
@@ -173,36 +185,53 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
       });
       await roadSegmentTypeormRepository.save(segment);
 
-      const roadSegmentId = RoadSegmentId.fromCityNames('Paris', 'Lyon');
+      const roadSegmentId = RoadSegmentId.fromCityNamesOrThrow('Paris', 'Lyon');
 
       // Act
       const result = await repository.findById(roadSegmentId);
 
       // Assert
-      expect(result).toBeInstanceOf(RoadSegment);
-      // Cities are sorted alphabetically, so Lyon comes before Paris
-      expect(result.cityA.name.value).toBe('Lyon');
-      expect(result.cityB.name.value).toBe('Paris');
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.value).toBeInstanceOf(RoadSegment);
+        // Cities are sorted alphabetically, so Lyon comes before Paris
+        expect(result.value.cityA.name.value).toBe('Lyon');
+        expect(result.value.cityB.name.value).toBe('Paris');
+      }
     });
 
-    it('should throw RoadSegmentNotFoundError when road segment does not exist', async () => {
+    it('should return RoadSegmentNotFoundError when road segment does not exist', async () => {
       // Arrange
-      const roadSegmentId = RoadSegmentId.fromCityNames('Paris', 'Marseille');
-
-      // Act & Assert
-      await expect(repository.findById(roadSegmentId)).rejects.toThrow(
-        RoadSegmentNotFoundError,
+      const roadSegmentId = RoadSegmentId.fromCityNamesOrThrow(
+        'Paris',
+        'Marseille',
       );
+
+      // Act
+      const result = await repository.findById(roadSegmentId);
+
+      // Assert
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toBeInstanceOf(RoadSegmentNotFoundError);
+      }
     });
 
-    it('should throw RoadSegmentNotFoundError when city does not exist', async () => {
+    it('should return RoadSegmentNotFoundError when city does not exist', async () => {
       // Arrange
-      const roadSegmentId = RoadSegmentId.fromCityNames('NonExistent', 'Lyon');
-
-      // Act & Assert
-      await expect(repository.findById(roadSegmentId)).rejects.toThrow(
-        RoadSegmentNotFoundError,
+      const roadSegmentId = RoadSegmentId.fromCityNamesOrThrow(
+        'NonExistent',
+        'Lyon',
       );
+
+      // Act
+      const result = await repository.findById(roadSegmentId);
+
+      // Assert
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toBeInstanceOf(RoadSegmentNotFoundError);
+      }
     });
   });
 
@@ -217,19 +246,19 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
       });
       await roadSegmentTypeormRepository.save(segment);
 
-      const paris = City.create(
-        CityId.fromNormalizedValue(parisEntity.id),
-        CityName.create('Paris'),
+      const paris = City.reconstitute(
+        CityId.fromNormalizedValueOrThrow(parisEntity.id),
+        CityName.createOrThrow('Paris'),
       );
-      const lyon = City.create(
-        CityId.fromNormalizedValue(lyonEntity.id),
-        CityName.create('Lyon'),
+      const lyon = City.reconstitute(
+        CityId.fromNormalizedValueOrThrow(lyonEntity.id),
+        CityName.createOrThrow('Lyon'),
       );
-      const updatedRoadSegment = RoadSegment.create(
-        RoadSegmentId.fromCityNames('Paris', 'Lyon'),
+      const updatedRoadSegment = RoadSegment.reconstitute(
+        RoadSegmentId.fromCityNamesOrThrow('Paris', 'Lyon'),
         [paris, lyon],
-        Distance.fromKilometers(465),
-        Speed.fromKmPerHour(110), // Changed speed
+        Distance.fromKilometersOrThrow(465),
+        Speed.fromKmPerHourOrThrow(110), // Changed speed
       );
 
       // Act
@@ -252,19 +281,19 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
       });
       await roadSegmentTypeormRepository.save(segment);
 
-      const paris = City.create(
-        CityId.fromNormalizedValue(parisEntity.id),
-        CityName.create('Paris'),
+      const paris = City.reconstitute(
+        CityId.fromNormalizedValueOrThrow(parisEntity.id),
+        CityName.createOrThrow('Paris'),
       );
-      const lyon = City.create(
-        CityId.fromNormalizedValue(lyonEntity.id),
-        CityName.create('Lyon'),
+      const lyon = City.reconstitute(
+        CityId.fromNormalizedValueOrThrow(lyonEntity.id),
+        CityName.createOrThrow('Lyon'),
       );
-      const updatedRoadSegment = RoadSegment.create(
-        RoadSegmentId.fromCityNames('Paris', 'Lyon'),
+      const updatedRoadSegment = RoadSegment.reconstitute(
+        RoadSegmentId.fromCityNamesOrThrow('Paris', 'Lyon'),
         [paris, lyon],
-        Distance.fromKilometers(500), // Changed distance
-        Speed.fromKmPerHour(130),
+        Distance.fromKilometersOrThrow(500), // Changed distance
+        Speed.fromKmPerHourOrThrow(130),
       );
 
       // Act
@@ -277,27 +306,41 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
       expect(Number(savedSegment!.distance)).toBe(500);
     });
 
-    it('should throw error when saving road segment with non-existent cities', async () => {
-      // Arrange
-      const nonExistentCity = City.create(
-        CityId.fromNormalizedValue('non-existent-id'),
-        CityName.create('NonExistent'),
+    it('should create new cities when saving road segment with non-existent city names', async () => {
+      // Arrange - Create a road segment with a new city that doesn't exist in DB
+      const newCity = City.reconstitute(
+        CityId.fromCityNameOrThrow('Bordeaux'),
+        CityName.createOrThrow('Bordeaux'),
       );
-      const paris = City.create(
-        CityId.fromNormalizedValue(parisEntity.id),
-        CityName.create('Paris'),
+      const paris = City.reconstitute(
+        CityId.fromNormalizedValueOrThrow(parisEntity.id),
+        CityName.createOrThrow('Paris'),
       );
-      const roadSegment = RoadSegment.create(
-        RoadSegmentId.fromCityNames('NonExistent', 'Paris'),
-        [nonExistentCity, paris],
-        Distance.fromKilometers(100),
-        Speed.fromKmPerHour(110),
+      const roadSegment = RoadSegment.reconstitute(
+        RoadSegmentId.fromCityNamesOrThrow('Bordeaux', 'Paris'),
+        [newCity, paris],
+        Distance.fromKilometersOrThrow(580),
+        Speed.fromKmPerHourOrThrow(130),
       );
 
-      // Act & Assert
-      await expect(repository.save(roadSegment)).rejects.toThrow(
-        RoadSegmentNotFoundError,
-      );
+      // Act
+      const result = await repository.save(roadSegment);
+
+      // Assert - Save should succeed and create the new city
+      expect(result.success).toBe(true);
+
+      // Verify the road segment was saved
+      const savedSegment = await roadSegmentTypeormRepository.findOne({
+        where: [{ cityAId: parisEntity.id }, { cityBId: parisEntity.id }],
+      });
+      expect(savedSegment).not.toBeNull();
+      expect(Number(savedSegment!.distance)).toBe(580);
+
+      // Verify the new city was created
+      const bordeauxEntity = await cityTypeormRepository.findOne({
+        where: { name: 'Bordeaux' },
+      });
+      expect(bordeauxEntity).not.toBeNull();
     });
   });
 });

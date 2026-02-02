@@ -1,5 +1,8 @@
 import { City, RoadSegment } from '@/domain/entities';
-import { InvalidRoadSegmentError } from '@/domain/errors';
+import {
+  InvalidRoadSegmentError,
+  InvalidRoadSegmentIdError,
+} from '@/domain/errors';
 import {
   CityId,
   CityName,
@@ -15,33 +18,48 @@ describe('RoadSegment', () => {
 
   beforeEach(() => {
     parisCity = CityBuilder.aCity()
-      .withId(CityId.fromCityName('Paris'))
-      .withName(CityName.create('Paris'))
+      .withId(CityId.fromCityNameOrThrow('Paris'))
+      .withName(CityName.createOrThrow('Paris'))
       .build();
 
     lyonCity = CityBuilder.aCity()
-      .withId(CityId.fromCityName('Lyon'))
-      .withName(CityName.create('Lyon'))
+      .withId(CityId.fromCityNameOrThrow('Lyon'))
+      .withName(CityName.createOrThrow('Lyon'))
       .build();
   });
 
-  it('should throw InvalidRoadSegmentError for same city connection', () => {
+  it('should throw InvalidRoadSegmentIdError when creating ID with same city', () => {
+    expect(() => RoadSegmentId.fromCityNamesOrThrow('Paris', 'Paris')).toThrow(
+      InvalidRoadSegmentIdError as unknown as typeof Error,
+    );
+  });
+
+  it('should throw InvalidRoadSegmentError for same city connection in entity', () => {
+    // Create two different City objects with the same ID to test entity validation
+    const parisCity2 = CityBuilder.aCity()
+      .withId(CityId.fromCityNameOrThrow('Paris'))
+      .withName(CityName.createOrThrow('Paris'))
+      .build();
+
+    // Use a valid road segment ID but pass the same city twice
+    const validId = RoadSegmentId.fromCityNamesOrThrow('Paris', 'Lyon');
+
     expect(() =>
       RoadSegment.create(
-        RoadSegmentId.fromCityNames('Paris', 'Paris'),
-        [parisCity, parisCity],
-        Distance.fromKilometers(100),
-        Speed.fromKmPerHour(130),
+        validId,
+        [parisCity, parisCity2], // Same city ID, different instances
+        Distance.fromKilometersOrThrow(100),
+        Speed.fromKmPerHourOrThrow(130),
       ),
-    ).toThrow(InvalidRoadSegmentError);
+    ).toThrow(InvalidRoadSegmentError as unknown as typeof Error);
   });
 
   it('should sort cities by name', () => {
     const segment = RoadSegment.create(
-      RoadSegmentId.fromCityNames('Paris', 'Lyon'),
+      RoadSegmentId.fromCityNamesOrThrow('Paris', 'Lyon'),
       [lyonCity, parisCity], // Reversed order
-      Distance.fromKilometers(465),
-      Speed.fromKmPerHour(130),
+      Distance.fromKilometersOrThrow(465),
+      Speed.fromKmPerHourOrThrow(130),
     );
 
     // Lyon < Paris alphabetically
@@ -51,23 +69,23 @@ describe('RoadSegment', () => {
 
   it('should update speed limit', () => {
     const segment = RoadSegment.create(
-      RoadSegmentId.fromCityNames('Paris', 'Lyon'),
+      RoadSegmentId.fromCityNamesOrThrow('Paris', 'Lyon'),
       [parisCity, lyonCity],
-      Distance.fromKilometers(465),
-      Speed.fromKmPerHour(130),
+      Distance.fromKilometersOrThrow(465),
+      Speed.fromKmPerHourOrThrow(130),
     );
 
-    const newSpeed = Speed.fromKmPerHour(110);
+    const newSpeed = Speed.fromKmPerHourOrThrow(110);
     segment.updateSpeedLimit(newSpeed);
     expect(segment.speedLimit.kmPerHour).toBe(110);
   });
 
   it('should get cities via cityA and cityB getters', () => {
     const segment = RoadSegment.create(
-      RoadSegmentId.fromCityNames('Paris', 'Lyon'),
+      RoadSegmentId.fromCityNamesOrThrow('Paris', 'Lyon'),
       [parisCity, lyonCity],
-      Distance.fromKilometers(465),
-      Speed.fromKmPerHour(130),
+      Distance.fromKilometersOrThrow(465),
+      Speed.fromKmPerHourOrThrow(130),
     );
 
     expect(segment.cityA).toBeDefined();
@@ -76,10 +94,10 @@ describe('RoadSegment', () => {
 
   it('should calculate estimated duration', () => {
     const segment = RoadSegment.create(
-      RoadSegmentId.fromCityNames('Paris', 'Lyon'),
+      RoadSegmentId.fromCityNamesOrThrow('Paris', 'Lyon'),
       [parisCity, lyonCity],
-      Distance.fromKilometers(465),
-      Speed.fromKmPerHour(130),
+      Distance.fromKilometersOrThrow(465),
+      Speed.fromKmPerHourOrThrow(130),
     );
 
     const estimatedDuration = segment.estimatedDuration;

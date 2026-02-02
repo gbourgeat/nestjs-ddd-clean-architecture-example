@@ -40,14 +40,17 @@ describe('UpdateRoadSegmentSpeedUseCase', () => {
     });
 
     // Assert
-    expect(result).toEqual({
-      roadSegmentId: 'lyon__paris',
-      cityA: 'Lyon',
-      cityB: 'Paris',
-      distance: 465,
-      speedLimit: 130,
-    });
-    expect(roadSegment.speedLimit.kmPerHour).toBe(130);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.value).toEqual({
+        roadSegmentId: 'lyon__paris',
+        cityA: 'Lyon',
+        cityB: 'Paris',
+        distance: 465,
+        speedLimit: 130,
+      });
+      expect(roadSegment.speedLimit.kmPerHour).toBe(130);
+    }
   });
 
   it('should work with cities in reverse order', async () => {
@@ -71,23 +74,30 @@ describe('UpdateRoadSegmentSpeedUseCase', () => {
     });
 
     // Assert
-    expect(result.speedLimit).toBe(90);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.value.speedLimit).toBe(90);
+    }
   });
 
-  it('should throw RoadSegmentNotFoundError when road segment does not exist', async () => {
+  it('should return RoadSegmentNotFoundError when road segment does not exist', async () => {
     // Arrange - repository is empty, no segments added
 
-    // Act & Assert
-    await expect(
-      useCase.execute({
-        cityA: 'Paris',
-        cityB: 'UnknownCity',
-        newSpeedLimit: 130,
-      }),
-    ).rejects.toThrow(RoadSegmentNotFoundError);
+    // Act
+    const result = await useCase.execute({
+      cityA: 'Paris',
+      cityB: 'UnknownCity',
+      newSpeedLimit: 130,
+    });
+
+    // Assert
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toBeInstanceOf(RoadSegmentNotFoundError);
+    }
   });
 
-  it('should throw InvalidSpeedError for negative speed', async () => {
+  it('should return InvalidSpeedError for negative speed', async () => {
     // Arrange
     const cityA = CityFixtures.paris();
     const cityB = CityFixtures.lyon();
@@ -100,14 +110,18 @@ describe('UpdateRoadSegmentSpeedUseCase', () => {
 
     roadSegmentRepository.givenRoadSegments([roadSegment]);
 
-    // Act & Assert
-    await expect(
-      useCase.execute({
-        cityA: 'Paris',
-        cityB: 'Lyon',
-        newSpeedLimit: -10,
-      }),
-    ).rejects.toThrow(InvalidSpeedError);
+    // Act
+    const result = await useCase.execute({
+      cityA: 'Paris',
+      cityB: 'Lyon',
+      newSpeedLimit: -10,
+    });
+
+    // Assert
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toBeInstanceOf(InvalidSpeedError);
+    }
   });
 
   it('should accept zero speed (edge case - currently allowed)', async () => {
@@ -131,17 +145,24 @@ describe('UpdateRoadSegmentSpeedUseCase', () => {
     });
 
     // Assert - Speed allows 0, so this should work
-    expect(result.speedLimit).toBe(0);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.value.speedLimit).toBe(0);
+    }
   });
 
-  it('should throw InvalidRoadSegmentIdError for empty city name', async () => {
-    // Act & Assert
-    await expect(
-      useCase.execute({
-        cityA: '',
-        cityB: 'Lyon',
-        newSpeedLimit: 130,
-      }),
-    ).rejects.toThrow(InvalidRoadSegmentIdError);
+  it('should return InvalidRoadSegmentIdError for empty city name', async () => {
+    // Act
+    const result = await useCase.execute({
+      cityA: '',
+      cityB: 'Lyon',
+      newSpeedLimit: 130,
+    });
+
+    // Assert
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toBeInstanceOf(InvalidRoadSegmentIdError);
+    }
   });
 });

@@ -1,3 +1,4 @@
+import { type Result, fail, ok } from '@/domain/common';
 import { InvalidDurationError, InvalidSpeedError } from '@/domain/errors';
 
 export class Duration {
@@ -7,27 +8,46 @@ export class Duration {
     this._value = value;
   }
 
-  static fromHours(hours: number): Duration {
+  static fromHours(hours: number): Result<Duration, InvalidDurationError> {
     if (hours < 0) {
-      throw InvalidDurationError.negative();
+      return fail(InvalidDurationError.negative());
     }
 
     if (!Number.isFinite(hours)) {
-      throw InvalidDurationError.notFinite();
+      return fail(InvalidDurationError.notFinite());
     }
 
-    return new Duration(hours);
+    return ok(new Duration(hours));
+  }
+
+  static fromHoursOrThrow(hours: number): Duration {
+    const result = Duration.fromHours(hours);
+    if (!result.success) {
+      throw result.error;
+    }
+    return result.value;
   }
 
   static fromDistanceAndSpeed(
     distanceKm: number,
     speedKmPerHour: number,
-  ): Duration {
+  ): Result<Duration, InvalidDurationError | InvalidSpeedError> {
     if (speedKmPerHour === 0) {
-      throw InvalidSpeedError.zero();
+      return fail(InvalidSpeedError.zero());
     }
 
     return Duration.fromHours(distanceKm / speedKmPerHour);
+  }
+
+  static fromDistanceAndSpeedOrThrow(
+    distanceKm: number,
+    speedKmPerHour: number,
+  ): Duration {
+    const result = Duration.fromDistanceAndSpeed(distanceKm, speedKmPerHour);
+    if (!result.success) {
+      throw result.error;
+    }
+    return result.value;
   }
 
   get hours(): number {
@@ -55,11 +75,11 @@ export class Duration {
   }
 
   add(other: Duration): Duration {
-    return Duration.fromHours(this._value + other._value);
+    return Duration.fromHoursOrThrow(this._value + other._value);
   }
 
   subtract(other: Duration): Duration {
-    return Duration.fromHours(this._value - other._value);
+    return Duration.fromHoursOrThrow(this._value - other._value);
   }
 
   toString(): string {

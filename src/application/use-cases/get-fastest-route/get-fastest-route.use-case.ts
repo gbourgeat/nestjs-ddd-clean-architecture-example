@@ -6,39 +6,75 @@ import {
   GetFastestRoadOutput,
   GetFastestRouteInput,
 } from '@/application/use-cases/get-fastest-route';
-import { SameStartAndEndCityError } from '@/domain/errors';
-import { CityRepository, RoadSegmentRepository } from '@/domain/repositories';
+import { type Result, fail, ok } from '@/domain/common';
+import {
+  CityNotFoundError,
+  InvalidCityNameError,
+  PersistenceError,
+  SameStartAndEndCityError,
+} from '@/domain/errors';
+import { RoadSegmentRepository } from '@/domain/repositories';
 import { PathFinder } from '@/domain/services';
 import { CityName } from '@/domain/value-objects';
+
+export type GetFastestRouteError =
+  | CityNotFoundError
+  | InvalidCityNameError
+  | SameStartAndEndCityError
+  | PersistenceError;
 
 export class GetFastestRouteUseCase {
   constructor(
     private readonly pathFinder: PathFinder,
     private readonly roadSegmentRepository: RoadSegmentRepository,
-    private readonly cityRepository: CityRepository,
   ) {}
 
-  /**
-   * @throws CityNotFoundError if start or end city cannot be found in the graph
-   * @throws InvalidWeatherConditionError if invalid weatherCondition conditions are provided in constraints
-   * @throws SameStartAndEndCityError if start and end cities are the same
-   */
   async execute({
     startCity,
     endCity,
     constraints,
-  }: GetFastestRouteInput): Promise<GetFastestRoadOutput> {
-    const startCityName = CityName.create(startCity);
-    const endCityName = CityName.create(endCity);
+  }: GetFastestRouteInput): Promise<
+    Result<GetFastestRoadOutput, GetFastestRouteError>
+  > {
+    const startCityNameResult = CityName.create(startCity);
+    if (!startCityNameResult.success) {
+      return fail(startCityNameResult.error);
+    }
 
-    this.ensureThatStartAndEndCitiesAreDistinct(startCityName, endCityName);
+    const endCityNameResult = CityName.create(endCity);
+    if (!endCityNameResult.success) {
+      return fail(endCityNameResult.error);
+    }
 
-    const [startCityEntity, endCityEntity] = await Promise.all([
-      this.cityRepository.findByName(startCityName),
-      this.cityRepository.findByName(endCityName),
+    const startCityName = startCityNameResult.value;
+    const endCityName = endCityNameResult.value;
+
+    if (startCityName.equals(endCityName)) {
+      return fail(SameStartAndEndCityError.forCityName(startCityName));
+    }
+
+    const [startCityResult, endCityResult] = await Promise.all([
+      this.roadSegmentRepository.findCityByName(startCityName),
+      this.roadSegmentRepository.findCityByName(endCityName),
     ]);
 
-    const roadSegments = await this.roadSegmentRepository.findAll();
+    if (!startCityResult.success) {
+      return fail(startCityResult.error);
+    }
+    if (!endCityResult.success) {
+      return fail(endCityResult.error);
+    }
+
+    const startCityEntity = startCityResult.value;
+    const endCityEntity = endCityResult.value;
+
+    const roadSegmentsResult = await this.roadSegmentRepository.findAll();
+
+    if (!roadSegmentsResult.success) {
+      return fail(roadSegmentsResult.error);
+    }
+
+    const roadSegments = roadSegmentsResult.value;
 
     const routeConstraints = RoadConstraintsMapper.toDomain(constraints);
 
@@ -49,15 +85,6 @@ export class GetFastestRouteUseCase {
       routeConstraints,
     );
 
-    return PathfindingResultMapper.toOutput(pathFinderResult);
-  }
-
-  private ensureThatStartAndEndCitiesAreDistinct(
-    cityNameA: CityName,
-    cityNameB: CityName,
-  ) {
-    if (cityNameA.equals(cityNameB)) {
-      throw SameStartAndEndCityError.forCityName(cityNameA);
-    }
+    return ok(PathfindingResultMapper.toOutput(pathFinderResult));
   }
 }

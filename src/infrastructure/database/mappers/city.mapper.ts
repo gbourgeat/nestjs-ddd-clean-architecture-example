@@ -11,8 +11,8 @@ export class CityMapper {
    */
   static toDomain(entity: CityTypeormEntity): City {
     return City.reconstitute(
-      CityId.fromNormalizedValue(entity.id),
-      CityName.create(entity.name),
+      CityId.fromNormalizedValueOrThrow(entity.id),
+      CityName.createOrThrow(entity.name),
     );
   }
 

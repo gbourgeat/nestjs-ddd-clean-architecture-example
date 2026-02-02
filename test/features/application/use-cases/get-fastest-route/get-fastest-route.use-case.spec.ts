@@ -2,12 +2,12 @@ import { GetFastestRouteInput } from '@/application/use-cases/get-fastest-route/
 import { GetFastestRouteUseCase } from '@/application/use-cases/get-fastest-route/get-fastest-route.use-case';
 import { City, RoadSegment } from '@/domain/entities';
 import {
+  CityNotFoundError,
   InvalidCityNameError,
   SameStartAndEndCityError,
 } from '@/domain/errors';
 import {
   CityFixtures,
-  CityInMemoryRepository,
   PathFinderFake,
   PathfindingResultBuilder,
   RoadSegmentBuilder,
@@ -17,7 +17,6 @@ import {
 
 describe('GetFastestRouteUseCase', () => {
   let useCase: GetFastestRouteUseCase;
-  let cityRepository: CityInMemoryRepository;
   let roadSegmentRepository: RoadSegmentInMemoryRepository;
   let pathFinder: PathFinderFake;
 
@@ -30,7 +29,6 @@ describe('GetFastestRouteUseCase', () => {
 
   beforeEach(() => {
     // Create repositories and services
-    cityRepository = new CityInMemoryRepository();
     roadSegmentRepository = new RoadSegmentInMemoryRepository();
     pathFinder = new PathFinderFake();
 
@@ -52,19 +50,14 @@ describe('GetFastestRouteUseCase', () => {
       .withSpeedLimit(130)
       .build();
 
-    // Populate repositories with test data
-    cityRepository.givenCities([parisCity, lyonCity, marseilleCity]);
+    // Populate repository with test data (cities are registered automatically)
     roadSegmentRepository.givenRoadSegments([
       roadSegmentParisLyon,
       roadSegmentLyonMarseille,
     ]);
 
     // Create use case instance
-    useCase = new GetFastestRouteUseCase(
-      pathFinder,
-      roadSegmentRepository,
-      cityRepository,
-    );
+    useCase = new GetFastestRouteUseCase(pathFinder, roadSegmentRepository);
   });
 
   describe('execute', () => {
@@ -96,19 +89,22 @@ describe('GetFastestRouteUseCase', () => {
       const result = await useCase.execute(input);
 
       // Assert
-      expect(result).toEqual({
-        totalDistance: 465,
-        estimatedDuration: 3.6, // Rounded to 1 decimal by mapper
-        steps: [
-          {
-            fromCity: 'Paris',
-            toCity: 'Lyon',
-            distance: 465,
-            speedLimit: 130,
-            weatherCondition: 'sunny',
-          },
-        ],
-      });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.value).toEqual({
+          totalDistance: 465,
+          estimatedDuration: 3.6, // Rounded to 1 decimal by mapper
+          steps: [
+            {
+              fromCity: 'Paris',
+              toCity: 'Lyon',
+              distance: 465,
+              speedLimit: 130,
+              weatherCondition: 'sunny',
+            },
+          ],
+        });
+      }
     });
 
     it('should apply constraints when provided', async () => {
@@ -144,93 +140,117 @@ describe('GetFastestRouteUseCase', () => {
       const result = await useCase.execute(input);
 
       // Assert
-      expect(result).toBeDefined();
-      expect(result.totalDistance).toBe(465);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.value.totalDistance).toBe(465);
+      }
     });
 
-    it('should throw InvalidCityNameError when start city name is empty', async () => {
+    it('should return InvalidCityNameError when start city name is empty', async () => {
       // Arrange
       const input: GetFastestRouteInput = {
         startCity: '',
         endCity: 'Lyon',
       };
 
-      // Act & Assert
-      await expect(useCase.execute(input)).rejects.toThrow(
-        InvalidCityNameError,
-      );
+      // Act
+      const result = await useCase.execute(input);
+
+      // Assert
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toBeInstanceOf(InvalidCityNameError);
+      }
     });
 
-    it('should throw InvalidCityNameError when end city name is empty', async () => {
+    it('should return InvalidCityNameError when end city name is empty', async () => {
       // Arrange
       const input: GetFastestRouteInput = {
         startCity: 'Paris',
         endCity: '',
       };
 
-      // Act & Assert
-      await expect(useCase.execute(input)).rejects.toThrow(
-        InvalidCityNameError,
-      );
+      // Act
+      const result = await useCase.execute(input);
+
+      // Assert
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toBeInstanceOf(InvalidCityNameError);
+      }
     });
 
-    it('should throw SameStartAndEndCityError when start and end cities are the same', async () => {
+    it('should return SameStartAndEndCityError when start and end cities are the same', async () => {
       // Arrange
       const input: GetFastestRouteInput = {
         startCity: 'Paris',
         endCity: 'Paris',
       };
 
-      // Act & Assert
-      await expect(useCase.execute(input)).rejects.toThrow(
-        SameStartAndEndCityError,
-      );
-      await expect(useCase.execute(input)).rejects.toThrow(
-        'Start city and end city cannot be the same: "Paris"',
-      );
+      // Act
+      const result = await useCase.execute(input);
+
+      // Assert
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toBeInstanceOf(SameStartAndEndCityError);
+        expect(result.error.message).toBe(
+          'Start city and end city cannot be the same: "Paris"',
+        );
+      }
     });
 
-    it('should throw InvalidCityNameError for city name with lowercase start', async () => {
+    it('should return InvalidCityNameError for city name with lowercase start', async () => {
       // Arrange
       const input: GetFastestRouteInput = {
         startCity: 'paris',
         endCity: 'Lyon',
       };
 
-      // Act & Assert
-      await expect(useCase.execute(input)).rejects.toThrow(
-        InvalidCityNameError,
-      );
+      // Act
+      const result = await useCase.execute(input);
+
+      // Assert
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toBeInstanceOf(InvalidCityNameError);
+      }
     });
 
-    it('should throw CityNotFoundError when start city is not found', async () => {
+    it('should return CityNotFoundError when start city is not found', async () => {
       // Arrange
       const input: GetFastestRouteInput = {
         startCity: 'UnknownCity',
         endCity: 'Lyon',
       };
 
-      // UnknownCity is not in the repository
+      // Act
+      const result = await useCase.execute(input);
 
-      // Act & Assert
-      await expect(useCase.execute(input)).rejects.toThrow(
-        /City.*UnknownCity.*not found/,
-      );
+      // Assert
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toBeInstanceOf(CityNotFoundError);
+        expect(result.error.message).toMatch(/City.*UnknownCity.*not found/);
+      }
     });
 
-    it('should throw CityNotFoundError when end city is not found', async () => {
+    it('should return CityNotFoundError when end city is not found', async () => {
       // Arrange
       const input: GetFastestRouteInput = {
         startCity: 'Paris',
         endCity: 'UnknownCity',
       };
 
-      // UnknownCity is not in the repository
+      // Act
+      const result = await useCase.execute(input);
 
-      // Act & Assert
-      await expect(useCase.execute(input)).rejects.toThrow(
-        /City.*UnknownCity.*not found/,
-      );
+      // Assert
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toBeInstanceOf(CityNotFoundError);
+        expect(result.error.message).toMatch(/City.*UnknownCity.*not found/);
+      }
     });
 
     it('should handle multi-step routes', async () => {
@@ -269,13 +289,16 @@ describe('GetFastestRouteUseCase', () => {
       const result = await useCase.execute(input);
 
       // Assert
-      expect(result.steps).toHaveLength(2);
-      expect(result.totalDistance).toBe(780);
-      expect(result.estimatedDuration).toBe(6.0);
-      expect(result.steps[0].fromCity).toBe('Paris');
-      expect(result.steps[0].toCity).toBe('Lyon');
-      expect(result.steps[1].fromCity).toBe('Lyon');
-      expect(result.steps[1].toCity).toBe('Marseille');
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.value.steps).toHaveLength(2);
+        expect(result.value.totalDistance).toBe(780);
+        expect(result.value.estimatedDuration).toBe(6.0);
+        expect(result.value.steps[0].fromCity).toBe('Paris');
+        expect(result.value.steps[0].toCity).toBe('Lyon');
+        expect(result.value.steps[1].fromCity).toBe('Lyon');
+        expect(result.value.steps[1].toCity).toBe('Marseille');
+      }
     });
 
     it('should return empty result when no route is found', async () => {
@@ -291,11 +314,14 @@ describe('GetFastestRouteUseCase', () => {
       const result = await useCase.execute(input);
 
       // Assert
-      expect(result).toEqual({
-        totalDistance: 0,
-        estimatedDuration: 0,
-        steps: [],
-      });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.value).toEqual({
+          totalDistance: 0,
+          estimatedDuration: 0,
+          steps: [],
+        });
+      }
     });
   });
 });

@@ -1,7 +1,10 @@
-export class InvalidRoadSegmentError extends Error {
-  public constructor(message: string) {
+import { DomainError } from './domain.error';
+
+export class InvalidRoadSegmentError extends DomainError {
+  readonly code = 'INVALID_ROAD_SEGMENT';
+
+  private constructor(message: string) {
     super(message);
-    this.name = this.constructor.name;
   }
 
   static sameCityConnection(): InvalidRoadSegmentError {

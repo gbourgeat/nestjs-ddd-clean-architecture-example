@@ -1,4 +1,6 @@
+import { type Result, fail, ok } from '@/domain/common';
 import { InvalidCityIdError } from '@/domain/errors';
+import { CityName } from './city-name';
 
 export class CityId {
   private readonly _value: string;
@@ -9,22 +11,44 @@ export class CityId {
     this._value = normalizedName;
   }
 
-  static fromCityName(cityName: string): CityId {
-    if (!cityName || cityName.trim().length === 0) {
-      throw InvalidCityIdError.emptyCityName();
-    }
-
-    const normalized = CityId.normalize(cityName);
-
+  static fromName(name: CityName): CityId {
+    const normalized = CityId.normalize(name.value);
     return new CityId(normalized);
   }
 
-  static fromNormalizedValue(normalizedValue: string): CityId {
-    if (!normalizedValue || normalizedValue.trim().length === 0) {
-      throw InvalidCityIdError.emptyNormalizedValue();
+  static fromCityName(cityName: string): Result<CityId, InvalidCityIdError> {
+    if (!cityName || cityName.trim().length === 0) {
+      return fail(InvalidCityIdError.emptyCityName());
     }
 
-    return new CityId(normalizedValue);
+    const normalized = CityId.normalize(cityName);
+    return ok(new CityId(normalized));
+  }
+
+  static fromCityNameOrThrow(cityName: string): CityId {
+    const result = CityId.fromCityName(cityName);
+    if (!result.success) {
+      throw result.error;
+    }
+    return result.value;
+  }
+
+  static fromNormalizedValue(
+    normalizedValue: string,
+  ): Result<CityId, InvalidCityIdError> {
+    if (!normalizedValue || normalizedValue.trim().length === 0) {
+      return fail(InvalidCityIdError.emptyNormalizedValue());
+    }
+
+    return ok(new CityId(normalizedValue));
+  }
+
+  static fromNormalizedValueOrThrow(normalizedValue: string): CityId {
+    const result = CityId.fromNormalizedValue(normalizedValue);
+    if (!result.success) {
+      throw result.error;
+    }
+    return result.value;
   }
 
   private static normalize(cityName: string): string {

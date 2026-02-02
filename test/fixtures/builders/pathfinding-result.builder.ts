@@ -10,8 +10,8 @@ import {
 export class RouteStepBuilder {
   private from?: City;
   private to?: City;
-  private distance: Distance = Distance.fromKilometers(100);
-  private speedLimit: Speed = Speed.fromKmPerHour(110);
+  private distance: Distance = Distance.fromKilometersOrThrow(100);
+  private speedLimit: Speed = Speed.fromKmPerHourOrThrow(110);
   private estimatedDuration?: Duration;
   private weatherCondition: WeatherCondition = 'clear' as WeatherCondition;
 
@@ -30,17 +30,17 @@ export class RouteStepBuilder {
   }
 
   withDistance(kilometers: number): this {
-    this.distance = Distance.fromKilometers(kilometers);
+    this.distance = Distance.fromKilometersOrThrow(kilometers);
     return this;
   }
 
   withSpeedLimit(kmPerHour: number): this {
-    this.speedLimit = Speed.fromKmPerHour(kmPerHour);
+    this.speedLimit = Speed.fromKmPerHourOrThrow(kmPerHour);
     return this;
   }
 
   withEstimatedDuration(hours: number): this {
-    this.estimatedDuration = Duration.fromHours(hours);
+    this.estimatedDuration = Duration.fromHoursOrThrow(hours);
     return this;
   }
 
@@ -56,7 +56,7 @@ export class RouteStepBuilder {
 
     const duration =
       this.estimatedDuration ||
-      Duration.fromDistanceAndSpeed(
+      Duration.fromDistanceAndSpeedOrThrow(
         this.distance.kilometers,
         this.speedLimit.kmPerHour,
       );
@@ -82,12 +82,12 @@ export class PathfindingResultBuilder {
   }
 
   withTotalDistance(kilometers: number): this {
-    this.totalDistance = Distance.fromKilometers(kilometers);
+    this.totalDistance = Distance.fromKilometersOrThrow(kilometers);
     return this;
   }
 
   withEstimatedTime(hours: number): this {
-    this.estimatedTime = Duration.fromHours(hours);
+    this.estimatedTime = Duration.fromHoursOrThrow(hours);
     return this;
   }
 
@@ -105,13 +105,13 @@ export class PathfindingResultBuilder {
     // Auto-calculate if not provided
     const totalDistance =
       this.totalDistance ||
-      Distance.fromKilometers(
+      Distance.fromKilometersOrThrow(
         this.steps.reduce((sum, step) => sum + step.distance.kilometers, 0),
       );
 
     const estimatedTime =
       this.estimatedTime ||
-      Duration.fromHours(
+      Duration.fromHoursOrThrow(
         this.steps.reduce((sum, step) => sum + step.estimatedDuration.hours, 0),
       );
 

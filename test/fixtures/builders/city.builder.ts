@@ -2,26 +2,27 @@ import { City } from '@/domain/entities';
 import { CityId, CityName } from '@/domain/value-objects';
 
 export class CityBuilder {
-  private id: CityId = CityId.fromNormalizedValue('default-city-id');
-  private name: CityName = CityName.create('DefaultCity');
+  private id: CityId = CityId.fromNormalizedValueOrThrow('default-city-id');
+  private name: CityName = CityName.createOrThrow('DefaultCity');
 
   static aCity(): CityBuilder {
     return new CityBuilder();
   }
 
   withId(id: string | CityId): this {
-    this.id = typeof id === 'string' ? CityId.fromNormalizedValue(id) : id;
+    this.id =
+      typeof id === 'string' ? CityId.fromNormalizedValueOrThrow(id) : id;
     return this;
   }
 
   withName(name: string | CityName): this {
-    this.name = typeof name === 'string' ? CityName.create(name) : name;
+    this.name = typeof name === 'string' ? CityName.createOrThrow(name) : name;
     return this;
   }
 
   withIdFromName(name: string): this {
-    this.name = CityName.create(name);
-    this.id = CityId.fromNormalizedValue(name.toLowerCase());
+    this.name = CityName.createOrThrow(name);
+    this.id = CityId.fromName(this.name);
     return this;
   }
 

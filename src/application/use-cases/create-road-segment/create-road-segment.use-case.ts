@@ -1,54 +1,82 @@
+import { type Result, fail, ok } from '@/domain/common';
 import { RoadSegment } from '@/domain/entities';
-import { CityRepository, RoadSegmentRepository } from '@/domain/repositories';
 import {
-  CityName,
-  Distance,
-  RoadSegmentId,
-  Speed,
-} from '@/domain/value-objects';
+  CityNotFoundError,
+  InvalidCityNameError,
+  PersistenceError,
+  RoadSegmentCreationError,
+} from '@/domain/errors';
+import { RoadSegmentRepository } from '@/domain/repositories';
+import { CityName } from '@/domain/value-objects';
 import { Injectable } from '@nestjs/common';
 import { CreateRoadSegmentInput } from './create-road-segment.input';
 import { CreateRoadSegmentOutput } from './create-road-segment.output';
 
+export type CreateRoadSegmentError =
+  | CityNotFoundError
+  | InvalidCityNameError
+  | RoadSegmentCreationError
+  | PersistenceError;
+
 @Injectable()
 export class CreateRoadSegmentUseCase {
-  constructor(
-    private readonly roadSegmentRepository: RoadSegmentRepository,
-    private readonly cityRepository: CityRepository,
-  ) {}
+  constructor(private readonly roadSegmentRepository: RoadSegmentRepository) {}
 
   async execute(
     input: CreateRoadSegmentInput,
-  ): Promise<CreateRoadSegmentOutput> {
-    const cityAName = CityName.create(input.cityA);
-    const cityBName = CityName.create(input.cityB);
+  ): Promise<Result<CreateRoadSegmentOutput, CreateRoadSegmentError>> {
+    // Validate city names
+    const cityANameResult = CityName.create(input.cityA);
+    if (!cityANameResult.success) {
+      return fail(cityANameResult.error);
+    }
 
-    const cityA = await this.cityRepository.findByName(cityAName);
-    const cityB = await this.cityRepository.findByName(cityBName);
+    const cityBNameResult = CityName.create(input.cityB);
+    if (!cityBNameResult.success) {
+      return fail(cityBNameResult.error);
+    }
 
-    const distance = Distance.fromKilometers(input.distance);
-    const speedLimit = Speed.fromKmPerHour(input.speedLimit);
+    // Check if cities exist (via road segments that contain them)
+    const cityAResult = await this.roadSegmentRepository.findCityByName(
+      cityANameResult.value,
+    );
+    if (!cityAResult.success) {
+      return fail(cityAResult.error);
+    }
 
-    const roadSegmentId = RoadSegmentId.fromCityNames(
-      cityAName.value,
-      cityBName.value,
+    const cityBResult = await this.roadSegmentRepository.findCityByName(
+      cityBNameResult.value,
+    );
+    if (!cityBResult.success) {
+      return fail(cityBResult.error);
+    }
+
+    // Create road segment using the new factory method
+    const roadSegmentResult = RoadSegment.createFromPrimitives(
+      input.cityA,
+      input.cityB,
+      input.distance,
+      input.speedLimit,
     );
 
-    const roadSegment = RoadSegment.create(
-      roadSegmentId,
-      [cityA, cityB],
-      distance,
-      speedLimit,
-    );
+    if (!roadSegmentResult.success) {
+      return fail(roadSegmentResult.error);
+    }
 
-    await this.roadSegmentRepository.save(roadSegment);
+    const roadSegment = roadSegmentResult.value;
 
-    return {
+    const saveResult = await this.roadSegmentRepository.save(roadSegment);
+
+    if (!saveResult.success) {
+      return fail(saveResult.error);
+    }
+
+    return ok({
       roadSegmentId: roadSegment.id.value,
       cityA: roadSegment.cityA.name.value,
       cityB: roadSegment.cityB.name.value,
       distance: roadSegment.distance.kilometers,
       speedLimit: roadSegment.speedLimit.kmPerHour,
-    };
+    });
   }
 }

@@ -1,3 +1,4 @@
+import { type Result, fail, ok } from '@/domain/common';
 import { InvalidDistanceError } from '@/domain/errors';
 
 export class Distance {
@@ -7,16 +8,26 @@ export class Distance {
     this._value = value;
   }
 
-  static fromKilometers(kilometers: number): Distance {
+  static fromKilometers(
+    kilometers: number,
+  ): Result<Distance, InvalidDistanceError> {
     if (kilometers < 0) {
-      throw InvalidDistanceError.negative();
+      return fail(InvalidDistanceError.negative());
     }
 
     if (!Number.isFinite(kilometers)) {
-      throw InvalidDistanceError.notFinite();
+      return fail(InvalidDistanceError.notFinite());
     }
 
-    return new Distance(kilometers);
+    return ok(new Distance(kilometers));
+  }
+
+  static fromKilometersOrThrow(kilometers: number): Distance {
+    const result = Distance.fromKilometers(kilometers);
+    if (!result.success) {
+      throw result.error;
+    }
+    return result.value;
   }
 
   get kilometers(): number {
@@ -40,7 +51,7 @@ export class Distance {
   }
 
   add(other: Distance): Distance {
-    return Distance.fromKilometers(this._value + other._value);
+    return Distance.fromKilometersOrThrow(this._value + other._value);
   }
 
   toString(): string {

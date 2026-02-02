@@ -3,7 +3,6 @@ import { GetFastestRouteUseCase } from '@/application/use-cases/get-fastest-rout
 import { City, RoadSegment } from '@/domain/entities';
 import {
   CityFixtures,
-  CityInMemoryRepository,
   PathFinderFake,
   PathfindingResultBuilder,
   RoadSegmentBuilder,
@@ -13,7 +12,6 @@ import {
 
 describe('RoadConstraints', () => {
   let useCase: GetFastestRouteUseCase;
-  let cityRepository: CityInMemoryRepository;
   let roadSegmentRepository: RoadSegmentInMemoryRepository;
   let pathFinder: PathFinderFake;
 
@@ -24,7 +22,6 @@ describe('RoadConstraints', () => {
   let roadSegmentLyonMarseille: RoadSegment;
 
   beforeEach(() => {
-    cityRepository = new CityInMemoryRepository();
     roadSegmentRepository = new RoadSegmentInMemoryRepository();
     pathFinder = new PathFinderFake();
 
@@ -44,17 +41,12 @@ describe('RoadConstraints', () => {
       .withSpeedLimit(130)
       .build();
 
-    cityRepository.givenCities([parisCity, lyonCity, marseilleCity]);
     roadSegmentRepository.givenRoadSegments([
       roadSegmentParisLyon,
       roadSegmentLyonMarseille,
     ]);
 
-    useCase = new GetFastestRouteUseCase(
-      pathFinder,
-      roadSegmentRepository,
-      cityRepository,
-    );
+    useCase = new GetFastestRouteUseCase(pathFinder, roadSegmentRepository);
   });
 
   it('should handle constraints with excluded weather conditions', async () => {
@@ -85,8 +77,10 @@ describe('RoadConstraints', () => {
 
     const result = await useCase.execute(input);
 
-    expect(result).toBeDefined();
-    expect(result.totalDistance).toBe(465);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.value.totalDistance).toBe(465);
+    }
   });
 
   it('should handle constraints with max distance', async () => {
@@ -117,8 +111,10 @@ describe('RoadConstraints', () => {
 
     const result = await useCase.execute(input);
 
-    expect(result).toBeDefined();
-    expect(result.totalDistance).toBe(465);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.value.totalDistance).toBe(465);
+    }
   });
 
   it('should handle constraints with min speed limit', async () => {
@@ -149,8 +145,10 @@ describe('RoadConstraints', () => {
 
     const result = await useCase.execute(input);
 
-    expect(result).toBeDefined();
-    expect(result.totalDistance).toBe(465);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.value.totalDistance).toBe(465);
+    }
   });
 
   it('should throw InvalidWeatherConditionError for invalid weather in constraints', async () => {
@@ -162,6 +160,8 @@ describe('RoadConstraints', () => {
       },
     };
 
+    // Note: Invalid weather validation happens in the mapper before the use case returns
+    // This test verifies the error is thrown during constraint mapping
     await expect(useCase.execute(input)).rejects.toThrow(
       /Invalid weather condition/,
     );

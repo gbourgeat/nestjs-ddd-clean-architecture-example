@@ -1,4 +1,5 @@
 export * from './city-not-found.error';
+export * from './domain.error';
 export * from './invalid-city-id.error';
 export * from './invalid-city-name.error';
 export * from './invalid-distance.error';
@@ -7,5 +8,8 @@ export * from './invalid-road-segment-id.error';
 export * from './invalid-road-segment.error';
 export * from './invalid-speed.error';
 export * from './invalid-weather-condition.error';
+export * from './pathfinding.error';
+export * from './persistence.error';
+export * from './road-segment-creation.error';
 export * from './road-segment-not-found.error';
 export * from './same-start-and-end-city.error';

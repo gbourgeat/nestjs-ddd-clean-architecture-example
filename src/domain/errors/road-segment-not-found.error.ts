@@ -1,9 +1,11 @@
 import { RoadSegmentId } from '@/domain/value-objects';
+import { DomainError } from './domain.error';
 
-export class RoadSegmentNotFoundError extends Error {
-  public constructor(message: string) {
+export class RoadSegmentNotFoundError extends DomainError {
+  readonly code = 'ROAD_SEGMENT_NOT_FOUND';
+
+  private constructor(message: string) {
     super(message);
-    this.name = this.constructor.name;
   }
 
   static forRoadSegmentId(

@@ -1,7 +1,10 @@
-export class InvalidRoadSegmentIdError extends Error {
-  public constructor(message: string) {
+import { DomainError } from './domain.error';
+
+export class InvalidRoadSegmentIdError extends DomainError {
+  readonly code = 'INVALID_ROAD_SEGMENT_ID';
+
+  private constructor(message: string) {
     super(message);
-    this.name = this.constructor.name;
   }
 
   static emptyFirstCityName(): InvalidRoadSegmentIdError {
@@ -21,6 +24,20 @@ export class InvalidRoadSegmentIdError extends Error {
   static missingSeparator(): InvalidRoadSegmentIdError {
     return new InvalidRoadSegmentIdError(
       'Road segment id value must contain the separator "__"',
+    );
+  }
+
+  static sameCities(): InvalidRoadSegmentIdError {
+    return new InvalidRoadSegmentIdError(
+      'Road segment cannot connect a city to itself',
+    );
+  }
+
+  static invalidCityId(
+    position: 'first' | 'second',
+  ): InvalidRoadSegmentIdError {
+    return new InvalidRoadSegmentIdError(
+      `Invalid ${position} city ID in road segment`,
     );
   }
 }

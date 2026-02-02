@@ -1,7 +1,10 @@
-export class InvalidDistanceError extends Error {
-  public constructor(message: string) {
+import { DomainError } from './domain.error';
+
+export class InvalidDistanceError extends DomainError {
+  readonly code = 'INVALID_DISTANCE';
+
+  private constructor(message: string) {
     super(message);
-    this.name = this.constructor.name;
   }
 
   static negative(): InvalidDistanceError {
