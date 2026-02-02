@@ -65,6 +65,6 @@ export class PathfindingOutputMapper {
 
   private static createDefaultCity(cityName: string): City {
     const name = CityName.createOrThrow(cityName);
-    return City.reconstitute(CityId.fromName(name), name);
+    return City.reconstitute(CityId.generate(), name);
   }
 }
