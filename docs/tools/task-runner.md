@@ -1,16 +1,14 @@
 # Task Runner Guide
 
-> Modern task automation for Route Solver
-
-This project uses **Task** (https://taskfile.dev) as a modern alternative to Makefile. Task provides a simpler, more readable syntax with YAML configuration.
+Modern task automation for Route Solver using [Task](https://taskfile.dev) as an alternative to Makefile.
 
 ## Why Task?
 
-- ✅ **Cross-platform:** Works on Linux, macOS, and Windows
-- ✅ **Readable:** YAML syntax is clearer than Makefile
-- ✅ **Modern:** Built with Go, fast and reliable
-- ✅ **Dependencies:** Easy task dependencies and parallel execution
-- ✅ **Variables:** Powerful variable system
+- **Cross-platform**: Works on Linux, macOS, and Windows
+- **Readable**: YAML syntax is clearer than Makefile
+- **Modern**: Built with Go, fast and reliable
+- **Dependencies**: Easy task dependencies and parallel execution
+- **Variables**: Powerful variable system
 
 ## Installation
 
@@ -47,7 +45,7 @@ scoop install task
 
 Download the binary from the [releases page](https://github.com/go-task/task/releases).
 
-## Verify Installation
+### Verify Installation
 
 ```bash
 task --version
@@ -93,9 +91,9 @@ task format
 task check
 ```
 
-## Command Categories
+## Command Reference
 
-### 📦 Installation & Setup
+### Installation and Setup
 
 | Command | Description |
 |---------|-------------|
@@ -103,7 +101,7 @@ task check
 | `task setup` | Complete project setup (install + env + db + migrations) |
 | `task env:create` | Create .env file from .env.example |
 
-### 🚀 Development
+### Development
 
 | Command | Description |
 |---------|-------------|
@@ -114,7 +112,7 @@ task check
 | `task clean` | Remove dist/ and coverage/ folders |
 | `task clean:all` | Complete cleanup (includes node_modules/) |
 
-### 🧪 Tests
+### Tests
 
 | Command | Description |
 |---------|-------------|
@@ -126,7 +124,7 @@ task check
 | `task test:e2e` | Run end-to-end tests (auto-manages DB) |
 | `task test:all` | Run all tests with coverage |
 
-### 🐳 Docker - Development
+### Docker - Development
 
 | Command | Description |
 |---------|-------------|
@@ -136,7 +134,7 @@ task check
 | `task docker:dev:restart` | Restart development database |
 | `task docker:dev:clean` | Clean database (removes volumes) |
 
-### 🐳 Docker - E2E Tests
+### Docker - E2E Tests
 
 | Command | Description |
 |---------|-------------|
@@ -144,7 +142,7 @@ task check
 | `task docker:e2e:down` | Stop E2E test database |
 | `task docker:e2e:restart` | Restart E2E database (clean state) |
 
-### 🐳 Docker - Integration Tests
+### Docker - Integration Tests
 
 | Command | Description |
 |---------|-------------|
@@ -152,7 +150,7 @@ task check
 | `task docker:integration:down` | Stop integration test database |
 | `task docker:integration:restart` | Restart integration database |
 
-### 🐳 Docker - Global Management
+### Docker - Global Management
 
 | Command | Description |
 |---------|-------------|
@@ -160,7 +158,7 @@ task check
 | `task docker:down` | Stop all Docker services |
 | `task docker:clean` | Clean all Docker volumes |
 
-### 🗄️ Database - Migrations
+### Database - Migrations
 
 | Command | Description |
 |---------|-------------|
@@ -171,21 +169,22 @@ task check
 | `task migration:create` | Create empty migration (interactive) |
 | `task db:reset` | Reset database completely (clean + up + migrate) |
 
-### 🔍 Code Quality
+### Code Quality
 
 | Command | Description |
 |---------|-------------|
-| `task lint` | Lint and fix code with ESLint |
-| `task format` | Format code with Prettier |
+| `task lint` | Lint and fix code with Biome |
+| `task format` | Format code with Biome |
 | `task check` | Complete quality check (lint + format + test:cov) |
+| `task lint-staged` | Run lint-staged manually |
 
-### 📚 Documentation
+### Documentation
 
 | Command | Description |
 |---------|-------------|
 | `task docs` | Open Swagger documentation (browser) |
 
-### 🛠️ Utilities
+### Utilities
 
 | Command | Description |
 |---------|-------------|
@@ -255,7 +254,7 @@ task db:reset
 task check
 ```
 
-## Comparison with npm scripts
+## Comparison with npm Scripts
 
 | npm script | Task command | Notes |
 |------------|--------------|-------|
@@ -264,15 +263,6 @@ task check
 | `npm run test:e2e` | `task test:e2e` | Task manages DB lifecycle |
 | `npm run docker:dev:up && npm run migration:run` | `task setup` | Orchestration |
 | Multiple commands | `task check` | Lint + format + test in one |
-
-## Task Configuration
-
-The configuration is in `Taskfile.yml` at the project root. You can customize:
-
-- Variables (Docker compose files, ports, etc.)
-- Task dependencies
-- Command sequences
-- Platform-specific commands
 
 ## Advanced Usage
 
@@ -286,8 +276,8 @@ task docker:dev:up docker:e2e:up
 
 Some tasks have automatic dependencies:
 
-- `task dev` → automatically runs `docker:dev:up` first
-- `task test:e2e` → automatically manages E2E database lifecycle
+- `task dev` automatically runs `docker:dev:up` first
+- `task test:e2e` automatically manages E2E database lifecycle
 
 ### Variables
 
@@ -295,6 +285,24 @@ You can override variables:
 
 ```bash
 task docker:dev:up DOCKER_DEV_FILE=docker-compose.custom.yml
+```
+
+### Verbose Mode
+
+```bash
+task --verbose dev
+```
+
+### Skip Dependencies
+
+```bash
+task --force dev
+```
+
+### Filter Tasks by Category
+
+```bash
+task --list | grep docker
 ```
 
 ## Troubleshooting
@@ -324,22 +332,58 @@ Check the `Taskfile.yml` syntax:
 task --taskfile Taskfile.yml --list
 ```
 
+## Configuration
+
+The configuration is in `Taskfile.yml` at the project root. You can customize:
+
+- Variables (Docker compose files, ports, etc.)
+- Task dependencies
+- Command sequences
+- Platform-specific commands
+
+### Taskfile Structure
+
+```yaml
+# Global variables
+vars:
+  DOCKER_DEV_FILE: docker-compose.dev.yml
+  # ...
+
+# Tasks grouped by category:
+tasks:
+  # Installation & Setup
+  install, setup, env:create
+
+  # Development
+  dev, start, build, clean
+
+  # Tests
+  test, test:watch, test:cov, test:e2e
+
+  # Docker (Dev, E2E, Integration)
+  docker:dev:*, docker:e2e:*, docker:integration:*
+
+  # Database - Migrations
+  migration:*, db:reset
+
+  # Code Quality
+  lint, format, check
+
+  # Documentation
+  docs
+
+  # Utilities
+  info, help
+```
+
+### Naming Conventions
+
+- **Simple actions**: `verb` (e.g., `dev`, `build`, `clean`)
+- **Sub-commands**: `category:action` (e.g., `docker:dev:up`, `test:cov`)
+- **npm consistency**: Keep the same names when possible
+
 ## Resources
 
-- **Task Documentation:** https://taskfile.dev
-- **GitHub Repository:** https://github.com/go-task/task
-- **Task Examples:** https://taskfile.dev/usage/
-
-## Contributing
-
-When adding new commands to the project:
-
-1. Add the corresponding task in `Taskfile.yml`
-2. Update this documentation
-3. Keep task names consistent with npm scripts (when applicable)
-4. Group related tasks in sections
-5. Use descriptive names and descriptions
-
-## License
-
-Same as the main project (UNLICENSED - Educational purposes).
+- **Task Documentation**: https://taskfile.dev
+- **GitHub Repository**: https://github.com/go-task/task
+- **Task Examples**: https://taskfile.dev/usage/

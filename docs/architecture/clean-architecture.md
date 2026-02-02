@@ -1,49 +1,69 @@
-# Dependency Checking - Dependency Cruiser
+# Clean Architecture and Dependency Validation
 
-## Objective
+## Overview
 
-This project uses `dependency-cruiser` to ensure compliance with hexagonal/clean architecture rules. The tool automatically verifies that dependencies between layers are correct.
+This project follows Clean/Hexagonal Architecture principles with strict dependency rules between layers. The `dependency-cruiser` tool automatically validates these rules.
 
-## Applied Architecture Rules
+## Architecture Layers
 
-### 1. **Domain Layer**
-- ❌ **MUST NOT** import from `application/`, `infrastructure/`, or `presentation/`
-- ❌ **MUST NOT** import from `node_modules` (except `@types/*` if necessary)
-- ✅ The domain must remain pure, without external dependencies
+```
+src/
+├── domain/           # Pure business logic (depends on nothing)
+├── application/      # Use case orchestration (depends on domain)
+├── infrastructure/   # External implementations (depends on domain + application)
+└── presentation/     # HTTP interface (depends on domain + application)
+```
 
-### 2. **Application Layer**
-- ✅ **CAN** import from `domain/`
-- ❌ **MUST NOT** import from `infrastructure/`
-- ❌ **MUST NOT** import from `presentation/`
+## Dependency Rules
 
-### 3. **Infrastructure Layer**
-- ✅ **CAN** import from `domain/`
-- ✅ **CAN** import from `application/`
-- ❌ **MUST NOT** import from `presentation/`
+### Domain Layer
 
-### 4. **Presentation Layer**
-- ✅ **CAN** import from `domain/`
-- ✅ **CAN** import from `application/`
-- ⚠️ **SHOULD NOT** directly import from `infrastructure/` (use dependency injection)
+- MUST NOT import from `application/`, `infrastructure/`, or `presentation/`
+- MUST NOT import from `node_modules` (except `@types/*` if necessary)
+- The domain must remain pure, without external dependencies
 
-### 5. **No Circular Dependencies**
-- ❌ No circular dependencies are allowed in the project
+### Application Layer
 
-## Available Commands
+- CAN import from `domain/`
+- MUST NOT import from `infrastructure/`
+- MUST NOT import from `presentation/`
 
-### Check dependencies
+### Infrastructure Layer
+
+- CAN import from `domain/`
+- CAN import from `application/`
+- MUST NOT import from `presentation/`
+
+### Presentation Layer
+
+- CAN import from `domain/`
+- CAN import from `application/`
+- SHOULD NOT directly import from `infrastructure/` (use dependency injection)
+
+### Circular Dependencies
+
+- No circular dependencies are allowed anywhere in the project
+
+## Validation Commands
+
+### Check Dependencies
+
 ```bash
 npm run deps:check
 ```
-Validates that all architecture rules are respected. This command should be executed before each commit.
 
-### Generate a dependency graph
+Validates all architecture rules. Run this before each commit.
+
+### Generate Dependency Graph
+
 ```bash
 npm run deps:graph
 ```
-Generates an SVG file visualizing all project dependencies in `docs/dependency-graph.svg`.
 
-**Prerequisites:** Requires Graphviz installed on your system.
+Generates an SVG file visualizing all project dependencies at `docs/dependency-graph.svg`.
+
+Prerequisites: Requires Graphviz installed on your system.
+
 ```bash
 # Ubuntu/Debian
 sudo apt-get install graphviz
@@ -55,15 +75,17 @@ brew install graphviz
 choco install graphviz
 ```
 
-### Display the architecture
+### Display Architecture
+
 ```bash
 npm run deps:archi
 ```
+
 Displays a textual representation of the project architecture with dependencies between modules.
 
 ## Interpreting Results
 
-### Example output with violations
+### Example Output with Violations
 
 ```
 warn presentation-no-infrastructure-deps: src/presentation/rest-api/rest-api.module.ts → src/infrastructure/pathfinding/pathfinding.module.ts
@@ -71,13 +93,15 @@ warn presentation-no-infrastructure-deps: src/presentation/rest-api/rest-api.mod
 error domain-no-external-deps: src/domain/entities/city.ts → src/infrastructure/database/entities/city.typeorm-entity.ts
 ```
 
-### Message types
+### Message Types
 
-- **error** 🔴: Critical violation that must be fixed immediately
-- **warn** ⚠️: Warning, should be fixed but non-blocking
-- **info** ℹ️: Information (not currently used)
+| Severity | Meaning |
+|----------|---------|
+| `error` | Critical violation - must be fixed immediately |
+| `warn` | Warning - should be fixed but non-blocking |
+| `info` | Information (not currently used) |
 
-### Violation meanings
+### Violation Reference
 
 | Violation | Meaning | Action |
 |-----------|---------|--------|
@@ -90,7 +114,7 @@ error domain-no-external-deps: src/domain/entities/city.ts → src/infrastructur
 
 ### Violation 1: Domain imports Infrastructure
 
-❌ **Bad:**
+Bad:
 ```typescript
 // src/domain/entities/city.ts
 import { CityTypeormEntity } from '@/infrastructure/database/entities';
@@ -100,7 +124,7 @@ export class City {
 }
 ```
 
-✅ **Good:**
+Good:
 ```typescript
 // src/domain/entities/city.ts
 export class City {
@@ -119,7 +143,7 @@ export class CityMapper {
 
 ### Violation 2: Application imports Infrastructure
 
-❌ **Bad:**
+Bad:
 ```typescript
 // src/application/use-cases/get-route/get-route.use-case.ts
 import { CityTypeormRepository } from '@/infrastructure/database/repositories';
@@ -129,7 +153,7 @@ export class GetRouteUseCase {
 }
 ```
 
-✅ **Good:**
+Good:
 ```typescript
 // src/application/use-cases/get-route/get-route.use-case.ts
 import { CityRepository } from '@/domain/repositories';
@@ -152,7 +176,7 @@ export class DatabaseModule {}
 
 ### Violation 3: Circular Dependencies
 
-❌ **Bad:**
+Bad:
 ```typescript
 // src/domain/value-objects/index.ts
 export * from './city-name';
@@ -168,7 +192,7 @@ export * from './city-not-found.error';
 import { CityId } from '@/domain/value-objects';
 ```
 
-✅ **Good:**
+Good:
 ```typescript
 // Option 1: Import files directly, not barrel exports
 // src/domain/errors/city-not-found.error.ts
@@ -185,7 +209,7 @@ export class CityNotFoundError extends Error {
 
 ### Violation 4: Presentation imports Infrastructure
 
-⚠️ **Acceptable but not recommended:**
+Acceptable but not recommended:
 ```typescript
 // src/presentation/rest-api/rest-api.module.ts
 import { DatabaseModule } from '@/infrastructure/database/database.module';
@@ -197,7 +221,7 @@ import { PathfindingModule } from '@/infrastructure/pathfinding/pathfinding.modu
 export class RestApiModule {}
 ```
 
-✅ **Best practice:**
+Best practice:
 ```typescript
 // src/app.module.ts (root module)
 import { DatabaseModule } from '@/infrastructure/database/database.module';
@@ -244,7 +268,7 @@ The `.dependency-cruiser.js` file contains the complete configuration. You can:
 - Add exceptions with `pathNot`
 - Create new custom rules
 
-### Example: Allow a temporary exception
+### Example: Allow a Temporary Exception
 
 ```javascript
 {
@@ -262,13 +286,7 @@ The `.dependency-cruiser.js` file contains the complete configuration. You can:
 }
 ```
 
-## Resources
-
-- [Dependency Cruiser Documentation](https://github.com/sverweij/dependency-cruiser)
-- [Project Architecture Rules](../README.md#architecture)
-- [Clean Architecture Guide](../docs/ARCHITECTURE.md)
-
-## Checklist
+## Pre-PR Checklist
 
 Before submitting a Pull Request:
 
@@ -277,6 +295,7 @@ Before submitting a Pull Request:
 - [ ] No circular dependencies have been introduced
 - [ ] Architecture rules are respected
 
-## Support
+## Resources
 
-If you have questions about a specific violation or how to fix it, consult this document or ask the team.
+- [Dependency Cruiser Documentation](https://github.com/sverweij/dependency-cruiser)
+- [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
