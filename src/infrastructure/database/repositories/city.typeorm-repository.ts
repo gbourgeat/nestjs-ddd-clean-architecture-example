@@ -1,11 +1,12 @@
 import { City } from '@/domain/entities';
 import { CityNotFoundError } from '@/domain/errors';
 import { CityRepository } from '@/domain/repositories';
-import { CityId, CityName } from '@/domain/value-objects';
+import { CityName } from '@/domain/value-objects';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CityTypeormEntity } from '../entities';
+import { CityMapper } from '../mappers';
 
 @Injectable()
 export class CityTypeormRepository implements CityRepository {
@@ -15,38 +16,33 @@ export class CityTypeormRepository implements CityRepository {
   ) {}
 
   async findByName(name: CityName): Promise<City> {
-    const city = await this.typeormRepository.findOne({
+    const cityEntity = await this.typeormRepository.findOne({
       where: { name: name.value },
     });
 
-    if (!city) {
+    if (!cityEntity) {
       throw CityNotFoundError.forCityName(name);
     }
 
-    return City.reconstitute(
-      CityId.fromNormalizedValue(city.id),
-      CityName.create(city.name),
-    );
+    return CityMapper.toDomain(cityEntity);
   }
 
   async save(city: City): Promise<void> {
     // Try to find by name instead of id, since id in domain is name-based
     // but id in database is UUID-based
-    const cityTypeormEntity = await this.typeormRepository.findOne({
+    const existingEntity = await this.typeormRepository.findOne({
       where: { name: city.name.value },
     });
 
-    if (cityTypeormEntity) {
+    if (existingEntity) {
       // City already exists, update it
-      cityTypeormEntity.name = city.name.value;
-      await this.typeormRepository.save(cityTypeormEntity);
+      const updatedEntity = CityMapper.toTypeorm(city, existingEntity);
+      await this.typeormRepository.save(updatedEntity);
     } else {
       // New city, let PostgreSQL generate the UUID
-      const newCityTypeormEntity = this.typeormRepository.create({
-        name: city.name.value,
-      });
-
-      await this.typeormRepository.save(newCityTypeormEntity);
+      const newEntityData = CityMapper.toTypeormForCreation(city);
+      const newEntity = this.typeormRepository.create(newEntityData);
+      await this.typeormRepository.save(newEntity);
     }
   }
 }
