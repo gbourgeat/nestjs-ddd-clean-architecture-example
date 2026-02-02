@@ -4,6 +4,7 @@ import { RoadSegmentRepository } from '@/domain/repositories';
 import { RoadSegmentId } from '@/domain/value-objects';
 import {
   CityTypeormEntity,
+  DatabaseIntegrityError,
   RoadSegmentTypeormEntity,
 } from '@/infrastructure/database';
 import { Injectable } from '@nestjs/common';
@@ -34,8 +35,8 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
       const cityB = citiesIndexById.get(roadSegmentEntity.cityBId);
 
       if (!cityA || !cityB) {
-        throw new Error(
-          `Cities not found for road segment ${roadSegmentEntity.id}`,
+        throw DatabaseIntegrityError.citiesNotFoundForRoadSegment(
+          roadSegmentEntity.id,
         );
       }
 
