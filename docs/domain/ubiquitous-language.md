@@ -1,74 +1,74 @@
 # Ubiquitous Language - Route Solver
 
-> **Objectif** : Ce glossaire est la source de vérité pour le vocabulaire métier du projet. Tous les termes utilisés dans le code, la documentation et les échanges doivent être cohérents avec ce référentiel.
+> **Purpose**: This glossary is the source of truth for the project's business vocabulary. All terms used in code, documentation, and discussions must be consistent with this reference.
 
-## Concepts Métier Principaux
+## Core Business Concepts
 
-### City (Ville)
+### City
 
-| Aspect | Valeur |
-|--------|--------|
-| **Définition** | Localisation géographique dans le réseau routier français |
-| **Identité** | Identifiée par un `CityId` unique (forme normalisée du nom) |
-| **Exemples** | Paris, Lyon, Aix-en-Provence, Saint-Denis |
+| Aspect | Value |
+|--------|-------|
+| **Definition** | Geographic location in the French road network |
+| **Identity** | Identified by a unique `CityId` (normalized form of the name) |
+| **Examples** | Paris, Lyon, Aix-en-Provence, Saint-Denis |
 | **Code** | `City` (Entity), `CityId` (VO), `CityName` (VO) |
 
-**Règles métier :**
-- Le nom suit les conventions de nommage françaises (majuscule initiale, accents, tirets, apostrophes)
-- Deux villes sont égales si elles ont le même `CityId`
+**Business rules:**
+- The name follows French naming conventions (initial capital, accents, hyphens, apostrophes)
+- Two cities are equal if they have the same `CityId`
 
 ---
 
-### RoadSegment (Segment Routier)
+### RoadSegment
 
-| Aspect | Valeur |
-|--------|--------|
-| **Définition** | Connexion routière bidirectionnelle entre deux villes distinctes |
-| **Identité** | Identifié par un `RoadSegmentId` composite (ex: `lyon__paris`) |
-| **Propriétés** | Distance (km), Limite de vitesse (km/h) |
+| Aspect | Value |
+|--------|-------|
+| **Definition** | Bidirectional road connection between two distinct cities |
+| **Identity** | Identified by a composite `RoadSegmentId` (e.g., `lyon__paris`) |
+| **Properties** | Distance (km), Speed limit (km/h) |
 | **Code** | `RoadSegment` (Entity), `RoadSegmentId` (VO) |
 
-**Règles métier :**
-- Un segment ne peut pas relier une ville à elle-même
-- Les villes sont toujours triées alphabétiquement pour garantir l'unicité
-- La durée estimée = distance / vitesse
+**Business rules:**
+- A segment cannot connect a city to itself
+- Cities are always sorted alphabetically to ensure uniqueness
+- Estimated duration = distance / speed
 
 ---
 
-### Itinerary (Itinéraire)
+### Itinerary
 
-| Aspect | Valeur |
-|--------|--------|
-| **Définition** | Chemin ordonné de segments routiers reliant une ville de départ à une ville d'arrivée |
-| **Résultat de** | Calcul de pathfinding (algorithme Dijkstra) |
-| **Composition** | Liste d'étapes (`ItineraryStep`) |
+| Aspect | Value |
+|--------|-------|
+| **Definition** | Ordered path of road segments connecting a departure city to a destination city |
+| **Result of** | Pathfinding calculation (Dijkstra algorithm) |
+| **Composition** | List of steps (`ItineraryStep`) |
 | **REST** | `GET /itineraries` |
 | **Code** | `PathfindingResult`, `RouteStep` |
 
-> **Note** : On utilise "Itinerary" (et non "Route") pour éviter la confusion avec "Road" (la route en français).
+> **Note**: We use "Itinerary" (not "Route") to avoid confusion with "Road" (which translates to "route" in French).
 
-**Règles métier :**
-- La ville de départ et d'arrivée doivent être différentes
-- Un itinéraire peut ne pas exister si aucun chemin n'est disponible
+**Business rules:**
+- Departure and destination cities must be different
+- An itinerary may not exist if no path is available
 
 ---
 
-### ItineraryStep (Étape d'Itinéraire)
+### ItineraryStep
 
-| Aspect | Valeur |
-|--------|--------|
-| **Définition** | Portion d'un itinéraire correspondant à un segment routier traversé |
-| **Propriétés** | Ville de départ, Ville d'arrivée, Distance, Vitesse, Durée, Météo |
+| Aspect | Value |
+|--------|-------|
+| **Definition** | Portion of an itinerary corresponding to a traversed road segment |
+| **Properties** | Departure city, Destination city, Distance, Speed, Duration, Weather |
 | **Code** | `RouteStep` (Interface) |
 
 ---
 
-### PathFinder (Calculateur d'Itinéraire)
+### PathFinder
 
-| Aspect | Valeur |
-|--------|--------|
-| **Définition** | Service abstrait responsable du calcul de l'itinéraire le plus rapide |
-| **Algorithme** | Dijkstra (implémentation infrastructure) |
+| Aspect | Value |
+|--------|-------|
+| **Definition** | Abstract service responsible for calculating the fastest itinerary |
+| **Algorithm** | Dijkstra (infrastructure implementation) |
 | **Code** | `PathFinder` (Abstract Service) |
 
 ---
@@ -77,110 +77,109 @@
 
 ### Distance
 
-| Aspect | Valeur |
-|--------|--------|
-| **Définition** | Mesure de longueur d'un segment routier |
-| **Unité** | Kilomètres (km) |
-| **Contraintes** | ≥ 0, finie |
+| Aspect | Value |
+|--------|-------|
+| **Definition** | Length measurement of a road segment |
+| **Unit** | Kilometers (km) |
+| **Constraints** | >= 0, finite |
 | **Code** | `Distance` |
 
 ---
 
-### Speed (Vitesse)
+### Speed
 
-| Aspect | Valeur |
-|--------|--------|
-| **Définition** | Limite de vitesse autorisée sur un segment routier |
-| **Unité** | Kilomètres par heure (km/h) |
-| **Contraintes** | ≥ 0, finie |
+| Aspect | Value |
+|--------|-------|
+| **Definition** | Authorized speed limit on a road segment |
+| **Unit** | Kilometers per hour (km/h) |
+| **Constraints** | >= 0, finite |
 | **Code** | `Speed` |
 
 ---
 
-### Duration (Durée)
+### Duration
 
-| Aspect | Valeur |
-|--------|--------|
-| **Définition** | Temps de trajet estimé |
-| **Unité** | Heures (avec conversion minutes/secondes) |
-| **Calcul** | distance / vitesse |
-| **Contraintes** | ≥ 0, finie, vitesse ≠ 0 pour le calcul |
+| Aspect | Value |
+|--------|-------|
+| **Definition** | Estimated travel time |
+| **Unit** | Hours (with minutes/seconds conversion) |
+| **Calculation** | distance / speed |
+| **Constraints** | >= 0, finite, speed != 0 for calculation |
 | **Code** | `Duration` |
 
 ---
 
-### WeatherCondition (Condition Météorologique)
+### WeatherCondition
 
-| Aspect | Valeur |
-|--------|--------|
-| **Définition** | État météorologique affectant les conditions de route |
-| **Valeurs** | `sunny`, `cloudy`, `rain`, `snow`, `thunderstorm`, `fog` |
-| **Traduction** | Ensoleillé, Nuageux, Pluie, Neige, Orage, Brouillard |
+| Aspect | Value |
+|--------|-------|
+| **Definition** | Meteorological state affecting road conditions |
+| **Values** | `sunny`, `cloudy`, `rain`, `snow`, `thunderstorm`, `fog` |
 | **Code** | `WeatherCondition` |
 
 ---
 
-### RoadConstraints (Contraintes de Route)
+### RoadConstraints
 
-| Aspect | Valeur |
-|--------|--------|
-| **Définition** | Critères optionnels de filtrage pour la recherche d'itinéraire |
-| **Propriétés** | Conditions météo à exclure, Distance max, Vitesse min |
+| Aspect | Value |
+|--------|-------|
+| **Definition** | Optional filtering criteria for itinerary search |
+| **Properties** | Weather conditions to exclude, Max distance, Min speed |
 | **Code** | `RoadConstraints` |
 
 ---
 
-## API REST
+## REST API
 
-### Vue d'ensemble
+### Overview
 
-| Ressource | Méthode | Endpoint | Description |
-|-----------|---------|----------|-------------|
-| Itinerary | GET | `/itineraries` | Calculer un itinéraire |
-| RoadSegment | POST | `/road-segments` | Créer un segment routier |
-| RoadSegment | PATCH | `/road-segments/:id` | Modifier la vitesse d'un segment |
+| Resource | Method | Endpoint | Description |
+|----------|--------|----------|-------------|
+| Itinerary | GET | `/itineraries` | Calculate an itinerary |
+| RoadSegment | POST | `/road-segments` | Create a road segment |
+| RoadSegment | PATCH | `/road-segments/:id` | Update segment speed limit |
 
 ### GET /itineraries
 
-Calcule l'itinéraire le plus rapide entre deux villes.
+Calculates the fastest itinerary between two cities.
 
-**Query Parameters :**
+**Query Parameters:**
 
-| Paramètre | Type | Requis | Description |
-|-----------|------|--------|-------------|
-| `from` | string | ✅ | Ville de départ |
-| `to` | string | ✅ | Ville d'arrivée |
-| `maxDistance` | number | ❌ | Distance max par segment (km) |
-| `minSpeed` | number | ❌ | Vitesse min requise (km/h) |
-| `excludeWeather` | string | ❌ | Conditions météo à exclure (séparées par virgule) |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `from` | string | Yes | Departure city |
+| `to` | string | Yes | Destination city |
+| `maxDistance` | number | No | Max distance per segment (km) |
+| `minSpeed` | number | No | Min required speed (km/h) |
+| `excludeWeather` | string | No | Weather conditions to exclude (comma-separated) |
 
-**Exemple :**
+**Example:**
 ```
 GET /itineraries?from=Paris&to=Lyon
 GET /itineraries?from=Paris&to=Lyon&maxDistance=500&excludeWeather=rain,snow
 ```
 
-**Réponses :**
-- `200 OK` - Itinéraire calculé avec succès
-- `400 Bad Request` - Paramètres invalides ou villes identiques
-- `404 Not Found` - Ville non trouvée
+**Responses:**
+- `200 OK` - Itinerary calculated successfully
+- `400 Bad Request` - Invalid parameters or identical cities
+- `404 Not Found` - City not found
 
 ---
 
 ### POST /road-segments
 
-Crée un nouveau segment routier entre deux villes.
+Creates a new road segment between two cities.
 
-**Request Body :**
+**Request Body:**
 
-| Champ | Type | Requis | Description |
-|-------|------|--------|-------------|
-| `cityA` | string | ✅ | Première ville |
-| `cityB` | string | ✅ | Seconde ville |
-| `distance` | number | ✅ | Distance en km |
-| `speedLimit` | number | ✅ | Limite de vitesse en km/h |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `cityA` | string | Yes | First city |
+| `cityB` | string | Yes | Second city |
+| `distance` | number | Yes | Distance in km |
+| `speedLimit` | number | Yes | Speed limit in km/h |
 
-**Exemple :**
+**Example:**
 ```json
 {
   "cityA": "Paris",
@@ -190,30 +189,30 @@ Crée un nouveau segment routier entre deux villes.
 }
 ```
 
-**Réponses :**
-- `201 Created` - Segment créé avec succès
-- `400 Bad Request` - Données invalides
-- `404 Not Found` - Ville non trouvée
+**Responses:**
+- `201 Created` - Segment created successfully
+- `400 Bad Request` - Invalid data
+- `404 Not Found` - City not found
 
 ---
 
 ### PATCH /road-segments/:id
 
-Met à jour la limite de vitesse d'un segment routier.
+Updates the speed limit of a road segment.
 
-**Path Parameters :**
+**Path Parameters:**
 
-| Paramètre | Description |
+| Parameter | Description |
 |-----------|-------------|
-| `id` | ID du segment (format: `cityA__cityB`, ex: `lyon__paris`) |
+| `id` | Segment ID (format: `cityA__cityB`, e.g., `lyon__paris`) |
 
-**Request Body :**
+**Request Body:**
 
-| Champ | Type | Requis | Description |
-|-------|------|--------|-------------|
-| `newSpeedLimit` | number | ✅ | Nouvelle limite de vitesse en km/h |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `newSpeedLimit` | number | Yes | New speed limit in km/h |
 
-**Exemple :**
+**Example:**
 ```
 PATCH /road-segments/lyon__paris
 ```
@@ -223,32 +222,32 @@ PATCH /road-segments/lyon__paris
 }
 ```
 
-**Réponses :**
-- `200 OK` - Vitesse mise à jour
-- `400 Bad Request` - Vitesse invalide ou ID mal formé
-- `404 Not Found` - Segment non trouvé
+**Responses:**
+- `200 OK` - Speed updated
+- `400 Bad Request` - Invalid speed or malformed ID
+- `404 Not Found` - Segment not found
 
 ---
 
-## Erreurs Métier
+## Business Errors
 
-| Code | Nom | Description |
-|------|-----|-------------|
-| `CITY_NOT_FOUND` | Ville non trouvée | La ville demandée n'existe pas dans le référentiel |
-| `ROAD_SEGMENT_NOT_FOUND` | Segment non trouvé | Le segment routier n'existe pas |
-| `SAME_START_END_CITY` | Même ville départ/arrivée | Impossible de calculer un itinéraire vers la même ville |
-| `NO_ROUTE_FOUND` | Aucun itinéraire | Aucun chemin disponible entre les deux villes |
-| `INVALID_CITY_NAME` | Nom de ville invalide | Le format du nom ne respecte pas les conventions |
-| `INVALID_DISTANCE` | Distance invalide | Valeur négative ou non finie |
-| `INVALID_SPEED` | Vitesse invalide | Valeur négative, nulle ou non finie |
+| Code | Name | Description |
+|------|------|-------------|
+| `CITY_NOT_FOUND` | City Not Found | The requested city does not exist in the repository |
+| `ROAD_SEGMENT_NOT_FOUND` | Road Segment Not Found | The road segment does not exist |
+| `SAME_START_END_CITY` | Same Start And End City | Cannot calculate an itinerary to the same city |
+| `NO_ROUTE_FOUND` | No Route Found | No path available between the two cities |
+| `INVALID_CITY_NAME` | Invalid City Name | The name format does not follow conventions |
+| `INVALID_DISTANCE` | Invalid Distance | Negative or non-finite value |
+| `INVALID_SPEED` | Invalid Speed | Negative, zero, or non-finite value |
 
 ---
 
-## Conventions de Nommage
+## Naming Conventions
 
 ### Code
 
-| Type | Pattern | Exemple |
+| Type | Pattern | Example |
 |------|---------|---------|
 | Entity | `PascalCase` | `City`, `RoadSegment` |
 | Value Object | `PascalCase` | `CityId`, `Distance` |
@@ -259,9 +258,9 @@ PATCH /road-segments/lyon__paris
 | Query DTO | `PascalCase` + `Query` | `SearchItineraryQuery` |
 | Request DTO | `PascalCase` + `Request` | `CreateRoadSegmentRequest` |
 
-### Fichiers
+### Files
 
-| Type | Pattern | Exemple |
+| Type | Pattern | Example |
 |------|---------|---------|
 | Entity | `kebab-case.ts` | `road-segment.ts` |
 | Value Object | `kebab-case.ts` | `city-id.ts` |
@@ -269,7 +268,7 @@ PATCH /road-segments/lyon__paris
 | Controller | `kebab-case.controller.ts` | `calculate.controller.ts` |
 | Query DTO | `kebab-case.query.ts` | `search-itinerary.query.ts` |
 
-### Structure Controllers
+### Controller Structure
 
 ```
 controllers/
@@ -284,29 +283,17 @@ controllers/
 
 ---
 
-## Glossaire Français ↔ Anglais
+## Terminology Note
 
-| Français | Anglais | REST | Contexte |
-|----------|---------|------|----------|
-| Ville | City | `/cities` | Entité géographique |
-| Segment routier | Road Segment | `/road-segments` | Connexion entre villes |
-| Itinéraire | Itinerary | `/itineraries` | Résultat du calcul de chemin |
-| Étape | Itinerary Step | - | Portion d'itinéraire |
-| Distance | Distance | - | Longueur en km |
-| Vitesse | Speed | - | Limite en km/h |
-| Durée | Duration | - | Temps de trajet |
-| Contraintes | Constraints | - | Filtres de recherche |
-| Condition météo | Weather Condition | - | État climatique |
-| Recherche de chemin | Pathfinding | - | Algorithme Dijkstra |
-
-> **Attention** : "Route" en français = "Road" en anglais (la route physique). Pour éviter toute confusion, on utilise "Itinerary" pour désigner le chemin calculé.
+> **Important**: "Route" in French means "Road" in English (the physical road). To avoid confusion, we use "Itinerary" to designate the calculated path.
 
 ---
 
-## Mises à Jour
+## Updates
 
-| Date | Modification | Auteur |
-|------|--------------|--------|
-| 2026-02-02 | Création initiale du glossaire | Claude Code |
-| 2026-02-02 | Ajout documentation API REST complète | Claude Code |
-| 2026-02-02 | Changement POST → GET pour /itineraries | Claude Code |
+| Date | Change | Author |
+|------|--------|--------|
+| 2026-02-02 | Initial glossary creation | Claude Code |
+| 2026-02-02 | Added complete REST API documentation | Claude Code |
+| 2026-02-02 | Changed POST to GET for /itineraries | Claude Code |
+| 2026-02-02 | Translated documentation to English | Claude Code |
