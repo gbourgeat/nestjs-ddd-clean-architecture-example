@@ -1,0 +1,20 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "src/presentation/rest-api/rest-api.bootsrap.ts",
+    "src/infrastructure/database/data-source.ts",
+    "test/**/*.spec.ts",
+    "test/**/*.e2e-spec.ts",
+    "test/**/*-spec.ts"
+  ],
+  "project": ["src/**/*.ts", "test/**/*.ts"],
+  "ignore": [
+    "src/infrastructure/database/migrations/**",
+    "src/**/index.ts"
+  ],
+  "ignoreDependencies": [
+    "source-map-support",
+    "ts-loader"
+  ],
+  "ignoreBinaries": ["dot", "docker-compose"]
+}

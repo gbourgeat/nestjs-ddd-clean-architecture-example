@@ -342,6 +342,11 @@ tasks:
   # 🔍 Qualité du code
   # ============================================================================
 
+  deps:unused:
+    desc: Détecter les dépendances npm inutilisées
+    cmds:
+      - npm run deps:unused
+
   lint:
     desc: Linter et corriger le code
     cmds:

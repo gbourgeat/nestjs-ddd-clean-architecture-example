@@ -274,6 +274,7 @@ task test             # Run feature tests
 task test:cov         # Run tests with coverage
 task test:e2e         # Run E2E tests
 task check            # Lint + format + tests
+task deps:unused      # Detect unused npm dependencies
 task docker:dev:up    # Start development database
 task migration:run    # Run database migrations
 task db:reset         # Reset database completely
@@ -290,6 +291,7 @@ npm run test:e2e:cov       # E2E tests with coverage
 npm run lint               # Lint code
 npm run format             # Format code
 npm run deps:check         # Check architecture dependencies
+npm run deps:unused        # Detect unused npm dependencies
 ```
 
 ### Docker
