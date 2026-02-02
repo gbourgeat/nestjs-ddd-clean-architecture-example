@@ -152,7 +152,7 @@ describe('DijkstraPathFinder (Integration)', () => {
 
       const constraints = new RoadConstraints(
         undefined,
-        Distance.fromKilometersOrThrow(500),
+        Distance.fromKilometers(500),
         undefined,
       );
 
@@ -197,7 +197,7 @@ describe('DijkstraPathFinder (Integration)', () => {
       const constraints = new RoadConstraints(
         undefined,
         undefined,
-        Speed.fromKmPerHourOrThrow(100),
+        Speed.fromKmPerHour(100),
       );
 
       // Act

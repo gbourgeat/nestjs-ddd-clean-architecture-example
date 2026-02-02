@@ -5,8 +5,8 @@ export class RoadSegmentBuilder {
   private id: RoadSegmentId = RoadSegmentId.generate();
   private cityA?: City;
   private cityB?: City;
-  private distance: Distance = Distance.fromKilometersOrThrow(100);
-  private speedLimit: Speed = Speed.fromKmPerHourOrThrow(110);
+  private distance: Distance = Distance.fromKilometers(100);
+  private speedLimit: Speed = Speed.fromKmPerHour(110);
 
   static aRoadSegment(): RoadSegmentBuilder {
     return new RoadSegmentBuilder();
@@ -34,12 +34,12 @@ export class RoadSegmentBuilder {
   }
 
   withDistance(kilometers: number): this {
-    this.distance = Distance.fromKilometersOrThrow(kilometers);
+    this.distance = Distance.fromKilometers(kilometers);
     return this;
   }
 
   withSpeedLimit(kmPerHour: number): this {
-    this.speedLimit = Speed.fromKmPerHourOrThrow(kmPerHour);
+    this.speedLimit = Speed.fromKmPerHour(kmPerHour);
     return this;
   }
 

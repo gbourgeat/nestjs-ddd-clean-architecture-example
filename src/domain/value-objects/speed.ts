@@ -8,7 +8,7 @@ export class Speed {
     this._value = value;
   }
 
-  static fromKmPerHour(kmPerHour: number): Result<Speed, InvalidSpeedError> {
+  static tryFromKmPerHour(kmPerHour: number): Result<Speed, InvalidSpeedError> {
     if (kmPerHour < 0) {
       return fail(InvalidSpeedError.negative());
     }
@@ -20,8 +20,8 @@ export class Speed {
     return ok(new Speed(kmPerHour));
   }
 
-  static fromKmPerHourOrThrow(kmPerHour: number): Speed {
-    const result = Speed.fromKmPerHour(kmPerHour);
+  static fromKmPerHour(kmPerHour: number): Speed {
+    const result = Speed.tryFromKmPerHour(kmPerHour);
     if (!result.success) {
       throw result.error;
     }

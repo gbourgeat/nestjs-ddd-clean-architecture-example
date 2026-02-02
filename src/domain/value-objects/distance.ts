@@ -8,7 +8,7 @@ export class Distance {
     this._value = value;
   }
 
-  static fromKilometers(
+  static tryFromKilometers(
     kilometers: number,
   ): Result<Distance, InvalidDistanceError> {
     if (kilometers < 0) {
@@ -22,8 +22,8 @@ export class Distance {
     return ok(new Distance(kilometers));
   }
 
-  static fromKilometersOrThrow(kilometers: number): Distance {
-    const result = Distance.fromKilometers(kilometers);
+  static fromKilometers(kilometers: number): Distance {
+    const result = Distance.tryFromKilometers(kilometers);
     if (!result.success) {
       throw result.error;
     }
@@ -51,7 +51,7 @@ export class Distance {
   }
 
   add(other: Distance): Distance {
-    return Distance.fromKilometersOrThrow(this._value + other._value);
+    return Distance.fromKilometers(this._value + other._value);
   }
 
   toString(): string {

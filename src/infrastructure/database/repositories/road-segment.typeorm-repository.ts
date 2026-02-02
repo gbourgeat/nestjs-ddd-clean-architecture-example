@@ -50,7 +50,11 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
         }
 
         result.push(
-          RoadSegmentTypeormMapper.toDomain(roadSegmentEntity, cityA, cityB),
+          RoadSegmentTypeormMapper.toDomain({
+            entity: roadSegmentEntity,
+            cityA,
+            cityB,
+          }),
         );
       }
 
@@ -87,7 +91,11 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
     }
 
     return ok(
-      RoadSegmentTypeormMapper.toDomain(roadSegmentEntity, cityA, cityB),
+      RoadSegmentTypeormMapper.toDomain({
+        entity: roadSegmentEntity,
+        cityA,
+        cityB,
+      }),
     );
   }
 
@@ -99,22 +107,11 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
       const cityAEntity = await this.upsertCity(roadSegment.cityA);
       const cityBEntity = await this.upsertCity(roadSegment.cityB);
 
-      // Check if a segment already exists between these cities
-      const existingSegment =
-        await this.roadSegmentTypeormEntityRepository.findOne({
-          where: [
-            { cityAId: cityAEntity.id, cityBId: cityBEntity.id },
-            { cityAId: cityBEntity.id, cityBId: cityAEntity.id },
-          ],
-        });
-
-      const entityData = RoadSegmentTypeormMapper.fromDomain(
-        roadSegment,
-        cityAEntity.id,
-        cityBEntity.id,
-        existingSegment ?? undefined,
-      );
-      const entity = this.roadSegmentTypeormEntityRepository.create(entityData);
+      const entity = RoadSegmentTypeormMapper.fromDomain({
+        domain: roadSegment,
+        cityADbId: cityAEntity.id,
+        cityBDbId: cityBEntity.id,
+      });
       await this.roadSegmentTypeormEntityRepository.save(entity);
 
       return ok(undefined);
@@ -150,9 +147,7 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
     });
 
     if (!cityEntity) {
-      // City doesn't exist, create it
-      const newCityData = CityTypeormMapper.fromDomain(city);
-      cityEntity = this.cityTypeormEntityRepository.create(newCityData);
+      cityEntity = CityTypeormMapper.fromDomain(city);
       await this.cityTypeormEntityRepository.save(cityEntity);
     }
 

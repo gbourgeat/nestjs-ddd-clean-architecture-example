@@ -23,11 +23,11 @@ export class RoadConstraintsMapper {
       : undefined;
 
     const maxDistance = constraints.maxDistance
-      ? Distance.fromKilometersOrThrow(constraints.maxDistance)
+      ? Distance.fromKilometers(constraints.maxDistance)
       : undefined;
 
     const minSpeedLimit = constraints.minSpeedLimit
-      ? Speed.fromKmPerHourOrThrow(constraints.minSpeedLimit)
+      ? Speed.fromKmPerHour(constraints.minSpeedLimit)
       : undefined;
 
     return new RoadConstraints(

@@ -42,7 +42,7 @@ export class UpdateRoadSegmentSpeedUseCase {
 
     const roadSegment = roadSegmentResult.value;
 
-    const newSpeedLimitResult = Speed.fromKmPerHour(input.newSpeedLimit);
+    const newSpeedLimitResult = Speed.tryFromKmPerHour(input.newSpeedLimit);
 
     if (!newSpeedLimitResult.success) {
       return fail(newSpeedLimitResult.error);
