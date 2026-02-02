@@ -1,6 +1,8 @@
 # Route Solver
 
 [![CI](https://github.com/gbourgeat/nestjs-ddd-clean-architecture-example/actions/workflows/ci.yml/badge.svg)](https://github.com/gbourgeat/nestjs-ddd-clean-architecture-example/actions/workflows/ci.yml)
+[![Barrel Exports](https://img.shields.io/badge/barrel%20exports-✅%20supported-brightgreen)](./docs/DEPENDENCY-CHECKING-BARRELS.md)
+[![Architecture](https://img.shields.io/badge/architecture-hexagonal-blue)](#architecture-overview)
 
 > A NestJS example implementation of Clean Architecture and Domain-Driven Design (DDD)
 
@@ -387,6 +389,53 @@ This command will:
 - Use cases (tested directly)
 - Application mappers (tested indirectly)
 
+## Architecture Dependency Validation
+
+The project uses **dependency-cruiser** to automatically enforce the layered architecture rules. The configuration is **fully compatible with barrel exports** (index.ts files).
+
+### Validation Rules
+
+The following rules are automatically checked:
+
+- **Domain** must not import from `application/`, `infrastructure/`, or `presentation/`
+- **Application** must only import from `domain/`
+- **Infrastructure** must not import from `presentation/`
+- **Presentation** should avoid direct imports from `infrastructure/` (use DI)
+- **No circular dependencies** are allowed (except in Domain layer and barrel exports)
+
+### Commands
+
+```bash
+# Check architecture dependencies (runs on pre-commit)
+npm run deps:check
+
+# Generate dependency graph visualization (requires Graphviz)
+npm run deps:graph
+
+# Display architecture overview
+npm run deps:archi
+```
+
+### Barrel Exports Support
+
+Barrel exports (`index.ts` files) are fully supported for elegant imports:
+
+```typescript
+// ✅ Allowed - Barrel exports
+import { CityId, CityName } from '@/domain/value-objects';
+
+// ✅ Allowed - Direct imports
+import { CityId } from '@/domain/value-objects/city-id';
+```
+
+The configuration excludes barrel files and Domain layer cycles from circular dependency detection, following DDD best practices.
+
+### Pre-commit Hook
+
+Dependency validation runs automatically before each commit. If violations are detected, the commit will be blocked.
+
+**Documentation:** See [docs/DEPENDENCY-CHECKING.md](./docs/DEPENDENCY-CHECKING.md) for detailed guide (English), [docs/DEPENDENCY-CHECKING-FR.md](./docs/DEPENDENCY-CHECKING-FR.md) for French version, or [docs/DEPENDENCY-CHECKING-BARRELS.md](./docs/DEPENDENCY-CHECKING-BARRELS.md) for barrel exports configuration.
+
 
 ## Docker Environments
 
@@ -678,6 +727,8 @@ curl -X PATCH http://localhost:3000/road-segments/123/speed \
 ## Documentation
 
 ### Project Documentation
+- [Architecture Dependency Checking](docs/DEPENDENCY-CHECKING.md) - Automated validation of architecture rules (EN)
+- [Contrôle des Dépendances](docs/DEPENDENCY-CHECKING-FR.md) - Validation automatique des règles d'architecture (FR)
 - [Pre-Commit Hooks](docs/PRE-COMMIT-HOOKS.md) - Automatic code formatting and linting before commits
 - [Git Workflow & Strategy](docs/GIT-WORKFLOW.md) - Branch conventions, commits, and PRs
 - [Git Cheat Sheet](docs/GIT-CHEAT-SHEET.md) - Quick reference for Git commands
