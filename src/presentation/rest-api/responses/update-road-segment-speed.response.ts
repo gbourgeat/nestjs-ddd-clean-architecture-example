@@ -2,8 +2,8 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateRoadSegmentSpeedResponse {
   @ApiProperty({
-    description: 'ID of the road segment',
-    example: 'lyon__paris',
+    description: 'ID of the road segment (UUID)',
+    example: '550e8400-e29b-41d4-a716-446655440000',
   })
   roadSegmentId: string;
 
