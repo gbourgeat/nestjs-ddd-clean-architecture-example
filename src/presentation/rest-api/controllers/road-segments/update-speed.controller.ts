@@ -31,42 +31,118 @@ export class UpdateRoadSegmentSpeedController {
 
   @Patch(':id')
   @ApiOperation({
-    summary: 'Update the speed limit of a road segment',
-    description:
-      'Update the speed limit of a road segment identified by its ID (format: cityA__cityB in alphabetical order).',
+    summary: "Modifier la limite de vitesse d'un segment routier",
+    description: `
+Met à jour la limite de vitesse d'un segment routier existant.
+
+## Format de l'identifiant
+L'identifiant du segment est au format \`cityA__cityB\` où les villes sont triées par ordre alphabétique.
+
+**Exemples d'identifiants valides :**
+- \`lyon__paris\` (Lyon-Paris)
+- \`marseille__nice\` (Marseille-Nice)
+- \`bordeaux__toulouse\` (Bordeaux-Toulouse)
+
+## Cas d'utilisation
+- Mise à jour suite à des travaux routiers
+- Changement de réglementation
+- Ajustement saisonnier (conditions hivernales)
+
+## Exemple
+\`\`\`
+PATCH /road-segments/lyon__paris
+{
+  "newSpeedLimit": 110
+}
+\`\`\`
+    `,
   })
   @ApiParam({
     name: 'id',
-    description: 'Road segment ID (format: cityA__cityB, e.g., "lyon__paris")',
+    required: true,
+    description: `
+Identifiant unique du segment routier au format \`cityA__cityB\`.
+
+**Important** : Les noms de villes sont en minuscules et triés alphabétiquement.
+
+Exemples :
+- \`lyon__paris\` pour le segment Lyon-Paris
+- \`marseille__nice\` pour le segment Marseille-Nice
+    `,
     example: 'lyon__paris',
   })
   @ApiBody({
     type: UpdateRoadSegmentSpeedRequest,
-    description: 'New speed limit data',
+    description: 'Nouvelle limite de vitesse à appliquer',
     examples: {
-      simple: {
-        summary: 'Update speed limit',
+      autoroute: {
+        summary: 'Vitesse autoroute standard',
+        description: 'Limite de vitesse typique sur autoroute française',
         value: {
           newSpeedLimit: 130,
+        },
+      },
+      travaux: {
+        summary: 'Réduction pour travaux',
+        description: 'Vitesse réduite temporairement pour travaux',
+        value: {
+          newSpeedLimit: 90,
+        },
+      },
+      intemperies: {
+        summary: 'Conditions météo dégradées',
+        description: 'Vitesse adaptée aux conditions hivernales',
+        value: {
+          newSpeedLimit: 110,
         },
       },
     },
   })
   @ApiResponse({
     status: 200,
-    description: 'Speed limit updated successfully',
+    description:
+      'Limite de vitesse mise à jour avec succès. Retourne le segment avec sa nouvelle configuration.',
     type: UpdateRoadSegmentSpeedResponse,
     example: {
       roadSegmentId: 'lyon__paris',
       cityA: 'Lyon',
       cityB: 'Paris',
       distance: 465,
-      speedLimit: 130,
+      speedLimit: 110,
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: `
+Requête invalide. Causes possibles :
+- Format d'identifiant incorrect (doit être \`cityA__cityB\`)
+- Vitesse négative ou nulle
+- Vitesse non numérique
+    `,
+    schema: {
+      oneOf: [
+        {
+          example: {
+            statusCode: 400,
+            message: 'Speed must be positive',
+            error: 'Invalid Speed',
+          },
+        },
+        {
+          example: {
+            statusCode: 400,
+            message:
+              'Invalid road segment ID format. Expected format: cityA__cityB',
+            error: 'Invalid Road Segment ID',
+          },
+        },
+      ],
     },
   })
   @ApiResponse({
     status: 404,
-    description: 'Road segment not found',
+    description:
+      "Le segment routier spécifié n'existe pas. Vérifiez l'identifiant et l'ordre alphabétique des villes.",
     schema: {
       example: {
         statusCode: 404,
@@ -76,13 +152,14 @@ export class UpdateRoadSegmentSpeedController {
     },
   })
   @ApiResponse({
-    status: 400,
-    description: 'Invalid input',
+    status: 500,
+    description:
+      'Erreur serveur interne. Contactez le support si le problème persiste.',
     schema: {
       example: {
-        statusCode: 400,
-        message: 'Speed must be positive',
-        error: 'Invalid Speed',
+        statusCode: 500,
+        message: 'Failed to update road segment',
+        error: 'Internal Server Error',
       },
     },
   })

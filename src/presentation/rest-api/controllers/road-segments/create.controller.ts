@@ -24,16 +24,41 @@ export class CreateRoadSegmentController {
 
   @Post()
   @ApiOperation({
-    summary: 'Create a new road segment',
-    description:
-      'Create a new road segment between two cities. Both cities must already exist in the database.',
+    summary: 'Créer un nouveau segment routier entre deux villes',
+    description: `
+Crée une connexion routière bidirectionnelle entre deux villes du réseau.
+
+## Prérequis
+- Les deux villes doivent déjà exister dans la base de données
+- Les deux villes doivent être différentes (pas de boucle)
+
+## Règles métier
+- **Distance** : Doit être un nombre positif représentant les kilomètres
+- **Vitesse** : Limite de vitesse en km/h (doit être positive)
+- **Identifiant** : Généré automatiquement au format \`cityA__cityB\` (ordre alphabétique)
+
+## Bidirectionnalité
+Le segment créé est bidirectionnel : un segment Paris-Lyon permet de voyager de Paris vers Lyon ET de Lyon vers Paris.
+
+## Exemple
+\`\`\`json
+POST /road-segments
+{
+  "cityA": "Paris",
+  "cityB": "Lyon",
+  "distance": 465,
+  "speedLimit": 130
+}
+\`\`\`
+    `,
   })
   @ApiBody({
     type: CreateRoadSegmentRequest,
-    description: 'Request data for creating a road segment',
+    description: 'Données du segment routier à créer',
     examples: {
-      simple: {
-        summary: 'Create road segment',
+      autoroute: {
+        summary: 'Autoroute Paris-Lyon',
+        description: 'Segment autoroutier typique avec limite à 130 km/h',
         value: {
           cityA: 'Paris',
           cityB: 'Lyon',
@@ -41,11 +66,22 @@ export class CreateRoadSegmentController {
           speedLimit: 130,
         },
       },
+      nationale: {
+        summary: 'Route nationale',
+        description: 'Route nationale avec limite à 80 km/h',
+        value: {
+          cityA: 'Dijon',
+          cityB: 'Beaune',
+          distance: 45,
+          speedLimit: 80,
+        },
+      },
     },
   })
   @ApiResponse({
     status: 201,
-    description: 'Road segment created successfully',
+    description:
+      'Segment routier créé avec succès. Retourne les informations du segment incluant son identifiant unique.',
     type: CreateRoadSegmentResponse,
     example: {
       roadSegmentId: 'lyon__paris',
@@ -56,53 +92,54 @@ export class CreateRoadSegmentController {
     },
   })
   @ApiResponse({
-    status: 404,
-    description: 'One of the cities was not found',
-    schema: {
-      example: {
-        statusCode: 404,
-        message: 'City with name "UnknownCity" not found',
-        error: 'City Not Found',
-      },
-    },
-  })
-  @ApiResponse({
     status: 400,
-    description: 'Invalid input',
+    description: `
+Requête invalide. Causes possibles :
+- Distance négative ou nulle
+- Vitesse négative ou nulle
+- Nom de ville vide
+- Tentative de créer un segment reliant une ville à elle-même
+    `,
     schema: {
-      examples: {
-        invalidDistance: {
-          summary: 'Invalid distance',
-          value: {
+      oneOf: [
+        {
+          example: {
             statusCode: 400,
             message: 'Distance must be positive',
             error: 'Invalid Distance',
           },
         },
-        invalidSpeed: {
-          summary: 'Invalid speed',
-          value: {
-            statusCode: 400,
-            message: 'Speed must be positive',
-            error: 'Invalid Speed',
-          },
-        },
-        sameCity: {
-          summary: 'Same city for both endpoints',
-          value: {
+        {
+          example: {
             statusCode: 400,
             message: 'Cannot create a road segment connecting a city to itself',
             error: 'Invalid Road Segment',
           },
         },
-        emptyCityName: {
-          summary: 'Empty city name',
-          value: {
-            statusCode: 400,
-            message: 'City name cannot be empty',
-            error: 'Invalid City Name',
-          },
-        },
+      ],
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description:
+      "L'une des villes spécifiées n'existe pas dans la base de données. Vérifiez l'orthographe ou créez d'abord la ville.",
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'City with name "Pariss" not found',
+        error: 'City Not Found',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description:
+      'Erreur serveur interne. Contactez le support si le problème persiste.',
+    schema: {
+      example: {
+        statusCode: 500,
+        message: 'Failed to save road segment',
+        error: 'Internal Server Error',
       },
     },
   })
