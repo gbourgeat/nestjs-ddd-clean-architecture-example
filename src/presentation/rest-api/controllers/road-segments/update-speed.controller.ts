@@ -86,7 +86,7 @@ export class UpdateRoadSegmentSpeedController {
       },
     },
   })
-  async updateRoadSegmentSpeed(
+  async updateSpeed(
     @Param('id') id: string,
     @Body() dto: UpdateRoadSegmentSpeedRequest,
   ): Promise<UpdateRoadSegmentSpeedResponse> {

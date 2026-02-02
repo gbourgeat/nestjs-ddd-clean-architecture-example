@@ -5,60 +5,38 @@ import {
   SameStartAndEndCityError,
 } from '@/domain/errors';
 import { RouteResponseMapper } from '@/presentation/rest-api/mappers';
-import { GetFastestRouteRequest } from '@/presentation/rest-api/requests';
+import { SearchItineraryQuery } from '@/presentation/rest-api/queries';
 import { GetFastestRouteResponse } from '@/presentation/rest-api/responses';
 import {
-  Body,
   Controller,
-  HttpCode,
+  Get,
   HttpException,
   HttpStatus,
-  Post,
+  Query,
 } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Itineraries')
 @Controller('itineraries')
-export class GetFastestRouteController {
+export class CalculateItineraryController {
   constructor(
     private readonly getFastestRouteUseCase: GetFastestRouteUseCase,
   ) {}
 
-  @Post()
-  @HttpCode(HttpStatus.OK)
+  @Get()
   @ApiOperation({
-    summary: 'Calculate the fastest route',
+    summary: 'Calculate the fastest itinerary',
     description:
-      'Calculate the fastest route between two cities taking into account the weather and optional constraints',
+      'Calculate the fastest itinerary between two cities, optionally applying constraints on weather, distance, or speed.',
   })
-  @ApiBody({
-    type: GetFastestRouteRequest,
-    description: 'Request data for route calculation',
-    examples: {
-      simple: {
-        summary: 'Simple request',
-        value: {
-          startCity: 'Paris',
-          endCity: 'Marseille',
-        },
-      },
-      withConstraints: {
-        summary: 'Request with constraints',
-        value: {
-          startCity: 'Paris',
-          endCity: 'Marseille',
-          constraints: {
-            excludeWeather: ['rain', 'snow'],
-            maxDistance: 500,
-            minSpeed: 100,
-          },
-        },
-      },
-    },
-  })
+  @ApiQuery({ name: 'from', required: true, example: 'Paris' })
+  @ApiQuery({ name: 'to', required: true, example: 'Lyon' })
+  @ApiQuery({ name: 'maxDistance', required: false, example: 500 })
+  @ApiQuery({ name: 'minSpeed', required: false, example: 100 })
+  @ApiQuery({ name: 'excludeWeather', required: false, example: 'rain,snow' })
   @ApiResponse({
     status: 200,
-    description: 'Route calculated successfully',
+    description: 'Itinerary calculated successfully',
     type: GetFastestRouteResponse,
     example: {
       path: ['Paris', 'Lyon', 'Marseille'],
@@ -88,46 +66,36 @@ export class GetFastestRouteController {
     schema: {
       example: {
         statusCode: 404,
-        message: 'End city "UnknownCity" not found in graph',
+        message: 'City "UnknownCity" not found',
         error: 'City Not Found',
       },
     },
   })
   @ApiResponse({
     status: 400,
-    description: 'Invalid request data',
+    description: 'Invalid request',
     schema: {
       example: {
         statusCode: 400,
-        message: ['startCity should not be empty', 'endCity must be a string'],
+        message: 'Start and end cities cannot be the same',
         error: 'Bad Request',
       },
     },
   })
-  @ApiResponse({
-    status: 500,
-    description: 'Internal server error',
-    schema: {
-      example: {
-        statusCode: 500,
-        message: 'An error occurred while calculating the route',
-        error: 'Internal Server Error',
-      },
-    },
-  })
-  async getFastestRoute(
-    @Body() dto: GetFastestRouteRequest,
+  async search(
+    @Query() query: SearchItineraryQuery,
   ): Promise<GetFastestRouteResponse> {
     const result = await this.getFastestRouteUseCase.execute({
-      startCity: dto.startCity,
-      endCity: dto.endCity,
-      constraints: dto.constraints
-        ? {
-            excludeWeatherConditions: dto.constraints.excludeWeather,
-            maxDistance: dto.constraints.maxDistance,
-            minSpeedLimit: dto.constraints.minSpeed,
-          }
-        : undefined,
+      startCity: query.from,
+      endCity: query.to,
+      constraints:
+        query.maxDistance || query.minSpeed || query.excludeWeather
+          ? {
+              maxDistance: query.maxDistance,
+              minSpeedLimit: query.minSpeed,
+              excludeWeatherConditions: query.excludeWeather,
+            }
+          : undefined,
     });
 
     if (!result.success) {

@@ -41,8 +41,8 @@
 |--------|--------|
 | **Définition** | Chemin ordonné de segments routiers reliant une ville de départ à une ville d'arrivée |
 | **Résultat de** | Calcul de pathfinding (algorithme Dijkstra) |
-| **Composition** | Liste de `RouteStep` (étapes) |
-| **REST** | `/itineraries` |
+| **Composition** | Liste d'étapes (`ItineraryStep`) |
+| **REST** | `GET /itineraries` |
 | **Code** | `PathfindingResult`, `RouteStep` |
 
 > **Note** : On utilise "Itinerary" (et non "Route") pour éviter la confusion avec "Road" (la route en français).
@@ -53,7 +53,7 @@
 
 ---
 
-### RouteStep (Étape d'Itinéraire)
+### ItineraryStep (Étape d'Itinéraire)
 
 | Aspect | Valeur |
 |--------|--------|
@@ -130,20 +130,103 @@
 
 ---
 
-## Correspondance REST API
+## API REST
 
-| Concept Métier | Ressource REST | Méthode | Endpoint |
-|----------------|----------------|---------|----------|
-| Calcul d'itinéraire | Itinerary | POST | `/itineraries` |
-| Création segment | RoadSegment | POST | `/road-segments` |
-| Mise à jour segment | RoadSegment | PATCH | `/road-segments/:id` |
-| Lecture segment | RoadSegment | GET | `/road-segments/:id` |
-| Liste segments | RoadSegment | GET | `/road-segments` |
+### Vue d'ensemble
 
-> **Conventions REST** :
-> - Utiliser des noms de ressources (substantifs), jamais de verbes
-> - ❌ `/get-fastest-route` → ✅ `/itineraries`
-> - Les ressources sont au pluriel (`/itineraries`, `/road-segments`)
+| Ressource | Méthode | Endpoint | Description |
+|-----------|---------|----------|-------------|
+| Itinerary | GET | `/itineraries` | Calculer un itinéraire |
+| RoadSegment | POST | `/road-segments` | Créer un segment routier |
+| RoadSegment | PATCH | `/road-segments/:id` | Modifier la vitesse d'un segment |
+
+### GET /itineraries
+
+Calcule l'itinéraire le plus rapide entre deux villes.
+
+**Query Parameters :**
+
+| Paramètre | Type | Requis | Description |
+|-----------|------|--------|-------------|
+| `from` | string | ✅ | Ville de départ |
+| `to` | string | ✅ | Ville d'arrivée |
+| `maxDistance` | number | ❌ | Distance max par segment (km) |
+| `minSpeed` | number | ❌ | Vitesse min requise (km/h) |
+| `excludeWeather` | string | ❌ | Conditions météo à exclure (séparées par virgule) |
+
+**Exemple :**
+```
+GET /itineraries?from=Paris&to=Lyon
+GET /itineraries?from=Paris&to=Lyon&maxDistance=500&excludeWeather=rain,snow
+```
+
+**Réponses :**
+- `200 OK` - Itinéraire calculé avec succès
+- `400 Bad Request` - Paramètres invalides ou villes identiques
+- `404 Not Found` - Ville non trouvée
+
+---
+
+### POST /road-segments
+
+Crée un nouveau segment routier entre deux villes.
+
+**Request Body :**
+
+| Champ | Type | Requis | Description |
+|-------|------|--------|-------------|
+| `cityA` | string | ✅ | Première ville |
+| `cityB` | string | ✅ | Seconde ville |
+| `distance` | number | ✅ | Distance en km |
+| `speedLimit` | number | ✅ | Limite de vitesse en km/h |
+
+**Exemple :**
+```json
+{
+  "cityA": "Paris",
+  "cityB": "Lyon",
+  "distance": 465,
+  "speedLimit": 130
+}
+```
+
+**Réponses :**
+- `201 Created` - Segment créé avec succès
+- `400 Bad Request` - Données invalides
+- `404 Not Found` - Ville non trouvée
+
+---
+
+### PATCH /road-segments/:id
+
+Met à jour la limite de vitesse d'un segment routier.
+
+**Path Parameters :**
+
+| Paramètre | Description |
+|-----------|-------------|
+| `id` | ID du segment (format: `cityA__cityB`, ex: `lyon__paris`) |
+
+**Request Body :**
+
+| Champ | Type | Requis | Description |
+|-------|------|--------|-------------|
+| `newSpeedLimit` | number | ✅ | Nouvelle limite de vitesse en km/h |
+
+**Exemple :**
+```
+PATCH /road-segments/lyon__paris
+```
+```json
+{
+  "newSpeedLimit": 110
+}
+```
+
+**Réponses :**
+- `200 OK` - Vitesse mise à jour
+- `400 Bad Request` - Vitesse invalide ou ID mal formé
+- `404 Not Found` - Segment non trouvé
 
 ---
 
@@ -172,6 +255,9 @@
 | Error | `PascalCase` + `Error` | `CityNotFoundError` |
 | Repository | `Abstract` + `PascalCase` + `Repository` | `RoadSegmentRepository` |
 | Use Case | `PascalCase` + `UseCase` | `GetFastestRouteUseCase` |
+| Controller | `PascalCase` + `Controller` | `CalculateItineraryController` |
+| Query DTO | `PascalCase` + `Query` | `SearchItineraryQuery` |
+| Request DTO | `PascalCase` + `Request` | `CreateRoadSegmentRequest` |
 
 ### Fichiers
 
@@ -180,16 +266,21 @@
 | Entity | `kebab-case.ts` | `road-segment.ts` |
 | Value Object | `kebab-case.ts` | `city-id.ts` |
 | Error | `kebab-case.error.ts` | `city-not-found.error.ts` |
-| Repository (Interface) | `kebab-case.repository.ts` | `road-segment.repository.ts` |
-| Repository (Impl) | `kebab-case.typeorm-repository.ts` | `road-segment.typeorm-repository.ts` |
+| Controller | `kebab-case.controller.ts` | `calculate.controller.ts` |
+| Query DTO | `kebab-case.query.ts` | `search-itinerary.query.ts` |
 
-### REST API
+### Structure Controllers
 
-| Élément | Convention | Exemple |
-|---------|------------|---------|
-| Ressource | `kebab-case` pluriel | `/road-segments` |
-| Identifiant | `:id` ou `:compositeKey` | `/road-segments/:id` |
-| Actions | Éviter les verbes | ❌ `/get-fastest-route` → ✅ `/routes` |
+```
+controllers/
+├── itineraries/
+│   ├── index.ts
+│   └── calculate.controller.ts
+└── road-segments/
+    ├── index.ts
+    ├── create.controller.ts
+    └── update-speed.controller.ts
+```
 
 ---
 
@@ -217,3 +308,5 @@
 | Date | Modification | Auteur |
 |------|--------------|--------|
 | 2026-02-02 | Création initiale du glossaire | Claude Code |
+| 2026-02-02 | Ajout documentation API REST complète | Claude Code |
+| 2026-02-02 | Changement POST → GET pour /itineraries | Claude Code |

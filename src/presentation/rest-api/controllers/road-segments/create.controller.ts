@@ -106,7 +106,7 @@ export class CreateRoadSegmentController {
       },
     },
   })
-  async createRoadSegment(
+  async create(
     @Body() dto: CreateRoadSegmentRequest,
   ): Promise<CreateRoadSegmentResponse> {
     const result = await this.createRoadSegmentUseCase.execute({
