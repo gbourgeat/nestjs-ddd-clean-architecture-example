@@ -1,7 +1,6 @@
 # Route Solver
 
 [![CI](https://github.com/gbourgeat/nestjs-ddd-clean-architecture-example/actions/workflows/ci.yml/badge.svg)](https://github.com/gbourgeat/nestjs-ddd-clean-architecture-example/actions/workflows/ci.yml)
-[![Barrel Exports](https://img.shields.io/badge/barrel%20exports-✅%20supported-brightgreen)](./docs/DEPENDENCY-CHECKING-BARRELS.md)
 [![Architecture](https://img.shields.io/badge/architecture-hexagonal-blue)](#architecture-overview)
 
 > A NestJS example implementation of Clean Architecture and Domain-Driven Design (DDD)
@@ -434,7 +433,7 @@ The configuration excludes barrel files and Domain layer cycles from circular de
 
 Dependency validation runs automatically before each commit. If violations are detected, the commit will be blocked.
 
-**Documentation:** See [docs/DEPENDENCY-CHECKING.md](./docs/DEPENDENCY-CHECKING.md) for detailed guide (English), [docs/DEPENDENCY-CHECKING-FR.md](./docs/DEPENDENCY-CHECKING-FR.md) for French version, or [docs/DEPENDENCY-CHECKING-BARRELS.md](./docs/DEPENDENCY-CHECKING-BARRELS.md) for barrel exports configuration.
+**Documentation:** See [docs/architecture/clean-architecture.md](./docs/architecture/clean-architecture.md) for the complete guide.
 
 
 ## Docker Environments
@@ -469,7 +468,7 @@ npm run docker:e2e:restart
 npm run docker:integration:restart
 ```
 
-**Full Docker documentation:** See [docs/DOCKER.md](./docs/DOCKER.md) for detailed usage and configuration.
+**Full Docker documentation:** See [docs/infrastructure/docker.md](./docs/infrastructure/docker.md) for detailed usage and configuration.
 
 ## Task Runner (Alternative to Make)
 
@@ -525,9 +524,8 @@ task db:reset            # Reset database completely
 task check               # Lint + format + test
 ```
 
-**See all available tasks:** Run `task --list` or check `Taskfile.yml`  
-**Full documentation:** See [docs/TASKFILE.md](./docs/TASKFILE.md)  
-**Quick reference:** See [docs/TASK-QUICKREF.md](./docs/TASK-QUICKREF.md)
+**See all available tasks:** Run `task --list` or check `Taskfile.yml`
+**Full documentation:** See [docs/tools/task-runner.md](./docs/tools/task-runner.md)
 
 ## Getting Started
 
@@ -568,7 +566,7 @@ npm run start:dev
 
 **Without Docker:** Manually create a PostgreSQL database and update `.env` with your credentials.
 
-**Code Quality:** Pre-commit hooks are automatically configured to format and lint your code before each commit. See [docs/PRE-COMMIT-HOOKS.md](docs/PRE-COMMIT-HOOKS.md) for details.
+**Code Quality:** Pre-commit hooks are automatically configured to format and lint your code before each commit. See [docs/workflows/pre-commit-hooks.md](docs/workflows/pre-commit-hooks.md) for details.
 
 ### Available Scripts
 
@@ -726,20 +724,25 @@ curl -X PATCH http://localhost:3000/road-segments/123/speed \
 
 ## Documentation
 
-### Project Documentation
-- [Architecture Dependency Checking](docs/DEPENDENCY-CHECKING.md) - Automated validation of architecture rules (EN)
-- [Contrôle des Dépendances](docs/DEPENDENCY-CHECKING-FR.md) - Validation automatique des règles d'architecture (FR)
-- [Pre-Commit Hooks](docs/PRE-COMMIT-HOOKS.md) - Automatic code formatting and linting before commits
-- [Git Workflow & Strategy](docs/GIT-WORKFLOW.md) - Branch conventions, commits, and PRs
-- [Git Cheat Sheet](docs/GIT-CHEAT-SHEET.md) - Quick reference for Git commands
-- [Git Command Examples](docs/GIT-COMMANDS-EXAMPLES.md) - Detailed workflow examples
-- [Docker Guide](docs/DOCKER.md) - Complete Docker setup and usage
-- [Task Runner](docs/TASKFILE.md) - Task automation with Taskfile
-- [Migration Guide](docs/MIGRATION.md) - Database migration management
-- [CI/CD Guide](docs/CI.md) - Continuous Integration setup
+All documentation is organized in the [docs/](docs/) folder:
 
-### Feature Documentation
-- [Create Road Segment Feature](docs/CREATE-ROAD-SEGMENT-FEATURE.md) - POST /road-segments endpoint documentation
+### Architecture
+- [Clean Architecture](docs/architecture/clean-architecture.md) - Layer rules, dependency validation, CI integration
+- [Domain Patterns](docs/architecture/domain-patterns.md) - Result pattern, aggregates, entity patterns
+
+### Infrastructure
+- [Docker](docs/infrastructure/docker.md) - Docker Compose environments, ports, configuration
+- [CI/CD](docs/infrastructure/ci-cd.md) - GitHub Actions workflows, coverage, local testing
+
+### Workflows
+- [Git](docs/workflows/git.md) - Branch strategy, conventional commits, PR workflow
+- [Pre-Commit Hooks](docs/workflows/pre-commit-hooks.md) - Husky, lint-staged, automatic formatting
+
+### Tools
+- [Task Runner](docs/tools/task-runner.md) - Task installation, commands, workflows
+
+### Features
+- [Create Road Segment](docs/features/create-road-segment.md) - POST /road-segments endpoint documentation
 
 ### GitHub Configuration
 - [Pull Request Template](.github/PULL_REQUEST_TEMPLATE.md) - PR template
