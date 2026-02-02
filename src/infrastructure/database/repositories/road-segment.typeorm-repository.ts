@@ -1,20 +1,16 @@
-import { City, RoadSegment } from '@/domain/entities';
+import { RoadSegment } from '@/domain/entities';
 import { RoadSegmentNotFoundError } from '@/domain/errors';
 import { RoadSegmentRepository } from '@/domain/repositories';
-import {
-  CityId,
-  CityName,
-  Distance,
-  RoadSegmentId,
-  Speed,
-} from '@/domain/value-objects';
+import { RoadSegmentId } from '@/domain/value-objects';
 import {
   CityTypeormEntity,
+  DatabaseIntegrityError,
   RoadSegmentTypeormEntity,
 } from '@/infrastructure/database';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { RoadSegmentMapper } from '../mappers';
 
 @Injectable()
 export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
@@ -29,30 +25,22 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
     const roadSegments = await this.roadSegmentTypeormEntityRepository.find();
     const cities = await this.cityTypeormEntityRepository.find();
 
-    const citiesIndexById = new Map<string, { id: string; name: string }>();
+    const citiesIndexById = new Map<string, CityTypeormEntity>();
     cities.forEach((city) => {
-      citiesIndexById.set(city.id, { id: city.id, name: city.name });
+      citiesIndexById.set(city.id, city);
     });
 
-    return roadSegments.map((route) => {
-      const cityA = citiesIndexById.get(route.cityAId) || { id: '', name: '' };
-      const cityB = citiesIndexById.get(route.cityBId) || { id: '', name: '' };
+    return roadSegments.map((roadSegmentEntity) => {
+      const cityA = citiesIndexById.get(roadSegmentEntity.cityAId);
+      const cityB = citiesIndexById.get(roadSegmentEntity.cityBId);
 
-      return RoadSegment.reconstitute(
-        RoadSegmentId.fromCityNames(cityA.name, cityB.name),
-        [
-          City.reconstitute(
-            CityId.fromNormalizedValue(cityA.id),
-            CityName.create(cityA.name),
-          ),
-          City.reconstitute(
-            CityId.fromNormalizedValue(cityB.id),
-            CityName.create(cityB.name),
-          ),
-        ],
-        Distance.fromKilometers(Number(route.distance)),
-        Speed.fromKmPerHour(route.speedLimit),
-      );
+      if (!cityA || !cityB) {
+        throw DatabaseIntegrityError.citiesNotFoundForRoadSegment(
+          roadSegmentEntity.id,
+        );
+      }
+
+      return RoadSegmentMapper.toDomain(roadSegmentEntity, cityA, cityB);
     });
   }
 
@@ -75,54 +63,17 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
 
     const cityA = cities.find(
       (c) => c.name.toLowerCase() === normalizedCityAName,
-    )!;
+    );
     const cityB = cities.find(
       (c) => c.name.toLowerCase() === normalizedCityBName,
-    )!;
+    );
 
-    // Find road segment connecting these cities
-    const roadSegment = await this.roadSegmentTypeormEntityRepository.findOne({
-      where: [
-        { cityAId: cityA.id, cityBId: cityB.id },
-        { cityAId: cityB.id, cityBId: cityA.id },
-      ],
-    });
-
-    if (!roadSegment) {
+    if (!cityA || !cityB) {
       throw RoadSegmentNotFoundError.forRoadSegmentId(id);
     }
 
-    return RoadSegment.reconstitute(
-      RoadSegmentId.fromCityNames(cityA.name, cityB.name),
-      [
-        City.reconstitute(
-          CityId.fromNormalizedValue(cityA.id),
-          CityName.create(cityA.name),
-        ),
-        City.reconstitute(
-          CityId.fromNormalizedValue(cityB.id),
-          CityName.create(cityB.name),
-        ),
-      ],
-      Distance.fromKilometers(Number(roadSegment.distance)),
-      Speed.fromKmPerHour(roadSegment.speedLimit),
-    );
-  }
-
-  async save(roadSegment: RoadSegment): Promise<void> {
-    // Find cities by name (since domain IDs are name-based, not UUIDs)
-    const cityA = await this.cityTypeormEntityRepository.findOne({
-      where: { name: roadSegment.cityA.name.value },
-    });
-    const cityB = await this.cityTypeormEntityRepository.findOne({
-      where: { name: roadSegment.cityB.name.value },
-    });
-
-    if (!cityA || !cityB) {
-      throw RoadSegmentNotFoundError.forRoadSegmentId(roadSegment.id);
-    }
-
-    const existingSegment =
+    // Find road segment connecting these cities
+    const roadSegmentEntity =
       await this.roadSegmentTypeormEntityRepository.findOne({
         where: [
           { cityAId: cityA.id, cityBId: cityB.id },
@@ -130,21 +81,53 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
         ],
       });
 
-    if (existingSegment) {
-      // Update existing
-      existingSegment.speedLimit = roadSegment.speedLimit.kmPerHour;
-      existingSegment.distance = roadSegment.distance.kilometers;
-      await this.roadSegmentTypeormEntityRepository.save(existingSegment);
-    } else {
-      // Create new - use the database UUIDs, not domain IDs
-      const ormEntity = this.roadSegmentTypeormEntityRepository.create({
-        cityAId: cityA.id,
-        cityBId: cityB.id,
-        distance: roadSegment.distance.kilometers,
-        speedLimit: roadSegment.speedLimit.kmPerHour,
+    if (!roadSegmentEntity) {
+      throw RoadSegmentNotFoundError.forRoadSegmentId(id);
+    }
+
+    return RoadSegmentMapper.toDomain(roadSegmentEntity, cityA, cityB);
+  }
+
+  async save(roadSegment: RoadSegment): Promise<void> {
+    // Find cities by name (since domain IDs are name-based, not UUIDs)
+    const cityAEntity = await this.cityTypeormEntityRepository.findOne({
+      where: { name: roadSegment.cityA.name.value },
+    });
+    const cityBEntity = await this.cityTypeormEntityRepository.findOne({
+      where: { name: roadSegment.cityB.name.value },
+    });
+
+    if (!cityAEntity || !cityBEntity) {
+      throw RoadSegmentNotFoundError.forRoadSegmentId(roadSegment.id);
+    }
+
+    const existingSegment =
+      await this.roadSegmentTypeormEntityRepository.findOne({
+        where: [
+          { cityAId: cityAEntity.id, cityBId: cityBEntity.id },
+          { cityAId: cityBEntity.id, cityBId: cityAEntity.id },
+        ],
       });
 
-      await this.roadSegmentTypeormEntityRepository.save(ormEntity);
+    if (existingSegment) {
+      // Update existing using mapper
+      const updatedEntity = RoadSegmentMapper.toTypeorm(
+        roadSegment,
+        cityAEntity.id,
+        cityBEntity.id,
+        existingSegment,
+      );
+      await this.roadSegmentTypeormEntityRepository.save(updatedEntity);
+    } else {
+      // Create new using mapper
+      const newEntityData = RoadSegmentMapper.toTypeormForCreation(
+        roadSegment,
+        cityAEntity.id,
+        cityBEntity.id,
+      );
+      const newEntity =
+        this.roadSegmentTypeormEntityRepository.create(newEntityData);
+      await this.roadSegmentTypeormEntityRepository.save(newEntity);
     }
   }
 }
