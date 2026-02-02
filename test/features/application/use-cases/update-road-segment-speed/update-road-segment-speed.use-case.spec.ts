@@ -11,6 +11,10 @@ import {
 } from '@test/fixtures';
 
 describe('UpdateRoadSegmentSpeedUseCase', () => {
+  // Fixed UUIDs for test reproducibility
+  const ROAD_SEGMENT_UUID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+  const NON_EXISTENT_UUID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
+
   let useCase: UpdateRoadSegmentSpeedUseCase;
   let roadSegmentRepository: RoadSegmentInMemoryRepository;
 
@@ -25,6 +29,7 @@ describe('UpdateRoadSegmentSpeedUseCase', () => {
     const cityB = CityFixtures.lyon();
 
     const roadSegment = RoadSegmentBuilder.aRoadSegment()
+      .withId(ROAD_SEGMENT_UUID)
       .between(cityA, cityB)
       .withDistance(465)
       .withSpeedLimit(110)
@@ -34,7 +39,7 @@ describe('UpdateRoadSegmentSpeedUseCase', () => {
 
     // Act
     const result = await useCase.execute({
-      roadSegmentId: 'lyon__paris',
+      roadSegmentId: ROAD_SEGMENT_UUID,
       newSpeedLimit: 130,
     });
 
@@ -42,7 +47,7 @@ describe('UpdateRoadSegmentSpeedUseCase', () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.value).toEqual({
-        roadSegmentId: 'lyon__paris',
+        roadSegmentId: ROAD_SEGMENT_UUID,
         cityA: 'Lyon',
         cityB: 'Paris',
         distance: 465,
@@ -52,12 +57,13 @@ describe('UpdateRoadSegmentSpeedUseCase', () => {
     }
   });
 
-  it('should work with reversed city order in ID (normalized)', async () => {
+  it('should work with different city orders', async () => {
     // Arrange
     const cityA = CityFixtures.lyon();
     const cityB = CityFixtures.paris();
 
     const roadSegment = RoadSegmentBuilder.aRoadSegment()
+      .withId(ROAD_SEGMENT_UUID)
       .between(cityA, cityB)
       .withDistance(465)
       .withSpeedLimit(110)
@@ -65,9 +71,9 @@ describe('UpdateRoadSegmentSpeedUseCase', () => {
 
     roadSegmentRepository.givenRoadSegments([roadSegment]);
 
-    // Act - ID is always alphabetically sorted, so lyon__paris is the canonical form
+    // Act
     const result = await useCase.execute({
-      roadSegmentId: 'lyon__paris',
+      roadSegmentId: ROAD_SEGMENT_UUID,
       newSpeedLimit: 90,
     });
 
@@ -83,7 +89,7 @@ describe('UpdateRoadSegmentSpeedUseCase', () => {
 
     // Act
     const result = await useCase.execute({
-      roadSegmentId: 'paris__unknowncity',
+      roadSegmentId: NON_EXISTENT_UUID,
       newSpeedLimit: 130,
     });
 
@@ -100,6 +106,7 @@ describe('UpdateRoadSegmentSpeedUseCase', () => {
     const cityB = CityFixtures.lyon();
 
     const roadSegment = RoadSegmentBuilder.aRoadSegment()
+      .withId(ROAD_SEGMENT_UUID)
       .between(cityA, cityB)
       .withDistance(465)
       .withSpeedLimit(110)
@@ -109,7 +116,7 @@ describe('UpdateRoadSegmentSpeedUseCase', () => {
 
     // Act
     const result = await useCase.execute({
-      roadSegmentId: 'lyon__paris',
+      roadSegmentId: ROAD_SEGMENT_UUID,
       newSpeedLimit: -10,
     });
 
@@ -126,6 +133,7 @@ describe('UpdateRoadSegmentSpeedUseCase', () => {
     const cityB = CityFixtures.lyon();
 
     const roadSegment = RoadSegmentBuilder.aRoadSegment()
+      .withId(ROAD_SEGMENT_UUID)
       .between(cityA, cityB)
       .withDistance(465)
       .withSpeedLimit(110)
@@ -135,7 +143,7 @@ describe('UpdateRoadSegmentSpeedUseCase', () => {
 
     // Act
     const result = await useCase.execute({
-      roadSegmentId: 'lyon__paris',
+      roadSegmentId: ROAD_SEGMENT_UUID,
       newSpeedLimit: 0,
     });
 
@@ -160,7 +168,7 @@ describe('UpdateRoadSegmentSpeedUseCase', () => {
     }
   });
 
-  it('should return InvalidRoadSegmentIdError for invalid ID format', async () => {
+  it('should return InvalidRoadSegmentIdError for invalid UUID format', async () => {
     // Act
     const result = await useCase.execute({
       roadSegmentId: 'invalid-format',

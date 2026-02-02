@@ -10,6 +10,10 @@ describe('CreateRoadSegmentUseCase', () => {
   let useCase: CreateRoadSegmentUseCase;
   let roadSegmentRepository: RoadSegmentInMemoryRepository;
 
+  // UUID regex for validation
+  const UUID_REGEX =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
   beforeEach(() => {
     roadSegmentRepository = new RoadSegmentInMemoryRepository();
     useCase = new CreateRoadSegmentUseCase(roadSegmentRepository);
@@ -33,13 +37,12 @@ describe('CreateRoadSegmentUseCase', () => {
       // Assert
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.value).toEqual({
-          roadSegmentId: 'lyon__paris',
-          cityA: 'Lyon',
-          cityB: 'Paris',
-          distance: 465,
-          speedLimit: 130,
-        });
+        // UUID is generated, so we just check format
+        expect(result.value.roadSegmentId).toMatch(UUID_REGEX);
+        expect(result.value.cityA).toBe('Lyon'); // Sorted alphabetically
+        expect(result.value.cityB).toBe('Paris');
+        expect(result.value.distance).toBe(465);
+        expect(result.value.speedLimit).toBe(130);
 
         // Verify segment was saved
         const savedSegments = roadSegmentRepository.getAll();
@@ -49,7 +52,7 @@ describe('CreateRoadSegmentUseCase', () => {
       }
     });
 
-    it('should sort cities alphabetically in the road segment ID', async () => {
+    it('should sort cities alphabetically in the output', async () => {
       // Arrange
       const cityA = CityFixtures.paris();
       const cityB = CityFixtures.lyon();
@@ -68,7 +71,27 @@ describe('CreateRoadSegmentUseCase', () => {
       if (result.success) {
         expect(result.value.cityA).toBe('Lyon');
         expect(result.value.cityB).toBe('Paris');
-        expect(result.value.roadSegmentId).toBe('lyon__paris');
+      }
+    });
+
+    it('should generate a UUID for the road segment ID', async () => {
+      // Arrange
+      const cityA = CityFixtures.paris();
+      const cityB = CityFixtures.lyon();
+      roadSegmentRepository.givenCities([cityA, cityB]);
+
+      // Act
+      const result = await useCase.execute({
+        cityA: 'Paris',
+        cityB: 'Lyon',
+        distance: 465,
+        speedLimit: 130,
+      });
+
+      // Assert
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.value.roadSegmentId).toMatch(UUID_REGEX);
       }
     });
 

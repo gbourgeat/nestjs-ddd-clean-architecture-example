@@ -7,37 +7,13 @@ export class InvalidRoadSegmentIdError extends DomainError {
     super(message);
   }
 
-  static emptyFirstCityName(): InvalidRoadSegmentIdError {
-    return new InvalidRoadSegmentIdError('First city name cannot be empty');
-  }
-
-  static emptySecondCityName(): InvalidRoadSegmentIdError {
-    return new InvalidRoadSegmentIdError('Second city name cannot be empty');
-  }
-
   static emptyValue(): InvalidRoadSegmentIdError {
-    return new InvalidRoadSegmentIdError(
-      'Road segment id value cannot be empty',
-    );
+    return new InvalidRoadSegmentIdError('Road segment ID cannot be empty');
   }
 
-  static missingSeparator(): InvalidRoadSegmentIdError {
+  static invalidUuidFormat(value: string): InvalidRoadSegmentIdError {
     return new InvalidRoadSegmentIdError(
-      'Road segment id value must contain the separator "__"',
-    );
-  }
-
-  static sameCities(): InvalidRoadSegmentIdError {
-    return new InvalidRoadSegmentIdError(
-      'Road segment cannot connect a city to itself',
-    );
-  }
-
-  static invalidCityId(
-    position: 'first' | 'second',
-  ): InvalidRoadSegmentIdError {
-    return new InvalidRoadSegmentIdError(
-      `Invalid ${position} city ID in road segment`,
+      `Road segment ID must be a valid UUID, got: "${value}"`,
     );
   }
 }

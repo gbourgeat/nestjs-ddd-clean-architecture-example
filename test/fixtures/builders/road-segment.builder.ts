@@ -2,7 +2,7 @@ import { City, RoadSegment } from '@/domain/entities';
 import { Distance, RoadSegmentId, Speed } from '@/domain/value-objects';
 
 export class RoadSegmentBuilder {
-  private id?: RoadSegmentId;
+  private id: RoadSegmentId = RoadSegmentId.generate();
   private cityA?: City;
   private cityB?: City;
   private distance: Distance = Distance.fromKilometersOrThrow(100);
@@ -13,7 +13,7 @@ export class RoadSegmentBuilder {
   }
 
   withId(id: string | RoadSegmentId): this {
-    this.id = typeof id === 'string' ? RoadSegmentId.fromValueOrThrow(id) : id;
+    this.id = typeof id === 'string' ? RoadSegmentId.fromString(id) : id;
     return this;
   }
 
@@ -48,15 +48,8 @@ export class RoadSegmentBuilder {
       throw new Error('RoadSegmentBuilder: both cities must be set');
     }
 
-    const id =
-      this.id ||
-      RoadSegmentId.fromCityNamesOrThrow(
-        this.cityA.name.value,
-        this.cityB.name.value,
-      );
-
     return RoadSegment.create(
-      id,
+      this.id,
       [this.cityA, this.cityB],
       this.distance,
       this.speedLimit,

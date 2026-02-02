@@ -25,6 +25,7 @@ export class RoadSegment {
   /**
    * Creates a RoadSegment from primitive values.
    * Validates all inputs and aggregates errors.
+   * Generates UUIDs for the RoadSegment and Cities.
    */
   static createFromPrimitives(
     cityAName: string,
@@ -91,24 +92,22 @@ export class RoadSegment {
     const distance = distanceResult.value;
     const speedLimit = speedResult.value;
 
-    // Derive CityIds from CityNames
-    const cityIdA = CityId.fromName(cityANameVO);
-    const cityIdB = CityId.fromName(cityBNameVO);
-
-    // Create RoadSegmentId (validates distinct cities)
-    const roadSegmentIdResult = RoadSegmentId.create(cityIdA, cityIdB);
-    if (!roadSegmentIdResult.success) {
+    // Validate distinct cities (business rule now in RoadSegment entity)
+    if (cityANameVO.equals(cityBNameVO)) {
       validationErrors.push({
         field: 'cities',
-        code: roadSegmentIdResult.error.code,
-        message: roadSegmentIdResult.error.message,
+        code: 'INVALID_ROAD_SEGMENT',
+        message: 'Road segment cannot connect a city to itself',
       });
       return fail(
         RoadSegmentCreationError.fromValidationErrors(validationErrors),
       );
     }
 
-    const roadSegmentId = roadSegmentIdResult.value;
+    // Generate UUIDs for the road segment and cities
+    const roadSegmentId = RoadSegmentId.generate();
+    const cityIdA = CityId.generate();
+    const cityIdB = CityId.generate();
 
     // Create City entities
     const cityA = City.create(cityIdA, cityANameVO);
@@ -124,7 +123,6 @@ export class RoadSegment {
 
   /**
    * Creates a RoadSegment from pre-validated value objects.
-   * @deprecated Use createFromPrimitives for new code.
    */
   static create(
     id: RoadSegmentId,

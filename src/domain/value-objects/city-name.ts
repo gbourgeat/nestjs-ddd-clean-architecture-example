@@ -16,7 +16,7 @@ export class CityName {
     return ok(new CityName(name.trim()));
   }
 
-  static createOrThrow(name: string): CityName {
+  static fromString(name: string): CityName {
     const result = CityName.create(name);
     if (!result.success) {
       throw result.error;
