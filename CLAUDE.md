@@ -130,16 +130,16 @@ export class GetFastestRouteUseCase {
 ### Test Structure
 ```
 test/
-├── features/                     # ← Feature tests (Use Cases)
+├── features/                     # Feature tests (Use Cases)
 │   ├── application/
 │   │   └── use-cases/
 │   │       ├── get-fastest-route/
 │   │       │   └── get-fastest-route.use-case.spec.ts
 │   │       └── update-road-segment-speed/
 │   │           └── update-road-segment-speed.use-case.spec.ts
-│   ├── domain/                   # ← (future) Domain-specific tests
+│   ├── domain/                   # (future) Domain-specific tests
 │   └── README.md
-├── fixtures/                     # ← Fakes & Builders for tests
+├── fixtures/                     # Fakes & Builders for tests
 │   ├── builders/
 │   ├── repositories/
 │   ├── services/
@@ -151,30 +151,6 @@ test/
 
 ### Use Case Test Example with Fakes & Builders
 
-**BEFORE (with mocks):**
-```typescript
-describe('GetFastestRouteUseCase', () => {
-  let useCase: GetFastestRouteUseCase;
-  let mockPathFinder: jest.Mocked<PathFinder>;
-  let mockCityRepository: jest.Mocked<CityRepository>;
-
-  beforeEach(() => {
-    mockPathFinder = { findFastestRoute: jest.fn() };
-    mockCityRepository = { findByName: jest.fn(), save: jest.fn() };
-    useCase = new GetFastestRouteUseCase(mockPathFinder, mockCityRepository);
-  });
-
-  it('should return route', async () => {
-    mockCityRepository.findByName
-      .mockResolvedValueOnce(parisCity)
-      .mockResolvedValueOnce(lyonCity);
-    mockPathFinder.findFastestRoute.mockResolvedValue(result);
-    // ...
-  });
-});
-```
-
-**AFTER (with fakes & builders):**
 ```typescript
 import {
   CityFixtures,
@@ -200,15 +176,15 @@ describe('GetFastestRouteUseCase', () => {
     // Populate with test data
     const paris = CityFixtures.paris();
     const lyon = CityFixtures.lyon();
-    
+
     cityRepository.givenCities([paris, lyon]);
-    
+
     const segment = RoadSegmentBuilder.aRoadSegment()
       .between(paris, lyon)
       .withDistance(465)
       .withSpeedLimit(130)
       .build();
-    
+
     roadSegmentRepository.givenRoadSegments([segment]);
 
     useCase = new GetFastestRouteUseCase(
@@ -224,7 +200,7 @@ describe('GetFastestRouteUseCase', () => {
       .withTotalDistance(465)
       .withEstimatedTime(3.58)
       .build();
-    
+
     pathFinder.givenResult(result);
 
     // Act
@@ -238,7 +214,6 @@ describe('GetFastestRouteUseCase', () => {
   });
 
   it('should throw SameStartAndEndCityError when cities are same', async () => {
-    // This test implicitly covers CityName.equals() from domain
     await expect(useCase.execute({
       startCity: 'Paris',
       endCity: 'Paris',
@@ -246,7 +221,6 @@ describe('GetFastestRouteUseCase', () => {
   });
 
   it('should throw CityNotFoundError when city not in repository', async () => {
-    // No mock needed - the in-memory repository throws the error naturally
     await expect(useCase.execute({
       startCity: 'UnknownCity',
       endCity: 'Lyon',
@@ -291,17 +265,81 @@ See `test/fixtures/README.md` for complete documentation.
 
 ## Commands
 
+### Task Runner (Recommended)
+
 ```bash
-npm run start:dev      # Development
-npm run test           # Unit tests
-npm run test:e2e       # E2E tests
-npm run test:cov       # Coverage
-npm run lint           # Linter
-npm run db:init        # Init database
+task setup            # First-time setup (install + env + db + migrations)
+task dev              # Start development server
+task test             # Run feature tests
+task test:cov         # Run tests with coverage
+task test:e2e         # Run E2E tests
+task check            # Lint + format + tests
+task docker:dev:up    # Start development database
+task migration:run    # Run database migrations
+task db:reset         # Reset database completely
 ```
+
+### npm Scripts
+
+```bash
+npm run start:dev          # Development server
+npm run test:features      # Feature tests (Use Cases)
+npm run test:features:cov  # Feature tests with coverage
+npm run test:e2e           # E2E tests
+npm run test:e2e:cov       # E2E tests with coverage
+npm run lint               # Lint code
+npm run format             # Format code
+npm run deps:check         # Check architecture dependencies
+```
+
+### Docker
+
+```bash
+npm run docker:dev:up           # Start dev database (port 54320)
+npm run docker:dev:down         # Stop dev database
+npm run docker:e2e:up           # Start E2E database (port 54321)
+npm run docker:e2e:down         # Stop E2E database
+npm run docker:integration:up   # Start integration database (port 54322)
+```
+
+## Documentation
+
+All documentation is in the `docs/` folder:
+
+| Category | Document | Description |
+|----------|----------|-------------|
+| Architecture | `docs/architecture/clean-architecture.md` | Layer rules, dependency validation |
+| Architecture | `docs/architecture/domain-patterns.md` | Result pattern, aggregates |
+| Infrastructure | `docs/infrastructure/docker.md` | Docker environments, ports |
+| Infrastructure | `docs/infrastructure/ci-cd.md` | GitHub Actions, CI configuration |
+| Workflows | `docs/workflows/git.md` | Branch strategy, commits, PRs |
+| Workflows | `docs/workflows/pre-commit-hooks.md` | Husky, lint-staged setup |
+| Tools | `docs/tools/task-runner.md` | Task installation, commands |
+| Features | `docs/features/create-road-segment.md` | POST /road-segments endpoint |
+
+## Git Workflow
+
+### Branch Naming
+```
+<type>/<ticket-id>-<description>
+```
+Types: `feature/`, `fix/`, `hotfix/`, `refactor/`, `docs/`, `test/`, `chore/`, `perf/`
+
+### Commit Convention (Conventional Commits)
+```
+<type>(<scope>): <description>
+```
+Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`
+
+### PR Title Format
+```
+[<TYPE>] <Description>
+```
+Types: `[FEATURE]`, `[FIX]`, `[HOTFIX]`, `[REFACTOR]`, `[DOCS]`, `[TEST]`, `[CHORE]`
 
 ## Rules Files
 
 - `.cursor/rules/*.mdc` - Cursor rules by domain
 - `.github/copilot-instructions.md` - GitHub Copilot instructions
 - `.windsurfrules` - Windsurf/Cascade rules
+- `.claude/commands/` - Claude Code custom commands
