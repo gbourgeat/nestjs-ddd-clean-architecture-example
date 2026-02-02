@@ -2,6 +2,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { App } from 'supertest/types';
+import { DataSource } from 'typeorm';
 import { RestApiModule } from '../../src/presentation/rest-api/rest-api.module';
 
 describe('PATCH /road-segments/:id (e2e)', () => {
@@ -18,6 +19,12 @@ describe('PATCH /road-segments/:id (e2e)', () => {
     app.useGlobalPipes(
       new ValidationPipe({ transform: true, whitelist: true }),
     );
+
+    // Reset database before tests to ensure clean state
+    const dataSource = moduleFixture.get(DataSource);
+    await dataSource.synchronize(true);
+
+    // Initialize app (triggers DatabaseSeeder.onModuleInit())
     await app.init();
   });
 
