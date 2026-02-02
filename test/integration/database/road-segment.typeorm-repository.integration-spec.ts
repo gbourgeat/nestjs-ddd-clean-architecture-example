@@ -160,16 +160,19 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
       });
       await roadSegmentTypeormRepository.save(segment);
 
-      const roadSegmentId = RoadSegmentId.fromCityNames('Paris', 'Lyon');
+      const roadSegmentId = RoadSegmentId.fromCityNamesOrThrow('Paris', 'Lyon');
 
       // Act
       const result = await repository.findById(roadSegmentId);
 
       // Assert
-      expect(result).toBeInstanceOf(RoadSegment);
-      // Cities are sorted alphabetically, so Lyon comes before Paris
-      expect(result.cityA.name.value).toBe('Lyon');
-      expect(result.cityB.name.value).toBe('Paris');
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.value).toBeInstanceOf(RoadSegment);
+        // Cities are sorted alphabetically, so Lyon comes before Paris
+        expect(result.value.cityA.name.value).toBe('Lyon');
+        expect(result.value.cityB.name.value).toBe('Paris');
+      }
     });
 
     it('should find a road segment regardless of city order in id', async () => {
@@ -182,36 +185,53 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
       });
       await roadSegmentTypeormRepository.save(segment);
 
-      const roadSegmentId = RoadSegmentId.fromCityNames('Paris', 'Lyon');
+      const roadSegmentId = RoadSegmentId.fromCityNamesOrThrow('Paris', 'Lyon');
 
       // Act
       const result = await repository.findById(roadSegmentId);
 
       // Assert
-      expect(result).toBeInstanceOf(RoadSegment);
-      // Cities are sorted alphabetically, so Lyon comes before Paris
-      expect(result.cityA.name.value).toBe('Lyon');
-      expect(result.cityB.name.value).toBe('Paris');
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.value).toBeInstanceOf(RoadSegment);
+        // Cities are sorted alphabetically, so Lyon comes before Paris
+        expect(result.value.cityA.name.value).toBe('Lyon');
+        expect(result.value.cityB.name.value).toBe('Paris');
+      }
     });
 
-    it('should throw RoadSegmentNotFoundError when road segment does not exist', async () => {
+    it('should return RoadSegmentNotFoundError when road segment does not exist', async () => {
       // Arrange
-      const roadSegmentId = RoadSegmentId.fromCityNames('Paris', 'Marseille');
-
-      // Act & Assert
-      await expect(repository.findById(roadSegmentId)).rejects.toThrow(
-        RoadSegmentNotFoundError,
+      const roadSegmentId = RoadSegmentId.fromCityNamesOrThrow(
+        'Paris',
+        'Marseille',
       );
+
+      // Act
+      const result = await repository.findById(roadSegmentId);
+
+      // Assert
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toBeInstanceOf(RoadSegmentNotFoundError);
+      }
     });
 
-    it('should throw RoadSegmentNotFoundError when city does not exist', async () => {
+    it('should return RoadSegmentNotFoundError when city does not exist', async () => {
       // Arrange
-      const roadSegmentId = RoadSegmentId.fromCityNames('NonExistent', 'Lyon');
-
-      // Act & Assert
-      await expect(repository.findById(roadSegmentId)).rejects.toThrow(
-        RoadSegmentNotFoundError,
+      const roadSegmentId = RoadSegmentId.fromCityNamesOrThrow(
+        'NonExistent',
+        'Lyon',
       );
+
+      // Act
+      const result = await repository.findById(roadSegmentId);
+
+      // Assert
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toBeInstanceOf(RoadSegmentNotFoundError);
+      }
     });
   });
 

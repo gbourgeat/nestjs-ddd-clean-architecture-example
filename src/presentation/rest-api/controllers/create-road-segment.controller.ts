@@ -5,6 +5,7 @@ import {
   InvalidDistanceError,
   InvalidRoadSegmentError,
   InvalidSpeedError,
+  RoadSegmentCreationError,
 } from '@/domain/errors';
 import { CreateRoadSegmentRequest } from '@/presentation/rest-api/requests';
 import { CreateRoadSegmentResponse } from '@/presentation/rest-api/responses';
@@ -172,6 +173,17 @@ export class CreateRoadSegmentController {
       }
 
       if (error instanceof InvalidRoadSegmentError) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.BAD_REQUEST,
+            message: error.message,
+            error: 'Invalid Road Segment',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (error instanceof RoadSegmentCreationError) {
         throw new HttpException(
           {
             statusCode: HttpStatus.BAD_REQUEST,
