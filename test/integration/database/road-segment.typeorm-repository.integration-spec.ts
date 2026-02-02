@@ -219,8 +219,8 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
       const updatedRoadSegment = RoadSegment.reconstitute(
         RoadSegmentId.fromString(segmentId),
         [paris, lyon],
-        Distance.fromKilometersOrThrow(465),
-        Speed.fromKmPerHourOrThrow(110), // Changed speed
+        Distance.fromKilometers(465),
+        Speed.fromKmPerHour(110), // Changed speed
       );
 
       // Act
@@ -256,8 +256,8 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
       const updatedRoadSegment = RoadSegment.reconstitute(
         RoadSegmentId.fromString(segmentId),
         [paris, lyon],
-        Distance.fromKilometersOrThrow(500), // Changed distance
-        Speed.fromKmPerHourOrThrow(130),
+        Distance.fromKilometers(500), // Changed distance
+        Speed.fromKmPerHour(130),
       );
 
       // Act
@@ -284,8 +284,8 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
       const roadSegment = RoadSegment.reconstitute(
         RoadSegmentId.generate(),
         [newCity, paris],
-        Distance.fromKilometersOrThrow(580),
-        Speed.fromKmPerHourOrThrow(130),
+        Distance.fromKilometers(580),
+        Speed.fromKmPerHour(130),
       );
 
       // Act

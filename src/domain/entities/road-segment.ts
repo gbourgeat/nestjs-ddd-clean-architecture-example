@@ -36,8 +36,8 @@ export class RoadSegment {
     // Validate all inputs
     const cityANameResult = CityName.create(cityAName);
     const cityBNameResult = CityName.create(cityBName);
-    const distanceResult = Distance.fromKilometers(distanceKm);
-    const speedResult = Speed.fromKmPerHour(speedLimitKmh);
+    const distanceResult = Distance.tryFromKilometers(distanceKm);
+    const speedResult = Speed.tryFromKmPerHour(speedLimitKmh);
 
     // Collect validation errors
     const validationErrors: ValidationErrorDetail[] = [];
@@ -189,7 +189,7 @@ export class RoadSegment {
       );
     }
 
-    return Duration.fromDistanceAndSpeedOrThrow(
+    return Duration.fromDistanceAndSpeed(
       this.distance.kilometers,
       this.speedLimit.kmPerHour,
     );

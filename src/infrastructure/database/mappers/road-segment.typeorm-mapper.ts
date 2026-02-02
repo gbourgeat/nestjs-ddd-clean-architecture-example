@@ -8,52 +8,44 @@ import {
 } from '@/domain/value-objects';
 import { CityTypeormEntity, RoadSegmentTypeormEntity } from '../entities';
 
-/**
- * Mapper between RoadSegment domain entity and RoadSegmentTypeormEntity
- */
+export interface RoadSegmentToDomainData {
+  entity: RoadSegmentTypeormEntity;
+  cityA: CityTypeormEntity;
+  cityB: CityTypeormEntity;
+}
+
+export interface RoadSegmentFromDomainData {
+  domain: RoadSegment;
+  cityADbId: string;
+  cityBDbId: string;
+}
+
 export class RoadSegmentTypeormMapper {
-  /**
-   * Maps from TypeORM entity to domain entity
-   * Requires city entities to build the complete domain model
-   */
-  static toDomain(
-    entity: RoadSegmentTypeormEntity,
-    cityA: CityTypeormEntity,
-    cityB: CityTypeormEntity,
-  ): RoadSegment {
+  static toDomain(data: RoadSegmentToDomainData): RoadSegment {
     return RoadSegment.reconstitute(
-      RoadSegmentId.fromString(entity.id),
+      RoadSegmentId.fromString(data.entity.id),
       [
         City.reconstitute(
-          CityId.fromString(cityA.id),
-          CityName.fromString(cityA.name),
+          CityId.fromString(data.cityA.id),
+          CityName.fromString(data.cityA.name),
         ),
         City.reconstitute(
-          CityId.fromString(cityB.id),
-          CityName.fromString(cityB.name),
+          CityId.fromString(data.cityB.id),
+          CityName.fromString(data.cityB.name),
         ),
       ],
-      Distance.fromKilometersOrThrow(Number(entity.distance)),
-      Speed.fromKmPerHourOrThrow(entity.speedLimit),
+      Distance.fromKilometers(Number(data.entity.distance)),
+      Speed.fromKmPerHour(data.entity.speedLimit),
     );
   }
 
-  /**
-   * Maps from domain entity to TypeORM partial entity
-   * Uses existing database ID on update, domain ID on creation
-   */
-  static fromDomain(
-    domain: RoadSegment,
-    cityADatabaseId: string,
-    cityBDatabaseId: string,
-    existingEntity?: RoadSegmentTypeormEntity,
-  ): Partial<RoadSegmentTypeormEntity> {
-    return {
-      id: existingEntity?.id ?? domain.id.value,
-      cityAId: cityADatabaseId,
-      cityBId: cityBDatabaseId,
-      distance: domain.distance.kilometers,
-      speedLimit: domain.speedLimit.kmPerHour,
-    };
+  static fromDomain(data: RoadSegmentFromDomainData): RoadSegmentTypeormEntity {
+    const entity = new RoadSegmentTypeormEntity();
+    entity.id = data.domain.id.value;
+    entity.cityAId = data.cityADbId;
+    entity.cityBId = data.cityBDbId;
+    entity.distance = data.domain.distance.kilometers;
+    entity.speedLimit = data.domain.speedLimit.kmPerHour;
+    return entity;
   }
 }

@@ -30,10 +30,8 @@ export class PathfindingOutputMapper {
     cityMapping: Map<string, City>,
   ): PathfindingResult {
     return {
-      totalDistance: Distance.fromKilometersOrThrow(
-        internalResult.totalDistance,
-      ),
-      estimatedTime: Duration.fromHoursOrThrow(internalResult.estimatedTime),
+      totalDistance: Distance.fromKilometers(internalResult.totalDistance),
+      estimatedTime: Duration.fromHours(internalResult.estimatedTime),
       steps: internalResult.steps.map((step) =>
         this.toDomainStep(step, cityMapping),
       ),
@@ -54,11 +52,9 @@ export class PathfindingOutputMapper {
     return {
       from: fromCity,
       to: toCity,
-      distance: Distance.fromKilometersOrThrow(internalStep.distance),
-      speedLimit: Speed.fromKmPerHourOrThrow(internalStep.speedLimit),
-      estimatedDuration: Duration.fromHoursOrThrow(
-        internalStep.estimatedDuration,
-      ),
+      distance: Distance.fromKilometers(internalStep.distance),
+      speedLimit: Speed.fromKmPerHour(internalStep.speedLimit),
+      estimatedDuration: Duration.fromHours(internalStep.estimatedDuration),
       weatherCondition: internalStep.weatherCondition || 'sunny',
     };
   }

@@ -41,8 +41,8 @@ describe('RoadSegment', () => {
       RoadSegment.create(
         validId,
         [parisCity, parisCity2], // Same city ID, different instances
-        Distance.fromKilometersOrThrow(100),
-        Speed.fromKmPerHourOrThrow(130),
+        Distance.fromKilometers(100),
+        Speed.fromKmPerHour(130),
       ),
     ).toThrow(InvalidRoadSegmentError as unknown as typeof Error);
   });
@@ -52,8 +52,8 @@ describe('RoadSegment', () => {
     const segment = RoadSegment.create(
       segmentId,
       [parisCity, lyonCity], // Paris before Lyon (wrong alphabetical order)
-      Distance.fromKilometersOrThrow(465),
-      Speed.fromKmPerHourOrThrow(130),
+      Distance.fromKilometers(465),
+      Speed.fromKmPerHour(130),
     );
 
     // Lyon < Paris alphabetically
@@ -66,11 +66,11 @@ describe('RoadSegment', () => {
     const segment = RoadSegment.create(
       segmentId,
       [parisCity, lyonCity],
-      Distance.fromKilometersOrThrow(465),
-      Speed.fromKmPerHourOrThrow(130),
+      Distance.fromKilometers(465),
+      Speed.fromKmPerHour(130),
     );
 
-    const newSpeed = Speed.fromKmPerHourOrThrow(110);
+    const newSpeed = Speed.fromKmPerHour(110);
     segment.updateSpeedLimit(newSpeed);
     expect(segment.speedLimit.kmPerHour).toBe(110);
   });
@@ -80,8 +80,8 @@ describe('RoadSegment', () => {
     const segment = RoadSegment.create(
       segmentId,
       [parisCity, lyonCity],
-      Distance.fromKilometersOrThrow(465),
-      Speed.fromKmPerHourOrThrow(130),
+      Distance.fromKilometers(465),
+      Speed.fromKmPerHour(130),
     );
 
     expect(segment.cityA).toBeDefined();
@@ -93,8 +93,8 @@ describe('RoadSegment', () => {
     const segment = RoadSegment.create(
       segmentId,
       [parisCity, lyonCity],
-      Distance.fromKilometersOrThrow(465),
-      Speed.fromKmPerHourOrThrow(130),
+      Distance.fromKilometers(465),
+      Speed.fromKmPerHour(130),
     );
 
     const estimatedDuration = segment.estimatedDuration;
@@ -107,8 +107,8 @@ describe('RoadSegment', () => {
     const segment = RoadSegment.create(
       segmentId,
       [parisCity, lyonCity],
-      Distance.fromKilometersOrThrow(465),
-      Speed.fromKmPerHourOrThrow(130),
+      Distance.fromKilometers(465),
+      Speed.fromKmPerHour(130),
     );
 
     expect(segment.id.value).toBe(SEGMENT_UUID);
