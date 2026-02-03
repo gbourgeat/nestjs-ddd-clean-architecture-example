@@ -59,8 +59,12 @@ describe('RoadSegmentTypeormRepository (Integration)', () => {
   });
 
   afterAll(async () => {
-    await dataSource.destroy();
-    await module.close();
+    if (dataSource?.isInitialized) {
+      await dataSource.destroy();
+    }
+    if (module) {
+      await module.close();
+    }
   });
 
   beforeEach(async () => {
