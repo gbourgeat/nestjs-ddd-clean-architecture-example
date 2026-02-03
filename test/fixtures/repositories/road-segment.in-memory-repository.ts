@@ -11,6 +11,7 @@ import { CityName, RoadSegmentId } from '@/domain/value-objects';
 export class RoadSegmentInMemoryRepository extends RoadSegmentRepository {
   private roadSegments: Map<string, RoadSegment> = new Map();
   private cities: Map<string, City> = new Map();
+  private shouldFailOnSave = false;
 
   async findAll(): Promise<Result<RoadSegment[], PersistenceError>> {
     return ok(Array.from(this.roadSegments.values()));
@@ -29,6 +30,9 @@ export class RoadSegmentInMemoryRepository extends RoadSegmentRepository {
   async save(
     roadSegment: RoadSegment,
   ): Promise<Result<void, PersistenceError>> {
+    if (this.shouldFailOnSave) {
+      return fail(PersistenceError.database('Simulated database error'));
+    }
     // Auto-register cities from the road segment
     this.registerCity(roadSegment.cityA);
     this.registerCity(roadSegment.cityB);
@@ -71,6 +75,14 @@ export class RoadSegmentInMemoryRepository extends RoadSegmentRepository {
 
   getAll(): RoadSegment[] {
     return Array.from(this.roadSegments.values());
+  }
+
+  simulateSaveFailure(): void {
+    this.shouldFailOnSave = true;
+  }
+
+  resetSaveFailure(): void {
+    this.shouldFailOnSave = false;
   }
 
   private registerCity(city: City): void {

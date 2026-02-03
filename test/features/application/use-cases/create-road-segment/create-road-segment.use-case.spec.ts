@@ -2,6 +2,7 @@ import { CreateRoadSegmentUseCase } from '@/application/use-cases/create-road-se
 import {
   CityNotFoundError,
   InvalidCityNameError,
+  PersistenceError,
   RoadSegmentCreationError,
 } from '@/domain/errors';
 import { CityFixtures, RoadSegmentInMemoryRepository } from '@test/fixtures';
@@ -300,6 +301,28 @@ describe('CreateRoadSegmentUseCase', () => {
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error).toBeInstanceOf(RoadSegmentCreationError);
+      }
+    });
+
+    it('should return PersistenceError when save fails', async () => {
+      // Arrange
+      const cityA = CityFixtures.paris();
+      const cityB = CityFixtures.lyon();
+      roadSegmentRepository.givenCities([cityA, cityB]);
+      roadSegmentRepository.simulateSaveFailure();
+
+      // Act
+      const result = await useCase.execute({
+        cityA: 'Paris',
+        cityB: 'Lyon',
+        distance: 465,
+        speedLimit: 130,
+      });
+
+      // Assert
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toBeInstanceOf(PersistenceError);
       }
     });
   });
