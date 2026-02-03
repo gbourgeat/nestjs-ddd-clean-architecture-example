@@ -148,13 +148,16 @@ export class CreateRoadSegmentUseCase {
       );
     } catch (error) {
       // Handle InvalidRoadSegmentError (e.g., same city connection)
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Road segment creation failed due to an unknown error';
       return fail(
         RoadSegmentCreationError.fromValidationErrors([
           {
             field: 'cities',
             code: 'INVALID_ROAD_SEGMENT',
-            message:
-              error instanceof Error ? error.message : 'Invalid road segment',
+            message,
           },
         ]),
       );
