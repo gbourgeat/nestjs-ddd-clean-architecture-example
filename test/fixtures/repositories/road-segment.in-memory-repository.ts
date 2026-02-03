@@ -31,7 +31,7 @@ export class RoadSegmentInMemoryRepository extends RoadSegmentRepository {
     roadSegment: RoadSegment,
   ): Promise<Result<void, PersistenceError>> {
     if (this.shouldFailOnSave) {
-      return fail(PersistenceError.database('Simulated database error'));
+      return fail(PersistenceError.saveFailed('RoadSegment', 'Simulated database error'));
     }
     // Auto-register cities from the road segment
     this.registerCity(roadSegment.cityA);

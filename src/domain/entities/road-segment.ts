@@ -1,5 +1,10 @@
 import { InvalidRoadSegmentError } from '@/domain/errors';
-import { Distance, Duration, RoadSegmentId, Speed } from '@/domain/value-objects';
+import {
+  Distance,
+  Duration,
+  RoadSegmentId,
+  Speed,
+} from '@/domain/value-objects';
 import { City } from './city';
 
 export class RoadSegment {
