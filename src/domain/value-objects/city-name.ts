@@ -13,6 +13,7 @@ export class CityName {
     if (error) {
       return fail(error);
     }
+
     return ok(new CityName(name.trim()));
   }
 
@@ -21,6 +22,7 @@ export class CityName {
     if (!result.success) {
       throw result.error;
     }
+
     return result.value;
   }
 

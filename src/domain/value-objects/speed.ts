@@ -25,6 +25,7 @@ export class Speed {
     if (!result.success) {
       throw result.error;
     }
+
     return result.value;
   }
 

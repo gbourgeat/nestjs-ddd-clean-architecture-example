@@ -152,6 +152,7 @@ export class CreateRoadSegmentUseCase {
         error instanceof Error
           ? error.message
           : 'Road segment creation failed due to an unknown error';
+
       return fail(
         RoadSegmentCreationError.fromValidationErrors([
           {

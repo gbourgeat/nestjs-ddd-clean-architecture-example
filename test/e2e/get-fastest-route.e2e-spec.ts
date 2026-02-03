@@ -53,9 +53,9 @@ describe('GET /itineraries (e2e)', () => {
     expect(res.body).toHaveProperty('totalDistance');
     expect(res.body).toHaveProperty('estimatedTime');
     expect(res.body).toHaveProperty('steps');
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
     expect(Array.isArray(res.body.path)).toBe(true);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
     expect(Array.isArray(res.body.steps)).toBe(true);
   });
 
@@ -65,13 +65,12 @@ describe('GET /itineraries (e2e)', () => {
       .query({ from: 'Paris', to: 'Lyon' })
       .expect(200)
       .expect((res) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(res.body.path).toContain('Paris');
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
         expect(res.body.path).toContain('Lyon');
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
         expect(res.body.totalDistance).toBeGreaterThan(0);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
         expect(res.body.estimatedTime).toBeGreaterThan(0);
       });
   });
@@ -89,11 +88,10 @@ describe('GET /itineraries (e2e)', () => {
       .expect((res) => {
         expect(res.body).toHaveProperty('path');
         expect(res.body).toHaveProperty('steps');
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+
         res.body.steps.forEach((step: any) => {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           expect(step.distance).toBeLessThanOrEqual(500);
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
           expect(step.speed).toBeGreaterThanOrEqual(100);
         });
       });
@@ -120,7 +118,7 @@ describe('GET /itineraries (e2e)', () => {
       .expect(404)
       .expect((res) => {
         expect(res.body).toHaveProperty('message');
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
         expect(res.body.message).toContain('not found');
       });
   });
@@ -132,7 +130,7 @@ describe('GET /itineraries (e2e)', () => {
       .expect(400)
       .expect((res) => {
         expect(res.body).toHaveProperty('message');
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
         expect(res.body.message).toContain('cannot be the same');
       });
   });

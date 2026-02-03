@@ -14,32 +14,38 @@ export class RoadSegmentBuilder {
 
   withId(id: string | RoadSegmentId): this {
     this.id = typeof id === 'string' ? RoadSegmentId.fromString(id) : id;
+
     return this;
   }
 
   withCityA(city: City): this {
     this.cityA = city;
+
     return this;
   }
 
   withCityB(city: City): this {
     this.cityB = city;
+
     return this;
   }
 
   between(cityA: City, cityB: City): this {
     this.cityA = cityA;
     this.cityB = cityB;
+
     return this;
   }
 
   withDistance(kilometers: number): this {
     this.distance = Distance.fromKilometers(kilometers);
+
     return this;
   }
 
   withSpeedLimit(kmPerHour: number): this {
     this.speedLimit = Speed.fromKmPerHour(kmPerHour);
+
     return this;
   }
 

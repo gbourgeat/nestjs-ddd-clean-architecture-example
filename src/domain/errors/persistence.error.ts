@@ -11,6 +11,7 @@ export class PersistenceError extends DomainError {
     const msg = reason
       ? `Failed to save ${entityType}: ${reason}`
       : `Failed to save ${entityType}`;
+
     return new PersistenceError(msg);
   }
 
@@ -18,6 +19,7 @@ export class PersistenceError extends DomainError {
     const msg = reason
       ? `Failed to delete ${entityType}: ${reason}`
       : `Failed to delete ${entityType}`;
+
     return new PersistenceError(msg);
   }
 
@@ -25,6 +27,7 @@ export class PersistenceError extends DomainError {
     const msg = reason
       ? `Failed to load ${entityType}: ${reason}`
       : `Failed to load ${entityType}`;
+
     return new PersistenceError(msg);
   }
 }

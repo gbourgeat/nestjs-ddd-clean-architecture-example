@@ -24,6 +24,7 @@ export class RoadSegmentInMemoryRepository extends RoadSegmentRepository {
     if (!roadSegment) {
       return fail(RoadSegmentNotFoundError.forRoadSegmentId(id));
     }
+
     return ok(roadSegment);
   }
 
@@ -31,12 +32,15 @@ export class RoadSegmentInMemoryRepository extends RoadSegmentRepository {
     roadSegment: RoadSegment,
   ): Promise<Result<void, PersistenceError>> {
     if (this.shouldFailOnSave) {
-      return fail(PersistenceError.saveFailed('RoadSegment', 'Simulated database error'));
+      return fail(
+        PersistenceError.saveFailed('RoadSegment', 'Simulated database error'),
+      );
     }
     // Auto-register cities from the road segment
     this.registerCity(roadSegment.cityA);
     this.registerCity(roadSegment.cityB);
     this.roadSegments.set(roadSegment.id.value, roadSegment);
+
     return ok(undefined);
   }
 
@@ -47,6 +51,7 @@ export class RoadSegmentInMemoryRepository extends RoadSegmentRepository {
     if (!city) {
       return fail(CityNotFoundError.forCityName(name));
     }
+
     return ok(city);
   }
 

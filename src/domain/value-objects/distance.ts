@@ -27,6 +27,7 @@ export class Distance {
     if (!result.success) {
       throw result.error;
     }
+
     return result.value;
   }
 

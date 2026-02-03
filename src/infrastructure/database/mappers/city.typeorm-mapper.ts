@@ -14,6 +14,7 @@ export class CityTypeormMapper {
     const entity = new CityTypeormEntity();
     entity.id = domainEntity.id.value;
     entity.name = domainEntity.name.value;
+
     return entity;
   }
 }

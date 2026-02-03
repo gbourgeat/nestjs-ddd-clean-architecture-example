@@ -61,6 +61,7 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
       return ok(result);
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
+
       return fail(PersistenceError.loadFailed('RoadSegment', reason));
     }
   }
@@ -117,6 +118,7 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
       return ok(undefined);
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
+
       return fail(PersistenceError.saveFailed('RoadSegment', reason));
     }
   }
@@ -137,6 +139,7 @@ export class RoadSegmentTypeormRepository implements RoadSegmentRepository {
 
   async findAllCities(): Promise<City[]> {
     const cityEntities = await this.cityTypeormEntityRepository.find();
+
     return cityEntities.map(CityTypeormMapper.toDomain);
   }
 
