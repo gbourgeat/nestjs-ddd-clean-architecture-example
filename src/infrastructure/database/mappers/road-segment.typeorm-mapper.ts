@@ -46,6 +46,7 @@ export class RoadSegmentTypeormMapper {
     entity.cityBId = data.cityBDbId;
     entity.distance = data.domain.distance.kilometers;
     entity.speedLimit = data.domain.speedLimit.kmPerHour;
+
     return entity;
   }
 }

@@ -43,8 +43,10 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/presentation/rest-api/rest-api.bootsrap.js",
-    "lint": "biome lint --write src test",
-    "lint:check": "biome lint src test",
+    "lint": "biome lint --write src test && eslint --fix src test",
+    "lint:check": "biome lint src test && eslint src test",
+    "lint:padding": "eslint src test",
+    "lint:padding:fix": "eslint --fix src test",
     "check": "biome check --write src test",
     "check:ci": "biome check src test",
     "deps:check": "depcruise --config .dependency-cruiser.js src",
@@ -84,7 +86,8 @@
   },
   "lint-staged": {
     "*.ts": [
-      "biome check --write --no-errors-on-unmatched"
+      "biome check --write --no-errors-on-unmatched",
+      "eslint --fix"
     ],
     "src/**/*.ts": [
       "bash -c 'npm run deps:check'"
@@ -111,14 +114,17 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
+    "@eslint/js": "^9.39.2",
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",
+    "@stylistic/eslint-plugin": "^5.7.1",
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^22.10.7",
     "@types/supertest": "^6.0.2",
     "dependency-cruiser": "^17.3.7",
+    "eslint": "^9.39.2",
     "husky": "^9.1.7",
     "jest": "^30.0.0",
     "knip": "^5.82.1",
@@ -129,7 +135,8 @@
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.54.0"
   },
   "jest": {
     "moduleFileExtensions": [

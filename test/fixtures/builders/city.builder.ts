@@ -22,11 +22,13 @@ export class CityBuilder {
 
   withId(id: string | CityId): this {
     this.id = typeof id === 'string' ? CityId.fromString(id) : id;
+
     return this;
   }
 
   withName(name: string | CityName): this {
     this.name = typeof name === 'string' ? CityName.fromString(name) : name;
+
     return this;
   }
 

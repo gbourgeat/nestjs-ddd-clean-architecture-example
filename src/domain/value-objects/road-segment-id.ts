@@ -31,6 +31,7 @@ export class RoadSegmentId {
     if (!result.success) {
       throw result.error;
     }
+
     return result.value;
   }
 

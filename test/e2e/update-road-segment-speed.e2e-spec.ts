@@ -72,6 +72,7 @@ describe('PATCH /road-segments/:id (e2e)', () => {
 
   it('should return 404 for non-existent road segment', () => {
     const nonExistentUuid = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+
     return request(app.getHttpServer())
       .patch(`/road-segments/${nonExistentUuid}`)
       .send({
@@ -80,7 +81,7 @@ describe('PATCH /road-segments/:id (e2e)', () => {
       .expect(404)
       .expect((res) => {
         expect(res.body).toHaveProperty('message');
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
         expect(res.body.message).toContain('not found');
       });
   });
@@ -111,6 +112,7 @@ describe('PATCH /road-segments/:id (e2e)', () => {
 
   it('should return 400 for invalid request (missing newSpeedLimit)', () => {
     const someUuid = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaab';
+
     return request(app.getHttpServer())
       .patch(`/road-segments/${someUuid}`)
       .send({})
@@ -128,6 +130,7 @@ describe('PATCH /road-segments/:id (e2e)', () => {
 
   it('should validate that newSpeedLimit is a number', () => {
     const someUuid = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaac';
+
     return request(app.getHttpServer())
       .patch(`/road-segments/${someUuid}`)
       .send({

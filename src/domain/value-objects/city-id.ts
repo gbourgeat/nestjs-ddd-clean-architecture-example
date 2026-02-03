@@ -29,6 +29,7 @@ export class CityId {
     if (!result.success) {
       throw result.error;
     }
+
     return result.value;
   }
 

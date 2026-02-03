@@ -21,31 +21,37 @@ export class RouteStepBuilder {
 
   withFrom(city: City): this {
     this.from = city;
+
     return this;
   }
 
   withTo(city: City): this {
     this.to = city;
+
     return this;
   }
 
   withDistance(kilometers: number): this {
     this.distance = Distance.fromKilometers(kilometers);
+
     return this;
   }
 
   withSpeedLimit(kmPerHour: number): this {
     this.speedLimit = Speed.fromKmPerHour(kmPerHour);
+
     return this;
   }
 
   withEstimatedDuration(hours: number): this {
     this.estimatedDuration = Duration.fromHours(hours);
+
     return this;
   }
 
   withWeatherCondition(condition: WeatherCondition): this {
     this.weatherCondition = condition;
+
     return this;
   }
 
@@ -83,21 +89,25 @@ export class PathfindingResultBuilder {
 
   withTotalDistance(kilometers: number): this {
     this.totalDistance = Distance.fromKilometers(kilometers);
+
     return this;
   }
 
   withEstimatedTime(hours: number): this {
     this.estimatedTime = Duration.fromHours(hours);
+
     return this;
   }
 
   withSteps(...steps: RouteStep[]): this {
     this.steps = steps;
+
     return this;
   }
 
   withStep(step: RouteStep): this {
     this.steps.push(step);
+
     return this;
   }
 

@@ -15,6 +15,7 @@ function extractPath(result: PathfindingResult): City[] {
   for (const step of result.steps) {
     path.push(step.to);
   }
+
   return path;
 }
 

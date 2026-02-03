@@ -25,6 +25,7 @@ export class Duration {
     if (!result.success) {
       throw result.error;
     }
+
     return result.value;
   }
 
@@ -47,6 +48,7 @@ export class Duration {
     if (!result.success) {
       throw result.error;
     }
+
     return result.value;
   }
 

@@ -91,6 +91,7 @@ export class DijkstraPathFinder implements PathFinder {
 
     const weatherPromises = Array.from(cities).map(async (city) => {
       const weather = await this.weatherConditionProvider.forCity(city);
+
       return { cityName: city.name.value, weather };
     });
 
