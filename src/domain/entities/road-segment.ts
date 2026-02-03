@@ -1,17 +1,5 @@
-import { Result, fail, ok } from '@/domain/common';
-import {
-  InvalidRoadSegmentError,
-  RoadSegmentCreationError,
-  ValidationErrorDetail,
-} from '@/domain/errors';
-import {
-  CityId,
-  CityName,
-  Distance,
-  Duration,
-  RoadSegmentId,
-  Speed,
-} from '@/domain/value-objects';
+import { InvalidRoadSegmentError } from '@/domain/errors';
+import { Distance, Duration, RoadSegmentId, Speed } from '@/domain/value-objects';
 import { City } from './city';
 
 export class RoadSegment {
@@ -21,105 +9,6 @@ export class RoadSegment {
     public readonly distance: Distance,
     private _speedLimit: Speed,
   ) {}
-
-  /**
-   * Creates a RoadSegment from primitive values.
-   * Validates all inputs and aggregates errors.
-   * Generates UUIDs for the RoadSegment and Cities.
-   */
-  static createFromPrimitives(
-    cityAName: string,
-    cityBName: string,
-    distanceKm: number,
-    speedLimitKmh: number,
-  ): Result<RoadSegment, RoadSegmentCreationError> {
-    // Validate all inputs
-    const cityANameResult = CityName.create(cityAName);
-    const cityBNameResult = CityName.create(cityBName);
-    const distanceResult = Distance.tryFromKilometers(distanceKm);
-    const speedResult = Speed.tryFromKmPerHour(speedLimitKmh);
-
-    // Collect validation errors
-    const validationErrors: ValidationErrorDetail[] = [];
-
-    if (!cityANameResult.success) {
-      validationErrors.push({
-        field: 'cityAName',
-        code: cityANameResult.error.code,
-        message: cityANameResult.error.message,
-      });
-    }
-
-    if (!cityBNameResult.success) {
-      validationErrors.push({
-        field: 'cityBName',
-        code: cityBNameResult.error.code,
-        message: cityBNameResult.error.message,
-      });
-    }
-
-    if (!distanceResult.success) {
-      validationErrors.push({
-        field: 'distance',
-        code: distanceResult.error.code,
-        message: distanceResult.error.message,
-      });
-    }
-
-    if (!speedResult.success) {
-      validationErrors.push({
-        field: 'speedLimit',
-        code: speedResult.error.code,
-        message: speedResult.error.message,
-      });
-    }
-
-    // Return early if any validation failed
-    if (
-      !cityANameResult.success ||
-      !cityBNameResult.success ||
-      !distanceResult.success ||
-      !speedResult.success
-    ) {
-      return fail(
-        RoadSegmentCreationError.fromValidationErrors(validationErrors),
-      );
-    }
-
-    // All value objects are valid - TypeScript now knows these are Success types
-    const cityANameVO = cityANameResult.value;
-    const cityBNameVO = cityBNameResult.value;
-    const distance = distanceResult.value;
-    const speedLimit = speedResult.value;
-
-    // Validate distinct cities (business rule now in RoadSegment entity)
-    if (cityANameVO.equals(cityBNameVO)) {
-      validationErrors.push({
-        field: 'cities',
-        code: 'INVALID_ROAD_SEGMENT',
-        message: 'Road segment cannot connect a city to itself',
-      });
-      return fail(
-        RoadSegmentCreationError.fromValidationErrors(validationErrors),
-      );
-    }
-
-    // Generate UUIDs for the road segment and cities
-    const roadSegmentId = RoadSegmentId.generate();
-    const cityIdA = CityId.generate();
-    const cityIdB = CityId.generate();
-
-    // Create City entities
-    const cityA = City.create(cityIdA, cityANameVO);
-    const cityB = City.create(cityIdB, cityBNameVO);
-
-    // Create the RoadSegment (cities will be sorted internally)
-    const sortedCities = this.sortCitiesByNames([cityA, cityB]);
-
-    return ok(
-      new RoadSegment(roadSegmentId, sortedCities, distance, speedLimit),
-    );
-  }
 
   /**
    * Creates a RoadSegment from pre-validated value objects.
