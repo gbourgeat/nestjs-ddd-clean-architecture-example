@@ -94,16 +94,22 @@ jobs:
     if: github.event.pull_request.draft == false
     steps:
       - name: Add PR summary
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_BASE_REF: ${{ github.base_ref }}
+          PR_HEAD_REF: ${{ github.head_ref }}
         run: |
-          echo "## Pull Request Validation" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**PR:** #${{ github.event.pull_request.number }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Title:** ${{ github.event.pull_request.title }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Author:** @${{ github.event.pull_request.user.login }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Base:** \`${{ github.base_ref }}\` ← **Head:** \`${{ github.head_ref }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Checks" >> $GITHUB_STEP_SUMMARY
-          echo "- [ ] Lint & Format" >> $GITHUB_STEP_SUMMARY
-          echo "- [ ] TypeScript compilation" >> $GITHUB_STEP_SUMMARY
-          echo "- [ ] Build" >> $GITHUB_STEP_SUMMARY
-          echo "- [ ] Features Tests" >> $GITHUB_STEP_SUMMARY
+          echo "## Pull Request Validation" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**PR:** #$PR_NUMBER" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Title:** $PR_TITLE" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Author:** @$PR_AUTHOR" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Base:** \`$PR_BASE_REF\` ← **Head:** \`$PR_HEAD_REF\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Checks" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [ ] Lint & Format" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [ ] TypeScript compilation" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [ ] Build" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [ ] Features Tests" >> "$GITHUB_STEP_SUMMARY"
